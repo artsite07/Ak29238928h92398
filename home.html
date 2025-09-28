@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Beranda Pribadi - Dashboard</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <link rel="icon" type="image/png" href="1.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Firebase JS -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+  <style>
+    :root {
+      --bg-dark: #1A2E40;
+      --bg-light: #2A4460;
+      --cyan-primary: #00BCD4;
+      --cyan-text: #E0F7FA;
+      --subtle-cyan: #80DEEA;
+      --shadow-color: rgba(0, 188, 212, 0.4);
+    }
+
+    body {
+      background: var(--bg-dark);
+      color: var(--cyan-text);
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-sizing: border-box;
+    }
+
+    .container {
+      max-width: 900px;
+      width: 100%;
+    }
+
+    .clock-widget { text-align:center; margin-bottom:30px; }
+    #time { font-size:4rem; font-weight:700; color:var(--cyan-primary); text-shadow:0 0 20px var(--shadow-color);}
+    #period { font-size:1.5rem; margin-left:10px;}
+    #date { font-size:1rem; color:var(--subtle-cyan); margin-top:5px;}
+
+    .task-section {
+      background: var(--bg-light);
+      padding: 20px;
+      border-radius: 12px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .task-section h2 { color:var(--cyan-primary); border-bottom:1px solid var(--subtle-cyan); padding-bottom:5px; margin-bottom:15px;}
+
+    #taskList { list-style:none; padding:0; margin:0; max-height:300px; overflow-y:auto; }
+    #taskList::-webkit-scrollbar { width:6px;}
+    #taskList::-webkit-scrollbar-thumb { background:var(--cyan-primary); border-radius:10px;}
+    #taskList::-webkit-scrollbar-track { background:var(--bg-dark); }
+
+    .task-item { background: var(--bg-dark); margin-bottom:10px; padding:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; border-left:4px solid var(--cyan-primary);}
+    .task-details { display:flex; align-items:center; flex-grow:1; margin-right:10px; }
+    .task-count { background:var(--cyan-primary); color:var(--bg-dark); padding:2px 6px; border-radius:4px; margin-right:10px; font-weight:600; text-align:center; min-width:20px;}
+    .complete-btn { border:1px solid var(--cyan-primary); padding:6px 12px; border-radius:6px; cursor:pointer; background:transparent; color:var(--cyan-primary); font-weight:600; transition:0.2s;}
+    .complete-btn:hover { background:var(--cyan-primary); color:var(--bg-dark);}
+    #emptyMessage { text-align:center; padding:20px; font-style:italic; color:var(--subtle-cyan);}
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="clock-widget">
+      <div id="time-container">
+        <span id="time">00:00:00</span>
+        <span id="period">AM</span>
+      </div>
+      <div id="date">Loading date...</div>
+    </div>
+
+    <div class="task-section">
+      <h2>My Plan</h2>
+      <ul id="taskList"></ul>
+      <div id="emptyMessage" style="display:none;">No plans for now!</div>
+    </div>
+  </div>
+
+  <script>
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCba6M_spBXvuG91Zn-XWJ4bSTX6vNcST0",
+      authDomain: "index-68220.firebaseapp.com",
+      databaseURL: "https://index-68220-default-rtdb.firebaseio.com",
+      projectId: "index-68220",
+      storageBucket: "index-68220.firebasestorage.app",
+      messagingSenderId: "633087068802",
+      appId: "1:633087068802:web:f8aa1f2ef9c00b99d1429b",
+      measurementId: "G-2VQCRFJQCM"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Clock
+    function updateClock() {
+      const now = new Date();
+      let h = now.getHours();
+      const m = now.getMinutes().toString().padStart(2,'0');
+      const s = now.getSeconds().toString().padStart(2,'0');
+      const period = h>=12?'PM':'AM';
+      h = h%12 || 12;
+      document.getElementById('time').textContent = `${h.toString().padStart(2,'0')}:${m}:${s}`;
+      document.getElementById('period').textContent = period;
+      document.getElementById('date').textContent = now.toLocaleDateString('id-ID',{weekday:'long', year:'numeric', month:'long', day:'numeric'});
+    }
+    setInterval(updateClock,1000);
+    updateClock();
+
+    // Load tasks
+    const taskList = document.getElementById('taskList');
+    const emptyMessage = document.getElementById('emptyMessage');
+
+    function completeTask(id){
+      db.ref('plans/'+id).update({completed:true});
+    }
+
+    function loadTasks(){
+      db.ref('plans').on('value',snap=>{
+        taskList.innerHTML='';
+        const all=[];
+        snap.forEach(c=>{
+          const d=c.val(); d.id=c.key; all.push(d);
+        });
+        const active = all.filter(t=>!t.completed).reverse();
+        if(!active.length){ emptyMessage.style.display='block'; return;} 
+        emptyMessage.style.display='none';
+        active.forEach((t,i)=>{
+          const li=document.createElement('li');
+          li.className='task-item';
+          li.innerHTML=`<div class="task-details"><div class="task-count">${i+1}</div><div class="task-text">${t.text||'No description'}</div></div><button class="complete-btn" onclick="completeTask('${t.id}')">Selesai</button>`;
+          taskList.appendChild(li);
+        });
+      });
+    }
+    loadTasks();
+  </script>
+</body>
+</html>
