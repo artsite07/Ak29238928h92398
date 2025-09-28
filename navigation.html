@@ -6,21 +6,15 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Manajemen Navigasi</title>
   <link rel="icon" href="1.png" />
-  <!-- Menggunakan font Inter untuk tampilan modern -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <!-- Firebase JS (compat) -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-  <!-- SortableJS untuk Drag and Drop -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 
   <style>
-    /* Variabel Warna Konsisten dengan Beranda */
     :root {
       --bg-dark: #111827;
-      /* Background iframe dari Beranda */
       --card-bg: #1f2937;
-      /* Background card/konten */
       --cyan-start: #0088cc;
       --cyan-end: #00d4ff;
       --text-color: #e2e8f0;
@@ -31,25 +25,12 @@
       --reorder-bg: #374151;
     }
 
-    /* Utilitas Gradien Teks */
-    .grad-text {
-      background-image: linear-gradient(90deg, var(--cyan-start), var(--cyan-end));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    * {
-      box-sizing: border-box;
-      font-family: 'Inter', sans-serif;
-    }
-
     body {
       margin: 0;
       padding: 30px;
       background: var(--bg-dark);
-      /* Mengikuti background parent iframe */
       color: var(--text-color);
+      font-family: 'Inter', sans-serif;
       min-height: 100vh;
     }
 
@@ -68,9 +49,11 @@
       margin-top: 0;
       border-bottom: 2px solid var(--border-color);
       padding-bottom: 10px;
+      background-image: linear-gradient(90deg, var(--cyan-start), var(--cyan-end));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
-    /* Form Input */
     .form-input {
       display: grid;
       grid-template-columns: 1fr 2fr auto;
@@ -115,7 +98,6 @@
       transform: translateY(1px);
     }
 
-    /* Daftar Navigasi */
     .nav-list {
       list-style: none;
       padding: 0;
@@ -134,16 +116,13 @@
       border-left: 4px solid var(--cyan-start);
       transition: background 0.3s, border-left-color 0.3s;
       flex-wrap: wrap;
-      /* Untuk responsivitas */
       cursor: grab;
-      /* Indikator bahwa item dapat di-drag */
     }
 
     .nav-item:hover {
       background: #334155;
     }
 
-    /* Gaya saat item sedang di-drag */
     .sortable-chosen {
       background: var(--reorder-bg) !important;
       border-left: 4px solid var(--cyan-end) !important;
@@ -155,7 +134,6 @@
       opacity: 0.4;
       background: #374151;
     }
-
 
     .nav-info {
       flex-grow: 1;
@@ -210,10 +188,8 @@
       background-color: #dc2626;
     }
 
-    /* Gaya untuk mode Edit */
     .edit-mode .nav-info {
       display: none;
-      /* Sembunyikan info saat edit mode aktif */
     }
 
     .edit-fields {
@@ -244,8 +220,6 @@
       flex: 2 1 60%;
     }
 
-
-    /* Responsivitas */
     @media (max-width: 768px) {
       .form-input {
         grid-template-columns: 1fr;
@@ -270,31 +244,90 @@
         width: 100%;
       }
     }
+
+    /* --- Popup Delete --- */
+    .popup-overlay {
+      position: fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      background: rgba(17,24,39,0.9);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index:1000;
+    }
+
+    .popup {
+      background: var(--card-bg);
+      border:2px solid var(--cyan-start);
+      border-radius:12px;
+      padding:25px;
+      text-align:center;
+      color: var(--text-color);
+    }
+
+    .popup-actions button {
+      margin: 8px;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    #confirmDelete {
+      background: var(--red-soft);
+      color:white;
+    }
+
+    #confirmDelete:hover {
+      background:#dc2626;
+    }
+
+    #cancelDelete {
+      background:#334155;
+      color: var(--cyan-start);
+    }
+
+    #cancelDelete:hover {
+      border-color: var(--cyan-end);
+      color: var(--cyan-end);
+    }
   </style>
 </head>
 
 <body>
   <div class="container">
-    <h1 class="grad-text">Kelola Navigasi Utama</h1>
-    <p style="color:var(--muted-text); margin-bottom: 25px;">Drag & Drop item di bawah ini untuk mengurutkannya. Urutan akan tersimpan otomatis.</p>
+    <h1>Kelola Navigasi Utama</h1>
+    <p style="color:var(--muted-text); margin-bottom:25px;">Drag & Drop item di bawah ini untuk mengurutkannya. Urutan akan tersimpan otomatis.</p>
 
-    <!-- Form Tambah Navigasi -->
     <div class="form-input">
       <input type="text" id="navName" placeholder="Nama Menu (misal: Beranda)" />
       <input type="text" id="navLink" placeholder="Link (misal: beranda.html)" />
       <button onclick="addNav()">Tambah</button>
     </div>
 
-    <!-- Daftar Navigasi -->
     <ul class="nav-list" id="navList">
-      <li style="opacity:.6; color: var(--muted-text); text-align: center;">Memuat daftar navigasi...</li>
+      <li style="opacity:.6; color: var(--muted-text); text-align:center;">Memuat daftar navigasi...</li>
     </ul>
-
   </div>
 
+  <!-- Popup Delete -->
+  <div class="popup-overlay" id="deleteOverlay">
+    <div class="popup">
+      <h3>Konfirmasi Hapus</h3>
+      <p id="deleteMessage">Anda yakin ingin menghapus item ini?</p>
+      <div class="popup-actions">
+        <button id="confirmDelete">Hapus</button>
+        <button id="cancelDelete">Batal</button>
+      </div>
+    </div>
+  </div>
 
   <script>
-    /* Firebase config */
+    // --- Firebase ---
     const firebaseConfig = {
       apiKey: "AIzaSyCba6M_spBXvuG91Zn-XWJ4bSTX6vNcST0",
       authDomain: "index-68220.firebaseapp.com",
@@ -306,257 +339,167 @@
       measurementId: "G-2VQCRFJQCM"
     };
 
-    if (typeof firebase !== 'undefined' && !firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    } else if (typeof firebase === 'undefined') {
-      console.error("Firebase library failed to load.");
-    }
-    const db = typeof firebase !== 'undefined' ? firebase.database() : null;
-
-    if (!db) {
-      document.getElementById("navList").innerHTML = "<li style='color:var(--red-soft);'>ERROR: Database tidak dapat diakses.</li>";
-    }
+    if (typeof firebase !== 'undefined' && !firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database ? firebase.database() : null;
 
     const nameInput = document.getElementById("navName");
     const linkInput = document.getElementById("navLink");
     const listEl = document.getElementById("navList");
     const navRef = db ? db.ref("navigation") : null;
-    let isReordering = false; // Flag untuk mencegah listener on('value') merender ulang saat proses reorder
+    let isReordering = false;
 
-    function escapeHTML(s) {
-      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
-    }
+    function escapeHTML(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
 
-    // --- Fungsi CRUD ---
-
+    // --- CRUD ---
     function addNav() {
-      if (!navRef) return;
+      if(!navRef) return;
       const name = nameInput.value.trim();
       const link = linkInput.value.trim();
-      if (!name || !link) {
-        // Ganti alert dengan pesan di UI jika memungkinkan, tapi untuk saat ini, gunakan alert
-        alert('Nama dan Link Navigasi wajib diisi.');
-        return;
-      }
+      if(!name || !link){ alert('Nama dan Link wajib diisi.'); return; }
 
-      // Hitung order tertinggi yang ada, lalu tambahkan 1
-      navRef.limitToLast(1).once('value', snapshot => {
+      navRef.limitToLast(1).once('value', snapshot=>{
         let nextOrder = 1;
-        snapshot.forEach(child => {
-          // Jika ada, gunakan order yang sudah ada + 1
-          if (child.val().order) {
-            nextOrder = child.val().order + 1;
-          }
+        snapshot.forEach(child=>{
+          if(child.val().order) nextOrder = child.val().order+1;
         });
-
-        // Kirim data ke ref 'navigation'
-        navRef.push({
-          name,
-          link,
-          order: nextOrder // Tambahkan properti order
-        }).then(() => {
-          nameInput.value = "";
-          linkInput.value = "";
-        }).catch(error => {
-          console.error("Gagal menambahkan navigasi:", error);
-        });
-      }, error => {
-        console.error("Gagal membaca order terakhir:", error);
-        // Fallback jika gagal baca, push tanpa order
-        navRef.push({
-          name,
-          link,
-          order: 999
-        });
-      });
+        navRef.push({name, link, order: nextOrder}).then(()=>{
+          nameInput.value=""; linkInput.value="";
+        }).catch(console.error);
+      }, console.error);
     }
 
-    function delNav(id) {
-      if (!navRef) return;
-      if (confirm("Apakah Anda yakin ingin menghapus navigasi ini?")) {
-        navRef.child(id).remove().catch(error => {
-          console.error("Gagal menghapus navigasi:", error);
-        });
-      }
+    let deleteId = null;
+    function askDelete(id,name){
+      deleteId = id;
+      document.getElementById('deleteMessage').innerHTML = `Yakin ingin menghapus: <strong>${name}</strong>?`;
+      document.getElementById('deleteOverlay').style.display='flex';
     }
 
-    function saveEdit(id) {
-      if (!navRef) return;
-      const item = document.getElementById('nav-item-' + id);
-      if (!item) return;
+    document.getElementById('confirmDelete').onclick = ()=>{
+      if(!deleteId) return;
+      navRef.child(deleteId).remove().catch(console.error);
+      document.getElementById('deleteOverlay').style.display='none';
+      deleteId=null;
+    }
 
+    document.getElementById('cancelDelete').onclick = ()=>{
+      document.getElementById('deleteOverlay').style.display='none';
+      deleteId=null;
+    }
+
+    function delNav(id){
+      const item = document.getElementById('nav-item-'+id);
+      const name = item.querySelector('.name').textContent;
+      askDelete(id,name);
+    }
+
+    function saveEdit(id){
+      const item = document.getElementById('nav-item-'+id);
+      if(!item) return;
       const newName = item.querySelector('.name-input').value.trim();
       const newLink = item.querySelector('.link-input').value.trim();
-
-      if (!newName || !newLink) {
-        alert('Nama dan Link wajib diisi.');
-        return;
-      }
-
-      // Perbarui data di Firebase
-      navRef.child(id).update({
-        name: newName,
-        link: newLink
-      }).then(() => {
-        // Setelah berhasil, matikan mode edit
+      if(!newName || !newLink){ alert('Nama dan Link wajib diisi.'); return; }
+      navRef.child(id).update({name:newName, link:newLink}).then(()=>{
         item.classList.remove('edit-mode');
-        // Set tombol kembali ke "Edit"
-        item.querySelector('.edit').textContent = 'Edit';
-        item.querySelector('.edit').style.backgroundColor = 'var(--green-soft)';
-      }).catch(error => {
-        console.error("Gagal menyimpan edit:", error);
-      });
+        const btn = item.querySelector('.edit');
+        btn.textContent='Edit';
+        btn.style.backgroundColor='var(--green-soft)';
+      }).catch(console.error);
     }
 
-    function toggleEdit(id) {
-      const item = document.getElementById('nav-item-' + id);
-      if (!item) return;
-
+    function toggleEdit(id){
+      const item = document.getElementById('nav-item-'+id);
+      if(!item) return;
       const isEditing = item.classList.contains('edit-mode');
-
-      if (isEditing) {
-        // Jika sudah edit, nonaktifkan
-        item.classList.remove('edit-mode');
-      } else {
-        // Jika belum edit, aktifkan
+      if(isEditing) item.classList.remove('edit-mode');
+      else {
         const currentName = item.querySelector('.nav-info .name').textContent;
         const currentLink = item.querySelector('.nav-info .link').textContent;
-
-        item.querySelector('.name-input').value = currentName;
-        item.querySelector('.link-input').value = currentLink;
-
+        item.querySelector('.name-input').value=currentName;
+        item.querySelector('.link-input').value=currentLink;
         item.classList.add('edit-mode');
       }
     }
 
-    // Fungsi untuk menangani klik tombol edit (berganti antara Edit/Simpan)
-    function handleEditClick(id, button) {
-      const item = document.getElementById('nav-item-' + id);
-      if (!item.classList.contains('edit-mode')) {
-        // Jika belum mode edit, aktifkan mode edit
+    function handleEditClick(id,button){
+      const item = document.getElementById('nav-item-'+id);
+      if(!item.classList.contains('edit-mode')){
         toggleEdit(id);
-        button.textContent = 'Simpan';
-        button.style.backgroundColor = 'var(--cyan-start)';
-      } else {
-        // Jika sudah mode edit, simpan perubahan
-        saveEdit(id);
-        // Tombol akan dikembalikan oleh saveEdit setelah berhasil
-      }
+        button.textContent='Simpan';
+        button.style.backgroundColor='var(--cyan-start)';
+      } else saveEdit(id);
     }
 
-    // --- Fungsi Pengurutan (Drag and Drop) ---
-    function updateOrder(sortableList) {
-      if (!navRef) return;
-      isReordering = true;
-      const updates = {};
-
-      // Looping melalui item DOM yang sudah diurutkan
-      Array.from(sortableList.children).forEach((li, index) => {
-        const id = li.dataset.id; // Ambil ID Firebase dari data-id
-        const newOrder = index + 1; // Urutan baru (1, 2, 3, ...)
-
-        // Siapkan path update: { "ID_FIREBASE/order": newOrder }
-        updates[id + '/order'] = newOrder;
+    function updateOrder(sortableList){
+      if(!navRef) return;
+      isReordering=true;
+      const updates={};
+      Array.from(sortableList.children).forEach((li,index)=>{
+        const id = li.dataset.id;
+        updates[id+'/order']=index+1;
       });
-
-      // Lakukan batch update ke Firebase
-      navRef.update(updates).then(() => {
-        console.log("Urutan navigasi berhasil diperbarui.");
-        // Beri jeda sebentar sebelum mengaktifkan kembali listener
-        setTimeout(() => {
-          isReordering = false;
-        }, 500);
-      }).catch(error => {
-        console.error("Gagal memperbarui urutan:", error);
-        isReordering = false;
-      });
+      navRef.update(updates).then(()=>{setTimeout(()=>isReordering=false,500);}).catch(()=>{isReordering=false;});
     }
 
-
-    // --- Render Daftar Navigasi ---
-
-    window.onload = () => {
-      // 1. Setup SortableJS
-      if (typeof Sortable !== 'undefined') {
-        Sortable.create(listEl, {
-          animation: 150,
-          handle: '.nav-item', // Seluruh item bisa di-drag
-          onEnd: function(evt) {
-            // Panggil fungsi updateOrder setelah selesai di-drag
-            updateOrder(evt.from);
-          },
-        });
-      } else {
-        console.error("SortableJS tidak terdeteksi.");
+    window.onload=()=>{
+      if(typeof Sortable!=='undefined'){
+        Sortable.create(listEl,{animation:150, handle:'.nav-item', onEnd:evt=>updateOrder(evt.from)});
       }
 
-      // 2. Listener untuk menambahkan Navigasi dengan Enter
-      linkInput.addEventListener("keypress", e => {
-        if (e.key === "Enter") addNav();
-      });
+      linkInput.addEventListener("keypress", e=>{if(e.key==="Enter") addNav();});
 
-      // 3. Render daftar dari Firebase, diurutkan berdasarkan 'order'
-      if (navRef) {
-        // Menggunakan orderByChild('order') untuk memastikan item diurutkan
-        navRef.orderByChild('order').on("value", snap => {
-          if (isReordering) return; // Abaikan render jika sedang dalam proses reorder
-
-          listEl.innerHTML = "";
-          if (!snap.exists()) {
-            listEl.innerHTML = "<li style='opacity:.6; color: var(--muted-text); text-align: center; padding: 15px;'>Tidak ada menu navigasi yang tersimpan.</li>";
+      if(navRef){
+        navRef.orderByChild('order').on("value",snap=>{
+          if(isReordering) return;
+          listEl.innerHTML="";
+          if(!snap.exists()){
+            listEl.innerHTML="<li style='opacity:.6; color: var(--muted-text); text-align: center; padding:15px;'>Tidak ada menu navigasi yang tersimpan.</li>";
             return;
           }
-
-          snap.forEach(child => {
-            const id = child.key;
-            const d = child.val();
-
-            const li = document.createElement("li");
-            li.className = "nav-item";
-            li.id = 'nav-item-' + id;
-            li.setAttribute('data-id', id); // Simpan ID Firebase untuk SortableJS
-
-            // Pastikan item yang tidak memiliki properti 'order' tidak membuat render berantakan
-            const orderDisplay = d.order === undefined ? '?' : d.order;
-
-            li.innerHTML = `
-              <!-- Mode Tampil -->
-              <div class="nav-info">
-                  <div class="name">${escapeHTML(d.name || 'Nama Kosong')}</div>
-                  <div class="link">${escapeHTML(d.link || '#')} (Order: ${orderDisplay})</div>
-              </div>
-
-              <!-- Mode Edit (Tersembunyi secara default) -->
-              <div class="edit-fields">
-                  <input type="text" class="name-input" placeholder="Nama" />
-                  <input type="text" class="link-input" placeholder="Link" />
-              </div>
-
-              <!-- Tombol Aksi -->
-              <div class="nav-actions">
-                  <button class="edit" onclick="handleEditClick('${id}', this)">Edit</button>
-                  <button class="del" onclick="delNav('${id}')">Hapus</button>
-              </div>
-            `;
+          snap.forEach(child=>{
+            const id = child.key; const d = child.val();
+            const orderDisplay = d.order===undefined?'?':d.order;
+            const li=document.createElement("li");
+            li.className="nav-item"; li.id='nav-item-'+id; li.dataset.id=id;
+            li.innerHTML=`
+            <div class="nav-info">
+              <div class="name">${escapeHTML(d.name||'Nama Kosong')}</div>
+              <div class="link">${escapeHTML(d.link||'#')} (Order: ${orderDisplay})</div>
+            </div>
+            <div class="edit-fields">
+              <input type="text" class="name-input" placeholder="Nama" />
+              <input type="text" class="link-input" placeholder="Link" />
+            </div>
+            <div class="nav-actions">
+              <button class="edit" onclick="handleEditClick('${id}', this)">Edit</button>
+              <button class="del" onclick="delNav('${id}')">Hapus</button>
+            </div>`;
             listEl.appendChild(li);
           });
         });
       }
     };
 
-    // Proteksi akses (dipertahankan dari kode lama)
-    (function() {
-      try {
-        const raw = sessionStorage.getItem('dashboard_access');
-        if (!raw) {
-          // Hanya log warning di konsol Iframe
-        }
-      } catch (e) {
-        console.error("Error accessing session storage:", e);
+    document.addEventListener('keydown', e=>{
+      const overlayVisible=document.getElementById('deleteOverlay').style.display==='flex';
+      if(overlayVisible){
+        if(e.key==='Escape') document.getElementById('cancelDelete').click();
+        if(e.key==='Enter') document.getElementById('confirmDelete').click();
       }
-    })();
+      const editingItem=document.querySelector('.nav-item.edit-mode');
+      if(editingItem){
+        if(e.key==='Escape'){
+          editingItem.classList.remove('edit-mode');
+          const btn = editingItem.querySelector('.edit');
+          btn.textContent='Edit';
+          btn.style.backgroundColor='var(--green-soft)';
+        }
+        if(e.key==='Enter'){
+          const id = editingItem.getAttribute('data-id');
+          saveEdit(id);
+        }
+      }
+    });
   </script>
-
 </body>
-
 </html>
