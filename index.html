@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Adlan Madjied Ridho - Access</title>
+  <link rel="icon" type="image/png" href="1.png">
+  <!-- Font Monospace -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Ikon -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+  <style>
+    /* Variabel Warna Dark Blue & Cyan Murni */
+    :root {
+      --bg-dark: #0a0e14;
+      /* Biru Gelap Sangat Dalam */
+      --card-bg: #111827;
+      /* Container gelap */
+      --primary-color: #00ffd9;
+      /* Cyan Murni */
+      --text-light: #e0e6f0;
+      /* Teks umum */
+      --border-thin: #374151;
+      /* Garis batas gelap */
+      --mono: 'Roboto Mono', monospace;
+    }
+
+    /* Font dan Warna Utama */
+    * {
+      box-sizing: border-box;
+      font-family: var(--mono);
+    }
+
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg-dark);
+      color: var(--text-light);
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Kartu Login Minimalis Murni */
+    .card {
+      width: min(300px, 90vw);
+      /* Lebih kecil */
+      padding: 15px;
+      /* Padding sangat minimal */
+      background: var(--card-bg);
+      border-radius: 4px;
+      text-align: center;
+      border: 1px solid var(--border-thin);
+    }
+
+    .form-row {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .input-group {
+      position: relative;
+    }
+
+    /* Input Style */
+    input[type="password"] {
+      background: var(--bg-dark);
+      border: 1px solid var(--border-thin);
+      outline: none;
+      color: var(--primary-color);
+      /* Teks cyan */
+      font-size: 1rem;
+      width: 100%;
+      padding: 10px 10px 10px 40px;
+      border-radius: 2px;
+      transition: border-color 0.2s;
+    }
+
+    input[type="password"]:focus {
+      border-color: var(--primary-color);
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--primary-color);
+      font-size: 0.9rem;
+    }
+
+    /* Tombol Style */
+    button {
+      width: 100%;
+      padding: 10px;
+      background: var(--primary-color);
+      border: none;
+      color: var(--bg-dark);
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: background 0.3s, opacity 0.3s;
+      text-transform: uppercase;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    /* Kotak Status Tersembunyi tapi Tetap Ada untuk Logic */
+    .status-placeholder {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <form id="loginForm" autocomplete="off">
+      <div class="form-row">
+        <!-- HANYA INPUT KATA SANDI -->
+        <div class="input-group">
+          <i class="fas fa-lock input-icon"></i>
+          <input id="pw" type="password" placeholder="KATA SANDI" aria-label="Password" required />
+        </div>
+        <button id="btnLogin" type="submit">ACCESS</button>
+      </div>
+    </form>
+
+    <!-- Elemen status tetap ada untuk menangani pesan error/redirect di JS, tapi disembunyikan total dari tampilan -->
+    <div id="status" class="status-placeholder" aria-live="polite">READY</div>
+    <div id="hint" class="status-placeholder"></div>
+  </div>
+
+  <!-- Firebase JS (compat) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script>
+    /* KONFIGURASI FIREBASE */
+    const firebaseConfig = {
+      apiKey: "AIzaSyCba6M_spBXvuG91Zn-XWJ4bSTX6vNcST0",
+      authDomain: "index-68220.firebaseapp.com",
+      databaseURL: "https://index-68220-default-rtdb.firebaseio.com",
+      projectId: "index-68220",
+      storageBucket: "index-68220.firebasestorage.app",
+      messagingSenderId: "633087068802",
+      appId: "1:633087068802:web:f8aa1f2ef9c00b99d1429b",
+      measurementId: "G-2VQCRFJQCM"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Password umpan (decoy password)
+    const decoyPassword = "A4521";
+    // Memastikan decoy password sudah diset
+    db.ref('decoy/password').get().then(snap => {
+      if (!snap.exists() || snap.val() !== decoyPassword) {
+        db.ref('decoy/password').set(decoyPassword).catch(() => console.warn('Gagal set decoy password'));
+      }
+    }).catch(() => console.warn('Gagal cek decoy password'));
+
+
+    // Elements
+    const form = document.getElementById('loginForm');
+    const pwInput = document.getElementById('pw');
+    const status = document.getElementById('status'); // Status masih dipakai untuk logic internal
+    const btnLogin = document.getElementById('btnLogin');
+
+
+    // Helper: compute SHA-256 hex of a string
+    async function sha256Hex(str) {
+      const enc = new TextEncoder().encode(str);
+      const digest = await crypto.subtle.digest('SHA-256', enc);
+      return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      btnLogin.disabled = true; // Disable tombol saat proses
+      status.textContent = 'VERIFYING...';
+
+      const val = pwInput.value || '';
+
+      // Rekam upaya login
+      db.ref('decoy/loginAttempts').push({
+        ts: Date.now(),
+        attempt: val.length + ' chars',
+        input: val.substring(0, 3) + '...' // Catat sebagian input
+      }).catch(() => {});
+
+      // Jika password umpan digunakan -> redirect ke situs jebakan
+      if (val === decoyPassword) {
+        db.ref('decoy/fakeSuccesses').push({
+          ts: Date.now(),
+          note: 'decoy used'
+        }).catch(() => {});
+
+        const target = 'https://pranx.com/hacker/';
+
+        status.textContent = 'ACCESS DENIED. REDIRECTING...';
+
+        setTimeout(() => {
+          window.location.href = target;
+        }, 1500);
+
+        pwInput.value = '';
+        pwInput.focus();
+        return;
+      }
+
+      // Jika bukan password umpan, cek hash yang tersimpan di RTDB
+      try {
+        const snap = await db.ref('real/passwordHash').get();
+        if (snap.exists()) {
+          const storedHash = snap.val();
+          const attemptHash = await sha256Hex(val);
+          if (attemptHash === storedHash) {
+            // Akses diberikan: atur penanda sesi dan alihkan ke beranda
+            sessionStorage.setItem('auth', Date.now().toString());
+            status.textContent = 'ACCESS GRANTED.';
+            setTimeout(() => {
+              window.location.href = 'beranda.html';
+            }, 500);
+          } else {
+            status.textContent = 'ACCESS DENIED: INVALID KEY.';
+            btnLogin.disabled = false; // Aktifkan tombol kembali
+          }
+        } else {
+          status.textContent = 'ERROR: HASH NOT FOUND.';
+          btnLogin.disabled = false; // Aktifkan tombol kembali
+        }
+      } catch (err) {
+        console.error(err);
+        status.textContent = 'NETWORK ERROR.';
+        btnLogin.disabled = false; // Aktifkan tombol kembali
+      }
+
+      pwInput.value = '';
+      pwInput.focus();
+    });
+
+    // Fokus input saat halaman dimuat
+    document.addEventListener('DOMContentLoaded', () => {
+      pwInput.focus();
+    });
+  </script>
+</body>
+
+</html>

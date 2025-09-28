@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Manajemen Rencana Aksi</title>
+  <link rel="icon" href="1.png">
+  <!-- Menggunakan font Inter untuk tampilan modern -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- Firebase JS (compat) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+  <style>
+    /* Variabel Warna Konsisten dengan Dashboard */
+    :root {
+      --bg-dark: #0a0e14;
+      --card-bg: #0a0e14;
+      --cyan-start: #0088cc;
+      --cyan-end: #00d4ff;
+      --text-color: #e2e8f0;
+      --muted-text: #94a3b8;
+      --border-color: rgba(255, 255, 255, 0.1);
+      --red-soft: #ef4444;
+      --green-soft: #10b981;
+      --reorder-bg: #374151;
+    }
+
+    .grad-text {
+      background-image: linear-gradient(90deg, var(--cyan-start), var(--cyan-end));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 30px;
+      background: var(--bg-dark);
+      color: var(--text-color);
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 0 auto;
+      background: var(--card-bg);
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-top: 0;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 10px;
+    }
+
+    .form-input {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 30px;
+      align-items: center;
+    }
+
+    .form-input input {
+      flex-grow: 1;
+      padding: 12px 16px;
+      border: 1px solid var(--border-color);
+      background: #334155;
+      color: var(--text-color);
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .form-input input:focus {
+      outline: none;
+      border-color: var(--cyan-end);
+      box-shadow: 0 0 5px rgb(0, 213, 255);
+    }
+
+    .form-input button {
+      padding: 12px 20px;
+      background: linear-gradient(90deg, var(--cyan-start), var(--cyan-end));
+      color: var(--bg-dark);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: opacity 0.3s, transform 0.1s;
+      box-shadow: 0 4px 10px rgba(0, 212, 255, 0.3);
+      flex-shrink: 0;
+    }
+
+    .form-input button:hover {
+      opacity: 0.9;
+    }
+
+    .plans-list {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .plan-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      background: #2b3a4a;
+      border-radius: 10px;
+      border-left: 4px solid var(--cyan-start);
+      transition: background 0.3s, border-left-color 0.3s;
+      flex-wrap: wrap;
+    }
+
+    .plan-item:hover {
+      background: #334155;
+    }
+
+    .plan-info {
+      flex-grow: 1;
+      min-width: 50%;
+    }
+
+    .plan-text {
+      font-weight: 500;
+      font-size: 1rem;
+      color: var(--text-color);
+      word-break: break-word;
+    }
+
+    .plan-actions {
+      display: flex;
+      gap: 10px;
+      margin-left: 20px;
+      flex-shrink: 0;
+    }
+
+    .plan-actions button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 0.9rem;
+      transition: opacity 0.3s, background 0.3s;
+    }
+
+    .plan-actions button.edit-btn {
+      background: var(--green-soft);
+      color: white;
+    }
+
+    .plan-actions button.edit-btn:hover {
+      background: #059669;
+    }
+
+    .plan-actions button.complete-btn {
+      background-color: var(--red-soft);
+      color: white;
+    }
+
+    .plan-actions button.complete-btn:hover {
+      background-color: #dc2626;
+    }
+
+    .edit-mode .plan-info {
+      display: none;
+    }
+
+    .edit-fields {
+      flex-grow: 1;
+      display: none;
+    }
+
+    .edit-mode .edit-fields {
+      display: flex;
+    }
+
+    .edit-fields input {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid var(--cyan-start);
+      background: #334155;
+      color: var(--text-color);
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 500px) {
+      .form-input {
+        flex-direction: column;
+      }
+
+      .form-input input {
+        width: 100%;
+      }
+
+      .plan-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .plan-actions {
+        margin-left: 0;
+        width: 100%;
+        justify-content: space-around;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1 class="grad-text">My Plan</h1>
+    <p style="color:var(--muted-text); margin-bottom: 25px;">Nothing Plan For Now</p>
+
+    <div class="form-input">
+      <input type="text" id="planInput" placeholder="Tulis rencana aksi baru..." />
+      <button onclick="savePlan()">Add</button>
+    </div>
+
+    <ul class="plans-list" id="plansList">
+      <li style="opacity:.6; color: var(--muted-text); text-align: center;">Loading...</li>
+    </ul>
+
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCba6M_spBXvuG91Zn-XWJ4bSTX6vNcST0",
+      authDomain: "index-68220.firebaseapp.com",
+      databaseURL: "https://index-68220-default-rtdb.firebaseio.com",
+      projectId: "index-68220",
+      storageBucket: "index-68220.firebasestorage.app",
+      messagingSenderId: "633087068802",
+      appId: "1:633087068802:web:f8aa1f2ef9c00b99d1429b",
+      measurementId: "G-2VQCRFJQCM"
+    };
+
+    if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const db = typeof firebase !== 'undefined' ? firebase.database() : null;
+
+    const inputEl = document.getElementById("planInput");
+    const listEl = document.getElementById("plansList");
+    const planRef = db ? db.ref("plans") : null;
+
+    function escapeHTML(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    }
+
+    function savePlan() {
+      if (!planRef) return;
+      const text = inputEl.value.trim();
+      if (!text) {
+        alert('Rencana aksi tidak boleh kosong.');
+        return;
+      }
+      planRef.push({
+        text,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+      }).then(() => {
+        inputEl.value = "";
+      }).catch(error => {
+        console.error("Gagal menambahkan rencana:", error);
+      });
+    }
+
+    // **Langsung hapus tanpa konfirmasi**
+    function completePlan(id) {
+      if (!planRef) return;
+      planRef.child(id).remove().catch(error => {
+        console.error("Gagal menyelesaikan rencana:", error);
+      });
+    }
+
+    function saveEdit(id) {
+      if (!planRef) return;
+      const item = document.getElementById('plan-item-' + id);
+      if (!item) return;
+      const newText = item.querySelector('.text-input').value.trim();
+      if (!newText) {
+        alert('Rencana aksi tidak boleh kosong.');
+        return;
+      }
+      planRef.child(id).update({
+        text: newText
+      }).then(() => {
+        item.classList.remove('edit-mode');
+        item.querySelector('.edit-btn').textContent = 'Edit';
+        item.querySelector('.edit-btn').style.backgroundColor = 'var(--green-soft)';
+      }).catch(error => {
+        console.error("Gagal menyimpan edit:", error);
+      });
+    }
+
+    function toggleEdit(id) {
+      const item = document.getElementById('plan-item-' + id);
+      if (!item) return;
+      const isEditing = item.classList.contains('edit-mode');
+      if (isEditing) {
+        item.classList.remove('edit-mode');
+      } else {
+        const currentText = item.querySelector('.plan-info .plan-text').textContent;
+        item.querySelector('.text-input').value = currentText;
+        item.classList.add('edit-mode');
+      }
+    }
+
+    function handleEditClick(id, button) {
+      const item = document.getElementById('plan-item-' + id);
+      if (!item.classList.contains('edit-mode')) {
+        toggleEdit(id);
+        button.textContent = 'Simpan';
+        button.style.backgroundColor = 'var(--cyan-start)';
+      } else {
+        saveEdit(id);
+      }
+    }
+
+    window.onload = () => {
+      inputEl.addEventListener("keypress", e => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          savePlan();
+        }
+      });
+
+      if (planRef) {
+        planRef.orderByChild('timestamp').on("value", snap => {
+          listEl.innerHTML = "";
+          if (!snap.exists()) {
+            listEl.innerHTML = "<li style='opacity:.6; color: var(--muted-text); text-align: center; padding: 15px;'>Tidak ada rencana aksi yang tersimpan.</li>";
+            return;
+          }
+          const fragment = document.createDocumentFragment();
+          snap.forEach(child => {
+            const id = child.key;
+            const d = child.val();
+            const li = document.createElement("li");
+            li.className = "plan-item";
+            li.id = 'plan-item-' + id;
+            li.setAttribute('data-id', id);
+            li.innerHTML = `
+              <div class="plan-info">
+                  <div class="plan-text">${escapeHTML(d.text || 'Rencana Kosong')}</div>
+              </div>
+              <div class="edit-fields">
+                  <input type="text" class="text-input" placeholder="Teks Rencana" />
+              </div>
+              <div class="plan-actions">
+                  <button class="edit-btn" onclick="handleEditClick('${id}', this)">Edit</button>
+                  <button class="complete-btn" onclick="completePlan('${id}')">Selesai</button>
+              </div>
+            `;
+            fragment.prepend(li);
+          });
+          listEl.appendChild(fragment);
+        });
+      }
+    };
+  </script>
+</body>
+
+</html>

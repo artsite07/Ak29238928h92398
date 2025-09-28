@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Adlan Madjied Ridho - Dashboard</title>
+  <link rel="icon" href="1.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --sidebar-bg: #1e293b;
+      --card-bg: #334155;
+      --cyan: #00f0ff;
+      --muted-text: #94a3b8;
+      --white: #f8fafc;
+    }
+    * {margin:0;padding:0;box-sizing:border-box;}
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--white);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .main-grid {display:grid; grid-template-columns:260px 1fr; width:100%;}
+    .sidebar {
+      background: var(--sidebar-bg);
+      padding:1rem;
+      display:flex;
+      flex-direction:column;
+      overflow-y:auto;
+    }
+    .profile-card {
+      text-align:center;
+      margin-bottom:2rem;
+      background:var(--card-bg);
+      border-radius:1rem;
+      padding:1rem;
+      box-shadow:0 4px 12px rgba(0,0,0,.5);
+    }
+    .profile-card img {width:80px;height:80px;border-radius:50%;margin-bottom:.5rem;}
+    h2 {font-size:1rem;margin-bottom:.5rem;color:var(--cyan);}
+    .nav-group {list-style:none;}
+    .nav-group li {margin:.3rem 0;}
+    .nav-group a {
+      color:var(--white);
+      text-decoration:none;
+      padding:.5rem;
+      display:block;
+      border-radius:.5rem;
+      transition:background .2s, color .2s;
+    }
+    .nav-group a:hover {background:rgba(0,240,255,.1); color:var(--cyan);}
+    .nav-group a.active {background:var(--cyan); color:var(--bg);}
+    .logout-container {margin-top:auto;}
+    .logout-button {
+      width:100%;
+      padding:.7rem;
+      background:transparent;
+      border:1px solid var(--cyan);
+      border-radius:.5rem;
+      color:var(--cyan);
+      font-weight:600;
+      cursor:pointer;
+      transition:all .2s;
+    }
+    .logout-button:hover {background:var(--cyan); color:var(--bg);}
+    .content-area {
+      position:relative;
+      width:100%;
+      height:100%;
+      overflow:hidden;
+    }
+    .content-area iframe {
+      position:absolute;
+      top:0;left:0;
+      width:100%;
+      height:100%;
+      border:none;
+      display:none;
+    }
+  </style>
+</head>
+<body>
+  <div class="main-grid">
+    <aside class="sidebar">
+      <div class="profile-card">
+        <img src="1.png" onerror="this.onerror=null;this.src='https://placehold.co/80x80/00f0ff/111827?text=AM';" alt="Foto Profil">
+        <h3>Adlan Madjied Ridho</h3>
+        <p>Administrator Portal</p>
+      </div>
+      <h2 id="navTitle">Navigation</h2>
+      <ul class="nav-group" id="navList">
+        <li style="opacity:.6; color: var(--muted-text);">Welcome Adlan Madjied Ridho</li>
+      </ul>
+      <div class="logout-container">
+        <button id="logoutButton" class="logout-button">Logout</button>
+      </div>
+    </aside>
+
+    <section class="content-area" id="contentArea"></section>
+  </div>
+
+  <script>
+    // === Firebase Init ===
+    const firebaseConfig = {
+      apiKey: "AIzaSyCba6M_spBXvuG91Zn-XWJ4bSTX6vNcST0",
+      authDomain: "index-68220.firebaseapp.com",
+      databaseURL: "https://index-68220-default-rtdb.firebaseio.com",
+      projectId: "index-68220",
+      storageBucket: "index-68220.firebasestorage.app",
+      messagingSenderId: "633087068802",
+      appId: "1:633087068802:web:f8aa1f2ef9c00b99d1429b",
+      measurementId: "G-2VQCRFJQCM"
+    };
+    if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const db = typeof firebase !== 'undefined' ? firebase.database() : null;
+
+    // === Utility ===
+    function escapeHTML(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    }
+
+    function handleLogout() {
+      sessionStorage.removeItem('auth');
+      sessionStorage.removeItem('activeNavUrl');
+      window.location.href = "index.html";
+    }
+    document.getElementById('logoutButton').addEventListener('click', handleLogout);
+
+    if (!sessionStorage.getItem('auth')) {
+      // window.location.href = "index.html"; 
+    }
+
+    const navList = document.getElementById('navList');
+    const contentArea = document.getElementById('contentArea');
+    const ACTIVE_URL_KEY = 'activeNavUrl';
+    const DEFAULT_URL = "https://www.google.com/search?q=selamat+datang+di+portal+admin";
+
+    // Map simpan iframe
+    const iframeMap = {};
+
+    function setActivePage(url) {
+      Object.keys(iframeMap).forEach(key => {
+        iframeMap[key].style.display = (key === url) ? "block" : "none";
+      });
+      sessionStorage.setItem(ACTIVE_URL_KEY, url);
+      document.querySelectorAll('#navList a').forEach(a => a.classList.remove('active'));
+      const activeLink = document.querySelector(`#navList a[href="${url}"]`);
+      if (activeLink) activeLink.classList.add('active');
+    }
+
+    // === Ambil data navigation dari Firebase ===
+    if (db) {
+      db.ref('navigation').orderByChild('order').on('value', snap => {
+        navList.innerHTML = '';
+        contentArea.innerHTML = '';
+        Object.keys(iframeMap).forEach(k => delete iframeMap[k]);
+
+        if (!snap.exists()) {
+          navList.innerHTML = '<li style="opacity:.6; color: var(--muted-text);">Tidak ada navigasi</li>';
+          return;
+        }
+
+        let firstUrl = null;
+        const fragment = document.createDocumentFragment();
+
+        snap.forEach(child => {
+          const d = child.val();
+          if (!d.link || !d.name) return;
+          const url = d.link.split('?')[0];
+          if (!firstUrl) firstUrl = url;
+
+          // menu
+          const li = document.createElement('li');
+          const a = document.createElement('a');
+          a.href = url;
+          a.textContent = escapeHTML(d.name);
+          a.addEventListener('click', e => {
+            e.preventDefault();
+            setActivePage(url);
+          });
+          li.appendChild(a);
+          fragment.appendChild(li);
+
+          // iframe
+          const iframe = document.createElement('iframe');
+          iframe.src = url;
+          iframe.name = "frame_" + btoa(url);
+          iframe.style.display = "none";
+          contentArea.appendChild(iframe);
+
+          iframeMap[url] = iframe;
+        });
+
+        navList.appendChild(fragment);
+
+        const storedUrl = sessionStorage.getItem(ACTIVE_URL_KEY);
+        const urlToShow = storedUrl && iframeMap[storedUrl] ? storedUrl : firstUrl || DEFAULT_URL;
+        if (iframeMap[urlToShow]) {
+          setActivePage(urlToShow);
+        }
+      });
+    }
+
+    // === Pastikan saat refresh tetap buka yang terakhir ===
+    document.addEventListener('DOMContentLoaded', () => {
+      const storedUrl = sessionStorage.getItem(ACTIVE_URL_KEY);
+      if (storedUrl && iframeMap[storedUrl]) {
+        setActivePage(storedUrl);
+      }
+    });
+
+    if (!sessionStorage.getItem('auth')) {
+      window.location.href = "index.html";
+    }
+  </script>
+</body>
+</html>
