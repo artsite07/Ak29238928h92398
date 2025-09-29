@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Codingin 13 Pro Max</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    body { margin:0; font-family:'Inter', sans-serif; background:#1f2937; color:#f3f4f6; }
+    #editor { width:100%; height:calc(100vh - 60px); }
+</style>
+</head>
+<body>
+
+<header class="p-3 shadow-lg bg-gray-800 flex justify-between items-center sticky top-0 z-10">
+    <h1 class="text-xl font-bold text-blue-400">Codingin 13 Pro Max</h1>
+    <div class="flex items-center space-x-3">
+        <button id="preview-btn" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg shadow-md">Gas Lihat</button>
+        <span id="save-status" class="text-sm text-gray-300">Tersimpan ✅</span>
+    </div>
+</header>
+
+<div id="editor"></div>
+
+<!-- Monaco Editor Standalone (UMD) -->
+<link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.41.0/min/vs/editor/editor.main.css">
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.41.0/min/vs/loader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.41.0/min/vs/editor/editor.main.nls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.41.0/min/vs/editor/editor.main.js"></script>
+
+<!-- Firebase Modular SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+// --- Firebase ---
+const firebaseConfig = {
+  apiKey: "AIzaSyCba6M_spBXvuG91Zn-XWJ4bSTX6vNcST0",
+  authDomain: "index-68220.firebaseapp.com",
+  databaseURL: "https://index-68220-default-rtdb.firebaseio.com",
+  projectId: "index-68220",
+  storageBucket: "index-68220.firebasestorage.app",
+  messagingSenderId: "633087068802",
+  appId: "1:633087068802:web:f8aa1f2ef9c00b99d1429b",
+  measurementId: "G-2VQCRFJQCM"
+};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// --- Load Monaco setelah window load ---
+window.addEventListener('load', () => {
+    require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.41.0/min/vs' }});
+    require(['vs/editor/editor.main'], function() {
+        const editor = monaco.editor.create(document.getElementById('editor'), {
+            value: '',
+            language: 'html',
+            theme: 'vs-dark',
+            automaticLayout: true,
+            minimap: { enabled: false },
+            fontSize: 14,
+            tabSize: 4,
+            wordWrap: 'on'
+        });
+
+        const previewBtn = document.getElementById('preview-btn');
+        const saveStatus = document.getElementById('save-status');
+
+        // --- Preview ---
+        previewBtn.addEventListener('click', () => {
+            const code = editor.getValue();
+            const blob = new Blob([code], { type:'text/html' });
+            window.open(URL.createObjectURL(blob), '_blank');
+        });
+
+        // --- Load dari Firebase ---
+        get(ref(db, 'code/editor')).then(snapshot => {
+            if(snapshot.exists()) editor.setValue(snapshot.val().content);
+        }).catch(console.error);
+
+        // --- Auto-save tiap 5 detik ---
+        let lastSavedValue = editor.getValue();
+        setInterval(() => {
+            const currentValue = editor.getValue();
+            if(currentValue !== lastSavedValue) {
+                saveStatus.textContent = 'Menyimpan...';
+                set(ref(db, 'code/editor'), { content: currentValue })
+                  .then(() => { saveStatus.textContent = 'Tersimpan ✅'; lastSavedValue = currentValue; })
+                  .catch(err => { saveStatus.textContent = 'Gagal ❌'; console.error(err); });
+            }
+        }, 5000);
+    });
+});
+</script>
+
+</body>
+</html>
