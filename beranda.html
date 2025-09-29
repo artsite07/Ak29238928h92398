@@ -2,288 +2,289 @@
 <html lang="id">
 
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Adlan Madjied Ridho</title>
-  <!-- Favicon menggunakan 1.png -->
-  <link rel="icon" href="1.png"> 
-  <!-- Menggunakan Poppins untuk kesan yang lebih lembut dan elegan -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
-  <!-- CSS Layar Kunci dengan Tema Abu-abu/Hitam -->
+  <link rel="icon" href="1.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <style>
     :root {
-      /* Warna utama diubah menjadi abu-abu netral */
-      --bg-dark: #121212; 
-      --text-light: #f0f0f0;
-      --primary: #9E9E9E; /* Abu-abu netral, pengganti Cyan */
-      --primary-hover: #757575; /* Abu-abu lebih gelap untuk hover */
-      --input-bg: rgba(255, 255, 255, 0.05); 
-      --input-border: rgba(255, 255, 255, 0.2);
-      --font-main: 'Poppins', sans-serif; 
-      --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.6); 
+      --bg: #0f172a;
+      --sidebar-bg: rgba(30, 41, 59, 0.95);
+      --card-bg: #334155;
+      --cyan: #00f0ff;
+      --muted-text: #94a3b8;
+      --white: #f8fafc;
     }
 
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: var(--font-main);
-    }
-
-    html, body {
-      height: 100%;
     }
 
     body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--white);
       display: flex;
-      justify-content: center;
-      align-items: center;
-      /* Menggunakan bg.png sebagai gambar latar belakang */
-      background: var(--bg-dark) url('bg.png') no-repeat center center fixed;
-      background-size: cover; 
-      color: var(--text-light);
-      transition: background-color 0.5s ease;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
     }
 
-    /* ---------------------- LAYAR KUNCI/LOGIN TUNGGAL ---------------------- */
-    #lockScreen {
+    .main-grid {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      background: var(--sidebar-bg);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      width: 260px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+      border-radius: 1rem;
+      backdrop-filter: blur(8px);
+      scrollbar-width: thin;
+      scrollbar-color: transparent transparent;
+      position: relative;
+      z-index: 10;
+    }
+
+    .sidebar::-webkit-scrollbar {
+      width: 0px;
+      background: transparent;
+    }
+
+    .profile-card {
+      text-align: center;
+      margin-bottom: 2rem;
+      background: var(--card-bg);
+      border-radius: 1rem;
+      padding: 1rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    }
+
+    .profile-card img {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      margin-bottom: .5rem;
+    }
+
+    h2 {
+      font-size: 1rem;
+      margin-bottom: .5rem;
+      color: var(--cyan);
+    }
+
+    .nav-group {
+      list-style: none;
+    }
+
+    .nav-group li {
+      margin: .3rem 0;
+    }
+
+    .nav-group a {
+      color: var(--white);
+      text-decoration: none;
+      padding: .5rem;
+      display: block;
+      border-radius: .5rem;
+      transition: background .2s, color .2s;
+    }
+
+    .nav-group a:hover {
+      background: rgba(0, 240, 255, .1);
+      color: var(--cyan);
+    }
+
+    .nav-group a.active {
+      background: var(--cyan);
+      color: var(--bg);
+    }
+
+    .logout-container {
+      margin-top: auto;
+    }
+
+    .logout-button {
+      width: 100%;
+      padding: .7rem;
+      background: transparent;
+      border: 1px solid var(--cyan);
+      border-radius: .5rem;
+      color: var(--cyan);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .logout-button:hover {
+      background: var(--cyan);
+      color: var(--bg);
+    }
+
+    .content-area {
+      position: relative;
+      flex: 1;
+      overflow: auto;
+      background: rgba(20, 25, 40, 0.95);
+      border-radius: 1rem;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(6px);
+      scrollbar-width: thin;
+      scrollbar-color: transparent transparent;
+      z-index: 1;
+      margin: 1rem;
+      padding: 1rem;
+    }
+
+    .content-area::-webkit-scrollbar {
+      width: 0px;
+      background: transparent;
+    }
+
+    .content-area iframe {
+      position: relative;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+      border-radius: 0.8rem;
+      z-index: 1;
+      display: none;
+      background: transparent;
+    }
+
+    #overlay {
+      display: none;
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      /* Overlay gelap dikurangi (0.6) agar BG terlihat jelas */
-      background: rgba(18, 18, 18, 0.6); 
-      color: var(--text-light);
-      display: none; 
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000; 
-      text-align: center;
-      opacity: 0;
-      transition: opacity 0.5s ease-in-out;
-      padding: 1rem;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 998;
     }
 
-    #lockScreen.active {
-        display: flex;
-        opacity: 1;
-    }
-
-    /* Style untuk Jam Digital */
-    #digitalClock {
-      font-size: 8.5rem; 
-      font-weight: 200; 
-      margin-bottom: 0.2rem;
-      letter-spacing: -3px;
-      line-height: 1;
-      /* Bayangan putih lembut, pengganti bayangan Cyan */
-      text-shadow: 0 0 10px rgba(255, 255, 255, 0.3); 
-      transition: font-size 0.3s ease;
-    }
-    
-    /* Style untuk Tanggal */
-    #dateDisplay {
-        font-size: 1.2rem;
-        font-weight: 300;
-        margin-bottom: 4rem; 
-        color: rgba(255, 255, 255, 0.8);
-        letter-spacing: 1px;
-    }
-    
-    /* Input Form diperkecil (Windows-style PIN input) */
-    #lockInputForm {
-        width: 100%;
-        max-width: 240px; /* Diperkecil dari 300px menjadi 240px */
-        display: flex;
-        flex-direction: column;
-        gap: 1rem; 
-    }
-    
-    .input-group {
-      position: relative;
-    }
-    
-    /* Input Sandi */
-    .password-input {
-      width: 100%;
-      padding: 0.8rem 1rem 0.8rem 3rem; /* Padding disesuaikan */
-      border-radius: 8px; /* Sudut sedikit lebih tegas */
-      border: 1px solid var(--input-border);
-      background: var(--input-bg);
-      color: var(--text-light); 
-      font-size: 1.0rem;
-      font-weight: 300;
-      outline: none;
-      transition: border-color .3s ease, background .3s ease, box-shadow 0.3s ease;
-      box-shadow: var(--shadow-soft); 
-    }
-    
-    .password-input::placeholder {
-        color: rgba(255, 255, 255, 0.5);
-    }
-
-    .input-icon {
-        position: absolute;
-        left: 1rem;
-        top: 50%;
-        transform: translateY(-50%);
-        color: rgba(255, 255, 255, 0.6);
-        font-size: 1rem;
-        transition: color 0.3s ease;
-    }
-
-    .password-input:focus {
-        border-color: var(--primary); /* Border abu-abu saat focus */
-        background: rgba(255, 255, 255, 0.1); /* Background lebih terang saat focus */
-        /* Bayangan putih/abu-abu, pengganti bayangan Cyan */
-        box-shadow: 0 0 15px rgba(255, 255, 255, 0.1), var(--shadow-soft);
-    }
-    
-    .password-input:focus + .input-icon {
-        color: var(--primary);
-    }
-
-    
-    /* Tombol */
-    button {
-      width: 100%;
-      padding: 0.8rem;
-      background: var(--primary); /* Abu-abu sebagai warna tombol */
-      color: var(--bg-dark); 
-      font-weight: 600;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background-color 0.3s ease, transform 0.1s, box-shadow 0.3s ease;
-      text-transform: uppercase;
-      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5); /* Bayangan hitam yang lebih tegas */
-      letter-spacing: 1px;
-    }
-
-    button:hover:not(:disabled) {
-      background-color: var(--primary-hover); /* Abu-abu lebih gelap saat hover */
-      color: var(--text-light);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
-    }
-
-    button:active:not(:disabled) {
-      transform: translateY(1px);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-    }
-
-    button:disabled {
-      background-color: #585858;
-      cursor: not-allowed;
-      box-shadow: none;
-      color: rgba(255, 255, 255, 0.5);
-    }
-
-    /* Status pesan */
-    #lockStatus {
-        margin-top: 2rem; 
-        font-size: 0.95rem;
-        font-weight: 300;
-        color: rgba(255, 255, 255, 0.8);
-        height: 1.5rem;
-    }
-
-    /* CSS untuk loading saat proses otentikasi */
-    .loading-spinner {
-        border: 4px solid #f0f0f0;
-        border-top: 4px solid var(--primary);
-        border-radius: 50%;
-        width: 20px;
-        height: 20px;
-        animation: spin 0.8s linear infinite;
-        margin: 0 auto;
-    }
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-    
-    #btnUnlock > * {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-    }
-    
-    /* Utility class untuk menyembunyikan elemen */
-    .hidden {
-        display: none !important;
-    }
-
-    /* ---------------------- BERANDA (IFRAME CONTENT) ---------------------- */
-    #berandaContainer {
+    #mobileToggle {
       display: none;
-      width: 100%;
-      height: 100%;
-      background: #f0f4f8; 
-      flex-direction: column;
-    }
-
-    #berandaIframe {
-      width: 100%;
-      height: 100%;
+      position: fixed;
+      bottom: 1rem;
+      right: 1rem;
+      width: 48px;
+      height: 48px;
+      background: var(--cyan);
+      color: var(--bg);
+      font-weight: 600;
+      font-size: 1.2rem;
       border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 1000;
     }
-    
-    /* Media Query untuk responsif */
-    @media (max-width: 600px) {
-      #digitalClock {
-        font-size: 4.5rem;
-        letter-spacing: -1px;
+
+    @media(max-width:768px) {
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100%;
+        transform: translateX(-100%);
+        transition: transform .3s ease;
+        z-index: 999;
       }
-      #dateDisplay {
-        font-size: 0.9rem;
-        margin-bottom: 3rem;
+
+      .sidebar.show {
+        transform: translateX(0);
+      }
+
+      #overlay.show {
+        display: block;
+      }
+
+      #mobileToggle {
+        display: block;
       }
     }
 
+    @media(min-width:769px) {
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 1s ease;
+      }
+
+      .sidebar.show {
+        transform: translateX(0);
+      }
+
+      .content-area iframe {
+        transform: none;
+        transition: none;
+        opacity: 1;
+      }
+    }
   </style>
 </head>
 
 <body>
+  <div id="overlay"></div>
+  <button id="mobileToggle">></button>
 
-  <!-- 1. LAYAR KUNCI / LOGIN TUNGGAL -->
-  <div id="lockScreen">
-    
-    <!-- Judul untuk mode Login (Dihapus) -->
-    
-    <!-- Jam Digital (Selalu ditampilkan) -->
-    <div id="digitalClock"></div>
-    <div id="dateDisplay"></div>
-    
-    <!-- Formulir Sandi -->
-    <form id="lockInputForm" autocomplete="off">
-      <div class="input-group">
-        <input id="lockPw" class="password-input" type="password" placeholder="MASUKKAN KATA SANDI" aria-label="Password Kunci Layar" required>
-        <i class="fas fa-lock input-icon"></i>
+  <div class="main-grid">
+    <aside class="sidebar" id="sidebar">
+      <div class="profile-card">
+        <img src="1.png" onerror="this.onerror=null;this.src='https://placehold.co/80x80/00f0ff/111827?text=AM';" alt="Foto Profil">
+        <h3>Adlan M.R</h3>
+        <p>Administrator Portal</p>
       </div>
-      <button id="btnUnlock" type="submit">
-          <span id="unlockButtonText">MASUK</span>
-          <div id="unlockSpinner" class="loading-spinner hidden"></div>
-      </button>
-    </form>
-    <div id="lockStatus" aria-live="polite"></div>
-  </div>
+      <h2 id="navTitle">Navigation</h2>
+      <ul class="nav-group" id="navList">
+        <li style="opacity:.6; color: var(--muted-text);">Welcome Adlan Madjied Ridho</li>
+      </ul>
+      <div class="logout-container">
+        <button id="logoutButton" class="logout-button">Logout</button>
+      </div>
+    </aside>
 
-  <!-- 2. KONTEN BERANDA (setelah berhasil otentikasi) -->
-  <div id="berandaContainer">
-    <iframe id="berandaIframe" title="Halaman Beranda"></iframe>
+    <section class="content-area" id="contentArea"></section>
   </div>
-
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
   <script>
-    // --- KONFIGURASI FIREBASE ---
-    // NOTE: Konfigurasi ini adalah contoh.
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const mobileToggle = document.getElementById('mobileToggle');
+
+    function openSidebar() {
+      sidebar.classList.add('show');
+      overlay.classList.add('show');
+      mobileToggle.textContent = '<';
+    }
+
+    function closeSidebar() {
+      sidebar.classList.remove('show');
+      overlay.classList.remove('show');
+      mobileToggle.textContent = '>';
+    }
+
+    mobileToggle.addEventListener('click', () => {
+      if (sidebar.classList.contains('show')) closeSidebar();
+      else openSidebar();
+    });
+
+    overlay.addEventListener('click', closeSidebar);
+
+    // ===== Firebase Init =====
     const firebaseConfig = {
       apiKey: "AIzaSyCba6M_spBXvuG91Zn-XWJ4bSTX6vNcST0",
       authDomain: "index-68220.firebaseapp.com",
@@ -294,272 +295,88 @@
       appId: "1:633087068802:web:f8aa1f2ef9c00b99d1429b",
       measurementId: "G-2VQCRFJQCM"
     };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    const decoyPassword = "A4521";
-    // Setup decoy password on load if not exist
-    db.ref('decoy/password').get().then(snap => {
-      if (!snap.exists() || snap.val() !== decoyPassword) {
-        db.ref('decoy/password').set(decoyPassword).catch(() => console.warn('Gagal set decoy password'));
-      }
-    }).catch(() => console.warn('Gagal cek decoy password'));
-
-    // --- ELEMEN DOM ---
-    const berandaContainer = document.getElementById('berandaContainer');
-    const berandaIframe = document.getElementById('berandaIframe');
-    
-    // Elemen Layar Kunci / Login
-    const lockScreen = document.getElementById('lockScreen');
-    const digitalClock = document.getElementById('digitalClock');
-    const dateDisplay = document.getElementById('dateDisplay');
-    const formLock = document.getElementById('lockInputForm');
-    const pwInputLock = document.getElementById('lockPw');
-    const statusDivLock = document.getElementById('lockStatus');
-    const btnUnlock = document.getElementById('btnUnlock');
-    const buttonTextUnlock = document.getElementById('unlockButtonText');
-    const spinnerUnlock = document.getElementById('unlockSpinner');
-
-
-    // --- FUNGSI UTILITY ---
-    
-    /**
-     * Memperbarui jam dan tanggal digital
-     */
-    function updateClock() {
-        const now = new Date();
-        // Format waktu HH:MM:SS
-        const timeString = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        // Format tanggal Hari, DD Bulan YYYY
-        const dateString = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        
-        digitalClock.textContent = timeString;
-        dateDisplay.textContent = dateString;
+    if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
     }
-    
-    /**
-     * Mengubah status tombol buka kunci/masuk menjadi loading
-     */
-    function setUnlockButtonLoading(isLoading, isLockMode) {
-        btnUnlock.disabled = isLoading;
-        buttonTextUnlock.classList.toggle('hidden', isLoading);
-        spinnerUnlock.classList.toggle('hidden', !isLoading);
-        
-        // Perbarui teks tombol berdasarkan mode (Login atau Kunci)
-        if (!isLoading) {
-            // Mode Kunci (sudah login) -> BUKA KUNCI
-            // Mode Login (belum login) -> MASUK
-            buttonTextUnlock.textContent = isLockMode ? 'BUKA KUNCI' : 'MASUK';
-        } else {
-            buttonTextUnlock.textContent = 'MEMVERIFIKASI...';
-        }
-    }
-    
-    /**
-     * Mengubah string menjadi hash SHA-256
-     */
-    async function sha256Hex(str) {
-      const enc = new TextEncoder().encode(str);
-      const digest = await crypto.subtle.digest('SHA-256', enc);
-      return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+    const db = typeof firebase !== 'undefined' ? firebase.database() : null;
+
+    function escapeHTML(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
     }
 
-    /**
-     * Logika otentikasi. Digunakan untuk login utama dan buka kunci layar.
-     * @param {string} password 
-     * @param {boolean} isLockMode - true jika mode Kunci, false jika mode Login (Initial Access)
-     */
-    async function authenticate(password, isLockMode) {
-        const statusDiv = statusDivLock;
-        
-        setUnlockButtonLoading(true, isLockMode);
-
-        statusDiv.textContent = 'Memverifikasi...';
-        const val = password || '';
-
-        // Log attempt
-        db.ref('decoy/loginAttempts').push({
-            ts: Date.now(),
-            attempt: val.length + ' chars',
-            input: val.substring(0, 3) + '...'
-        }).catch(() => {});
-
-        // Decoy password check (hanya berlaku untuk mode Login / Initial Access)
-        if (!isLockMode && val === decoyPassword) {
-            db.ref('decoy/fakeSuccesses').push({
-                ts: Date.now(),
-                note: 'decoy used'
-            }).catch(() => {});
-            statusDiv.textContent = 'AKSES DITOLAK. Mengalihkan...';
-            setTimeout(() => {
-                // Gunakan window.location.href untuk redirect sesuai instruksi sebelumnya
-                window.location.href = 'https://pranx.com/hacker/';
-            }, 1500);
-            return false;
-        }
-
-        // Real password check
-        try {
-            const snap = await db.ref('real/passwordHash').get();
-            if (snap.exists()) {
-                const storedHash = snap.val();
-                const attemptHash = await sha256Hex(val);
-                
-                if (attemptHash === storedHash) {
-                    sessionStorage.setItem('auth', Date.now().toString());
-                    statusDiv.textContent = 'AKSES DIBERIKAN. Memuat beranda...';
-                    return true;
-                } else {
-                    statusDiv.textContent = 'AKSES DITOLAK: KATA SANDI SALAH.';
-                }
-            } else {
-                statusDiv.textContent = 'ERROR: HASH KATA SANDI TIDAK DITEMUKAN.';
-            }
-        } catch (err) {
-            console.error('FIREBASE ERROR:', err);
-            statusDiv.textContent = 'ERROR JARINGAN. Coba lagi.';
-        }
-
-        // Reset loading dan input
-        setUnlockButtonLoading(false, isLockMode);
-        pwInputLock.value = '';
-        pwInputLock.focus();
-        
-        return false;
-    }
-
-
-    // --- LOGIKA TAMPILAN & TIMER OTOMATIS ---
-    
-    let timeoutTimer;
-    // INACTIVITY_TIMEOUT diatur menjadi 10 detik (10000 ms)
-    const INACTIVITY_TIMEOUT = 10000; 
-
-    /**
-     * Mengubah mode Layar Kunci (Sesi aktif)
-     * Tampilan selalu Layar Kunci Digital
-     */
-    function setLockMode() {
-        // Tampilan Mode Kunci: Jam/Tanggal aktif, Status sesuai gambar: "Sistem terkunci..."
-        setUnlockButtonLoading(false, true); // true = mode Kunci
-        statusDivLock.textContent = 'Sistem terkunci karena tidak aktif.';
-        document.title = 'Adlan Madjied Ridho - Kunci Layar';
-    }
-
-    /**
-     * Mengubah mode Layar Login (Tidak ada sesi)
-     * Tampilan dibuat sama dengan LockMode
-     */
-    function setLoginMode() {
-        // Tampilan Mode Login: Jam/Tanggal aktif, Status sesuai gambar: "Sistem terkunci..."
-        setUnlockButtonLoading(false, false); // false = mode Login
-        statusDivLock.textContent = 'Sistem terkunci karena tidak aktif.';
-        document.title = 'Adlan Madjied Ridho - Login';
-    }
-
-    /**
-     * Mengunci kembali halaman dan menampilkan layar kunci.
-     */
-    function lock() {
-        // Hanya kunci jika pengguna sudah login (ada sesi auth)
-        if (sessionStorage.getItem('auth')) {
-            setLockMode(); // Atur tampilan ke mode Kunci
-            lockScreen.classList.add('active');
-            berandaContainer.style.display = 'none';
-            document.body.style.display = 'flex'; 
-            document.body.style.background = 'var(--bg-dark) url(\'bg.png\') no-repeat center center fixed'; // Tetapkan latar belakang gambar
-            document.body.style.backgroundSize = 'cover';
-            
-            pwInputLock.value = '';
-            setTimeout(() => pwInputLock.focus(), 350); 
-        }
-    }
-
-    /**
-     * Membuka layar kunci, menampilkan konten beranda.
-     */
-    function unlockContent() {
-        lockScreen.classList.remove('active');
-        
-        // Atur style body agar iframe bisa mengambil seluruh viewport
-        document.body.style.display = 'block';
-        document.body.style.padding = '0';
-        document.body.style.margin = '0';
-        document.body.style.background = '#f0f4f8'; // Background terang untuk Beranda
-        document.body.style.backgroundSize = 'auto'; // Reset background size untuk beranda
-        
-        // Tampilkan kontainer beranda
-        berandaContainer.style.display = 'flex';
-        
-        // Muat beranda.html ke iframe (hanya sekali)
-        if (!berandaIframe.src) {
-            berandaIframe.src = 'beranda.html';
-        }
-        
-        document.title = 'Adlan Madjied Ridho - Beranda';
-        resetTimer(); // Atur ulang timer setelah membuka kunci
-    }
-    
-    /**
-     * Mengatur ulang timer penghitung waktu tidak aktif.
-     */
-    function resetTimer() {
-        clearTimeout(timeoutTimer);
-        // Hanya atur ulang timer jika pengguna sudah login DAN tidak dalam mode kunci
-        if (sessionStorage.getItem('auth') && !lockScreen.classList.contains('active')) {
-            timeoutTimer = setTimeout(lock, INACTIVITY_TIMEOUT);
-        }
-    }
-
-    /**
-     * Cek status otentikasi saat halaman dimuat
-     */
-    function checkAuthOnLoad() {
-        // Mulai jam digital
-        updateClock();
-        setInterval(updateClock, 1000); // Perbarui setiap detik
-
-        // Tambahkan event listener untuk mereset timer
-        ['mousemove', 'mousedown', 'keypress', 'scroll', 'touchstart'].forEach(eventType => {
-            document.addEventListener(eventType, resetTimer, true);
-        });
-        
-        // Tampilkan Layar Otentikasi
-        lockScreen.classList.add('active');
-        
-        // Tentukan mode berdasarkan sesi
-        if (sessionStorage.getItem('auth')) {
-            lock(); // Sesi ada: Masuk mode Kunci otomatis
-        } else {
-            setLoginMode(); // Sesi tidak ada: Masuk mode Login (tampilan Lock Screen)
-            pwInputLock.focus();
-        }
-    }
-
-
-    // --- EVENT HANDLERS ---
-    
-    document.addEventListener('DOMContentLoaded', checkAuthOnLoad);
-    
-    // Handle Submit Formulir (Login / Buka Kunci)
-    formLock.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      // Tentukan apakah ini mode Kunci (sudah ada auth) atau mode Login (belum ada auth)
-      const isLockMode = !!sessionStorage.getItem('auth');
-      
-      const success = await authenticate(pwInputLock.value, isLockMode); 
-      
-      if (success) {
-        // Berhasil, sembunyikan layar otentikasi dan muat konten
-        setTimeout(() => {
-            unlockContent();
-        }, 500);
-      }
+    // Logout hanya efek UI
+    document.getElementById('logoutButton').addEventListener('click', () => {
+      alert("Anda telah logout");
     });
 
-  </script>
+    const navList = document.getElementById('navList');
+    const contentArea = document.getElementById('contentArea');
+    const ACTIVE_URL_KEY = 'activeNavUrl';
+    const DEFAULT_URL = "https://www.google.com/search?q=selamat+datang+di+portal+admin";
+    const iframeMap = {};
 
+    function setActivePage(url) {
+      Object.keys(iframeMap).forEach(key => {
+        iframeMap[key].style.display = (key === url) ? "block" : "none";
+        if (window.innerWidth > 768) iframeMap[key].classList.add('show');
+        else iframeMap[key].classList.remove('show');
+      });
+      sessionStorage.setItem(ACTIVE_URL_KEY, url);
+      document.querySelectorAll('#navList a').forEach(a => a.classList.remove('active'));
+      const activeLink = document.querySelector(`#navList a[href="${url}"]`);
+      if (activeLink) activeLink.classList.add('active');
+      if (window.innerWidth <= 768) closeSidebar();
+    }
+
+    // ===== Firebase Navigation =====
+    if (db) {
+      db.ref('navigation').orderByChild('order').on('value', snap => {
+        navList.innerHTML = '';
+        contentArea.innerHTML = '';
+        Object.keys(iframeMap).forEach(k => delete iframeMap[k]);
+        if (!snap.exists()) {
+          navList.innerHTML = '<li style="opacity:.6;color: var(--muted-text);">Tidak ada navigasi</li>';
+          return;
+        }
+        let firstUrl = null;
+        const fragment = document.createDocumentFragment();
+        snap.forEach(child => {
+          const d = child.val();
+          if (!d.link || !d.name) return;
+          const url = d.link.split('?')[0];
+          if (!firstUrl) firstUrl = url;
+          const li = document.createElement('li');
+          const a = document.createElement('a');
+          a.href = url;
+          a.textContent = escapeHTML(d.name);
+          a.addEventListener('click', e => {
+            e.preventDefault();
+            setActivePage(url);
+          });
+          li.appendChild(a);
+          fragment.appendChild(li);
+          const iframe = document.createElement('iframe');
+          iframe.src = url;
+          iframe.name = "frame_" + btoa(url);
+          iframe.style.display = "none";
+          contentArea.appendChild(iframe);
+          iframeMap[url] = iframe;
+        });
+        navList.appendChild(fragment);
+        const storedUrl = sessionStorage.getItem(ACTIVE_URL_KEY);
+        const urlToShow = storedUrl && iframeMap[storedUrl] ? storedUrl : firstUrl || DEFAULT_URL;
+        if (iframeMap[urlToShow]) setActivePage(urlToShow);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.innerWidth > 768) {
+        setTimeout(() => sidebar.classList.add('show'), 100);
+        const storedUrl = sessionStorage.getItem(ACTIVE_URL_KEY);
+        if (storedUrl && iframeMap[storedUrl]) setTimeout(() => iframeMap[storedUrl].classList.add('show'), 500);
+      }
+    });
+  </script>
 </body>
 
 </html>
