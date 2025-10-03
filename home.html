@@ -3,262 +3,307 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Beranda Pribadi - Dashboard</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <link rel="icon" type="image/png" href="1.png">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <title>Dashboard Rencana Pribadi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Mengganti favicon dengan placeholder -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🚀%3C/text%3E%3C/svg%3E">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Konfigurasi Tailwind untuk palet warna yang lebih modern dan gelap
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'dark-bg': '#0F172A', // Slate 900
+            'card-bg': '#1E293B', // Slate 800
+            'accent': '#38BDF8', // Sky 400
+            'text-light': '#F1F5F9', // Slate 100
+            'subtle-text': '#94A3B8', // Slate 400
+            'btn-hover': '#0EA5E9', // Sky 600
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
 
-  <!-- Firebase JS -->
+  <!-- Firebase JS - TIDAK DIUBAH -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-<style>
-  :root {
-    --bg-dark: #010A14;       /* biru sangat gelap, hampir hitam */
-    --bg-light: #0A1F33;      /* container biru gelap sedikit lebih terang */
-    --cyan-primary: #00BCD4;  /* aksen cyan */
-    --cyan-text: #B2EBF2;     /* teks cyan terang */
-    --subtle-cyan: #4DD0E1;   /* highlight lembut */
-    --shadow-color: rgba(0, 188, 212, 0.4);
-  }
+  <style>
+    /* -------------------------------------------------------- */
+    /* Styling untuk menyembunyikan scrollbar tanpa menghilangkan fungsi scroll */
+    /* -------------------------------------------------------- */
 
-  body {
-    background: var(--bg-dark);
-    color: var(--cyan-text);
-    font-family: 'Inter', sans-serif;
-    margin: 0;
-    padding: 20px;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    box-sizing: border-box;
-  }
+    /* Menargetkan HTML dan BODY */
+    html, body {
+        /* Memastikan tidak ada margin/padding default yang mengganggu */
+        margin: 0;
+        padding: 0;
+        /* Menggunakan overflow: auto pada HTML agar scroll tetap terjadi di HTML */
+        overflow-x: hidden; 
+        overflow-y: auto;
+    }
 
-  .container {
-    max-width: 900px;
-    width: 100%;
-  }
+    /* Untuk browser berbasis WebKit (Chrome, Safari, Edge lama) */
+    body::-webkit-scrollbar,
+    html::-webkit-scrollbar {
+      display: none;
+      width: 0; 
+      height: 0;
+    }
 
-  .clock-widget {
-    text-align: center;
-    margin-bottom: 30px;
-  }
+    /* Untuk IE dan Edge */
+    body {
+      -ms-overflow-style: none;  /* IE and Edge */
+    }
+    
+    /* Untuk Firefox */
+    body {
+      scrollbar-width: none;  /* Firefox */
+    }
 
-  #time {
-    font-size: 4rem;
-    font-weight: 700;
-    color: var(--cyan-primary);
-    text-shadow: 0 0 20px var(--shadow-color);
-  }
+    /* Animasi sederhana untuk tombol hover */
+    .hover-grow {
+      transition: transform 0.1s ease-out;
+    }
 
-  #period {
-    font-size: 1.5rem;
-    margin-left: 10px;
-  }
-
-  #date {
-    font-size: 1rem;
-    color: var(--subtle-cyan);
-    margin-top: 5px;
-  }
-
-  .task-section {
-    background: var(--bg-light);
-    padding: 20px;
-    border-radius: 12px;
-    width: 100%;
-    box-sizing: border-box;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.6);
-  }
-
-  .task-section h2 {
-    color: var(--cyan-primary);
-    border-bottom: 1px solid var(--subtle-cyan);
-    padding-bottom: 5px;
-    margin-bottom: 15px;
-  }
-
-  #taskList {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    max-height: 300px;
-    overflow-y: auto;
-  }
-
-  #taskList::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  #taskList::-webkit-scrollbar-thumb {
-    background: var(--cyan-primary);
-    border-radius: 10px;
-  }
-
-  #taskList::-webkit-scrollbar-track {
-    background: var(--bg-dark);
-  }
-
-  .task-item {
-    background: #071826;  /* lebih gelap untuk tiap item */
-    margin-bottom: 10px;
-    padding: 10px;
-    border-radius: 8px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-left: 4px solid var(--cyan-primary);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-    transition: 0.2s;
-  }
-
-  .task-item:hover {
-    background: #0F2A3F;  /* hover lebih terang tapi tetap gelap */
-  }
-
-  .task-details {
-    display: flex;
-    align-items: center;
-    flex-grow: 1;
-    margin-right: 10px;
-  }
-
-  .task-count {
-    background: var(--cyan-primary);
-    color: var(--bg-dark);
-    padding: 2px 6px;
-    border-radius: 4px;
-    margin-right: 10px;
-    font-weight: 600;
-    text-align: center;
-    min-width: 20px;
-  }
-
-  .complete-btn {
-    border: 1px solid var(--cyan-primary);
-    padding: 6px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    background: transparent;
-    color: var(--cyan-primary);
-    font-weight: 600;
-    transition: 0.2s;
-  }
-
-  .complete-btn:hover {
-    background: var(--cyan-primary);
-    color: var(--bg-dark);
-  }
-
-  #emptyMessage {
-    text-align: center;
-    padding: 20px;
-    font-style: italic;
-    color: var(--subtle-cyan);
-  }
-</style>
-
+    .hover-grow:hover {
+      transform: scale(1.03);
+    }
+  </style>
 </head>
 
-<body>
-  <div class="container">
-    <div class="clock-widget">
-      <div id="time-container">
-        <span id="time">00:00:00</span>
-        <span id="period">AM</span>
+<body class="bg-dark-bg text-text-light min-h-screen p-4 sm:p-8 flex flex-col items-center font-sans antialiased">
+  
+  <div class="w-full max-w-4xl space-y-8">
+    
+    <!-- JUDUL APLIKASI -->
+    <h1 class="text-4xl font-extrabold text-center text-accent drop-shadow-lg mb-4">
+      Dashboard Rencana Harian
+    </h1>
+
+    <!-- WIDGET JAM DAN TANGGAL -->
+    <div class="text-center p-6 bg-card-bg rounded-2xl shadow-lg border border-sky-400/20 transition duration-300 hover:border-accent/40">
+      <div class="flex justify-center items-end">
+        <!-- Jam utama, sangat besar -->
+        <span id="time" class="text-6xl md:text-8xl font-extrabold text-accent leading-none tracking-tighter drop-shadow transition duration-300">00:00:00</span>
+        <!-- Penanda AM/PM -->
+        <span id="period" class="text-xl md:text-3xl font-semibold ml-2 mb-1 text-subtle-text">AM</span>
       </div>
-      <div id="date">Loading date...</div>
+      <!-- Tanggal -->
+      <div id="date" class="text-md md:text-xl text-accent/70 mt-3 font-medium">Loading date...</div>
     </div>
 
-    <div class="task-section">
-      <h2>My Plan</h2>
-      <ul id="taskList"></ul>
-      <div id="emptyMessage" style="display:none;">No plans for now!</div>
+    <!-- BAGIAN RENCANA (TO-DO LIST) -->
+    <div class="p-6 bg-card-bg rounded-2xl shadow-lg border border-sky-400/20">
+      <h2 class="text-3xl font-bold mb-5 pb-3 border-b border-subtle-text/30 text-accent">
+        Rencana Saya
+      </h2>
+      
+      <!-- Daftar Tugas - Hapus pembatasan tinggi dan scroll -->
+      <ul id="taskList" class="space-y-3 mb-6">
+        <!-- Tugas akan dimasukkan oleh JavaScript -->
+      </ul>
+
+      <!-- Pesan Kosong -->
+      <div id="emptyMessage" class="text-center py-8 text-subtle-text italic text-lg" style="display:none;">
+        🎉 Semua rencana sudah selesai! Saatnya membuat yang baru.
+      </div>
+      
+      <!-- FORM INPUT -->
+      <div class="mt-4 pt-4 border-t border-subtle-text/30">
+        <h3 class="text-xl font-semibold mb-3 text-text-light/80">Tambah Rencana</h3>
+        <div class="flex items-center space-x-3">
+            <input type="text" id="taskInput" placeholder="Ketik rencana baru Anda di sini..." 
+                   class="flex-grow p-3 bg-dark-bg border border-accent/40 rounded-full text-text-light focus:outline-none focus:ring-2 focus:ring-accent placeholder:text-subtle-text text-base sm:text-lg"
+                   onkeydown="if(event.key === 'Enter') document.getElementById('addTaskBtn').click()">
+            <button id="addTaskBtn" 
+                    class="p-3 font-bold bg-accent text-dark-bg rounded-full hover:bg-btn-hover hover-grow transition duration-200 shadow-lg flex items-center justify-center flex-shrink-0 w-12 h-12">
+                <!-- Ikon "+" sederhana untuk tombol Tambah -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                </svg>
+            </button>
+        </div>
+        <p id="errorMsg" class="text-red-500 mt-2 ml-4 hidden text-sm"></p>
+      </div>
     </div>
+    
   </div>
 
-<script>
-  // Firebase config
-  const firebaseConfig = {
-    apiKey: "AIzaSyCba6M_spBXvuG91Zn-XWJ4bSTX6vNcST0",
-    authDomain: "index-68220.firebaseapp.com",
-    databaseURL: "https://index-68220-default-rtdb.firebaseio.com",
-    projectId: "index-68220",
-    storageBucket: "index-68220.firebasestorage.app",
-    messagingSenderId: "633087068802",
-    appId: "1:633087068802:web:f8aa1f2ef9c00b99d1429b",
-    measurementId: "G-2VQCRFJQCM"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
 
-  // Clock
-  function updateClock() {
-    const now = new Date();
-    let h = now.getHours();
-    const m = now.getMinutes().toString().padStart(2, '0');
-    const s = now.getSeconds().toString().padStart(2, '0');
-    const period = h >= 12 ? 'PM' : 'AM';
-    h = h % 12 || 12;
-    document.getElementById('time').textContent = `${h.toString().padStart(2,'0')}:${m}:${s}`;
-    document.getElementById('period').textContent = period;
-    document.getElementById('date').textContent = now.toLocaleDateString('id-ID', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  }
-  setInterval(updateClock, 1000);
-  updateClock();
+  <script>
+    // =========================================================================================
+    // KODE FIREBASE DAN LOGIKA JAVASCRIPT - FIREBASE TIDAK DIUBAH
+    // =========================================================================================
 
-  // Load tasks
-  const taskList = document.getElementById('taskList');
-  const emptyMessage = document.getElementById('emptyMessage');
+    // Firebase config (Dibiarkan apa adanya)
+    const firebaseConfig = {
+      apiKey: "AIzaSyCba6M_spBXvuG91Zn-XWJ4bSTX6vNcST0",
+      authDomain: "index-68220.firebaseapp.com",
+      databaseURL: "https://index-68220-default-rtdb.firebaseio.com",
+      projectId: "index-68220",
+      storageBucket: "index-68220.firebasestorage.app",
+      messagingSenderId: "633087068802",
+      appId: "1:633087068802:web:f8aa1f2ef9c00b99d1429b",
+      measurementId: "G-2VQCRFJQCM"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-  // Fungsi hapus task
-  function completeTask(id) {
-    db.ref('plans/' + id).remove()
-      .then(() => {
-        console.log(`Task ${id} berhasil dihapus.`);
-      })
-      .catch(err => {
-        console.error('Gagal menghapus task:', err);
-      });
-  }
+    // =========================================================================================
+    // OPTIMASI: Menggunakan requestAnimationFrame untuk pembaruan jam yang lebih lancar
+    // =========================================================================================
 
-  function loadTasks() {
-    db.ref('plans').on('value', snap => {
-      taskList.innerHTML = '';
-      const all = [];
-      snap.forEach(c => {
-        const d = c.val();
-        d.id = c.key;
-        all.push(d);
-      });
-      const active = all.filter(t => !t.completed).reverse();
-      if (!active.length) {
-        emptyMessage.style.display = 'block';
-        return;
+    let lastTime = 0;
+    const updateInterval = 1000; // Update setiap 1000ms (1 detik)
+
+    function updateClock(timestamp) {
+      if (!lastTime || timestamp - lastTime >= updateInterval) {
+        lastTime = timestamp;
+        
+        const now = new Date();
+        let h = now.getHours();
+        const m = now.getMinutes().toString().padStart(2, '0');
+        const s = now.getSeconds().toString().padStart(2, '0');
+        const period = h >= 12 ? 'PM' : 'AM';
+        h = h % 12 || 12;
+
+        document.getElementById('time').textContent = `${h.toString().padStart(2,'0')}:${m}:${s}`;
+        document.getElementById('period').textContent = period;
+        document.getElementById('date').textContent = now.toLocaleDateString('id-ID', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
       }
-      emptyMessage.style.display = 'none';
-      active.forEach((t, i) => {
-        const li = document.createElement('li');
-        li.className = 'task-item';
-        li.innerHTML = `
-          <div class="task-details">
-            <div class="task-count">${i+1}</div>
-            <div class="task-text">${t.text||'No description'}</div>
-          </div>
-          <button class="complete-btn" onclick="completeTask('${t.id}')">Selesai</button>
-        `;
-        taskList.appendChild(li);
-      });
+
+      // Meminta frame animasi berikutnya
+      requestAnimationFrame(updateClock);
+    }
+    
+    // Mulai loop jam
+    requestAnimationFrame(updateClock);
+
+
+    // =========================================================================================
+    // LOGIKA TASK LIST DAN OPTIMASI PERFORMA
+    // =========================================================================================
+
+    const taskList = document.getElementById('taskList');
+    const emptyMessage = document.getElementById('emptyMessage');
+    const taskInput = document.getElementById('taskInput');
+    const addTaskBtn = document.getElementById('addTaskBtn');
+    const errorMsg = document.getElementById('errorMsg');
+
+
+    // Fungsi hapus task (TIDAK DIUBAH)
+    function completeTask(id) {
+      db.ref('plans/' + id).remove()
+        .then(() => {
+          console.log(`Task ${id} berhasil dihapus.`);
+        })
+        .catch(err => {
+          console.error('Gagal menghapus task:', err);
+        });
+    }
+    window.completeTask = completeTask; // Paparkan ke global scope agar dapat diakses oleh onclick
+
+
+    // Fungsi tambah task (Diperbarui untuk tampilan baru)
+    addTaskBtn.addEventListener('click', () => {
+        const text = taskInput.value.trim();
+        errorMsg.classList.add('hidden'); // Sembunyikan pesan error
+
+        if (text === "") {
+            errorMsg.textContent = "Rencana tidak boleh kosong!";
+            errorMsg.classList.remove('hidden');
+            return;
+        }
+
+        db.ref('plans').push({
+            text: text,
+            timestamp: firebase.database.ServerValue.TIMESTAMP,
+            completed: false
+        })
+        .then(() => {
+            taskInput.value = ''; // Kosongkan input setelah berhasil
+        })
+        .catch(err => {
+            errorMsg.textContent = `Gagal menyimpan rencana: ${err.message}`;
+            errorMsg.classList.remove('hidden');
+            console.error('Gagal menyimpan task:', err);
+        });
     });
-  }
-  loadTasks();
-</script>
+    
+    // Fungsi loadTasks dengan optimasi DocumentFragment
+    function loadTasks() {
+      db.ref('plans').on('value', snap => {
+        const all = [];
+        snap.forEach(c => {
+          const d = c.val();
+          d.id = c.key;
+          all.push(d);
+        });
+        
+        // Mengurutkan berdasarkan timestamp untuk urutan yang lebih akurat
+        // Operasi ini terjadi di luar DOM, jadi aman.
+        all.sort((a, b) => b.timestamp - a.timestamp); 
+        
+        const active = all.filter(t => !t.completed); 
+        
+        if (!active.length) {
+          emptyMessage.style.display = 'block';
+          taskList.style.display = 'none';
+          taskList.innerHTML = ''; // Kosongkan saat tidak ada item
+          return;
+        }
+        
+        emptyMessage.style.display = 'none';
+        taskList.style.display = 'block';
+
+        // OPTIMASI: Gunakan DocumentFragment untuk membuat elemen di memori
+        const fragment = document.createDocumentFragment();
+
+        active.forEach((t, i) => {
+          const li = document.createElement('li');
+          // Menggunakan kelas Tailwind untuk tampilan item tugas yang baru
+          li.className = 'flex justify-between items-start p-3 sm:p-4 bg-card-bg/70 rounded-xl shadow-md border border-accent/20 transition duration-200 hover:bg-card-bg hover:shadow-lg hover-grow';
+          li.innerHTML = `
+          <div class="flex items-start flex-grow min-w-0">
+            <!-- Penomoran dengan latar belakang aksen -->
+            <div class="task-count w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-xs sm:text-sm font-bold bg-accent text-dark-bg rounded-full mr-3 sm:mr-4 flex-shrink-0 shadow-sm">
+              ${i+1}
+            </div>
+            <!-- Teks tugas - menggunakan w-full dan break-words agar responsif -->
+            <div class="task-text text-base sm:text-lg font-medium text-text-light break-words w-full pt-0.5">
+              ${t.text || 'Tidak ada deskripsi'}
+            </div>
+          </div>
+          <!-- Tombol Selesai -->
+          <button class="complete-btn px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold border border-accent text-accent rounded-lg hover:bg-accent hover:text-dark-bg transition duration-200 flex-shrink-0 ml-2" onclick="completeTask('${t.id}')">
+            Selesai
+          </button>
+        `;
+          fragment.appendChild(li); // Tambahkan ke fragment, bukan DOM
+        });
+
+        // Hapus konten lama hanya SEKALI
+        taskList.innerHTML = ''; 
+        // Tambahkan semua konten baru ke DOM dalam SATU OPERASI
+        taskList.appendChild(fragment);
+      });
+    }
+    loadTasks();
+  </script>
 
 </body>
 
