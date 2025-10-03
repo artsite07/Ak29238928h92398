@@ -158,6 +158,17 @@
       text-align: left;
     }
 
+    /* --- STYLE LINK BIRU BARU --- */
+    #codeArea a {
+      color: #1e90ff;
+      /* Warna biru cerah */
+      text-decoration: underline;
+      cursor: pointer;
+      outline: none;
+    }
+
+    /* --- AKHIR STYLE LINK BIRU --- */
+
     /* Placeholder untuk contenteditable div (saat kosong) */
     #codeArea:empty:before {
       content: attr(placeholder);
@@ -177,7 +188,7 @@
       color: var(--accent-color);
       border-bottom: 1px solid var(--border-color);
       /* Penting agar ini tidak dianggap sebagai area "root" */
-      flex-shrink: 0; 
+      flex-shrink: 0;
     }
 
     .tree {
@@ -686,6 +697,7 @@
     const expandedFolders = {};
     let renamingElement = null;
     let treeDataCache = {};
+    let currentCursorPosition = null; // Tambahkan ini untuk menyimpan posisi kursor
 
     // --- LOGIKA MOBILE ---
 
@@ -743,17 +755,162 @@
       return '<i class="fas fa-file-alt" style="color:var(--text-secondary);"></i>';
     }
 
-    // --- Fungsi Render Tree & File Management ---
+
+    // --- FUNGSI AUTO-LINKER ---
+
+    // Ekspresi reguler untuk mendeteksi URL (http, https, www)
+    const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])|(\bwww\.[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+
+    /**
+     * Mendeteksi URL dalam konten teks dan mengubahnya menjadi tautan HTML.
+     */
+    function autoLinker(htmlContent) {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = htmlContent;
+
+      // Kami hanya ingin memproses node teks yang tidak berada di dalam tag <a>
+      function traverse(node) {
+        if (node.nodeType === 3) { // Node Teks
+          if (node.parentNode.nodeName !== 'A') {
+            const text = node.nodeValue;
+            const newHtml = text.replace(urlRegex, (match) => {
+              let href = match;
+              // Tambahkan https:// jika hanya diawali dengan www.
+              if (match.startsWith('www.')) {
+                href = 'https://' + match;
+              } else if (match.startsWith('ftp.') || match.startsWith('file.')) {
+                // Jangan tambahkan https:// jika sudah ada awalan protokol yang jelas
+              }
+
+              // Periksa apakah match sudah diawali dengan protokol
+              if (!match.match(/^(https?|ftp|file):\/\//i) && !match.startsWith('www.')) {
+                // Ini kasus edge, misalnya teks yang sangat mirip URL tapi tanpa protokol/www
+                return match; // Biarkan teks asli
+              }
+
+              // Hanya buat link jika teks tersebut belum menjadi bagian dari tag a yang valid.
+              return `<a href="${href}" target="_blank" rel="noopener noreferrer">${match}</a>`;
+            });
+
+            if (newHtml !== text) {
+              const tempFragment = document.createElement('div');
+              tempFragment.innerHTML = newHtml;
+
+              // Ganti node teks lama dengan fragmen HTML baru
+              while (tempFragment.firstChild) {
+                node.parentNode.insertBefore(tempFragment.firstChild, node);
+              }
+              node.remove();
+            }
+          }
+        } else if (node.nodeType === 1 && node.nodeName !== 'A') { // Node Element, bukan A
+          // Lanjutkan rekursif ke anak-anak node
+          for (let i = 0; i < node.childNodes.length; i++) {
+            traverse(node.childNodes[i]);
+          }
+        }
+      }
+
+      // Hanya proses children (isi) dari codeArea
+      for (let i = 0; i < tempDiv.childNodes.length; i++) {
+        traverse(tempDiv.childNodes[i]);
+      }
+
+      return tempDiv.innerHTML;
+    }
+
+
+    // --- FUNGSI UNTUK MENGINGAT DAN MENGEMBALIKAN POSISI KURSOR ---
+
+    function saveCursor() {
+      const selection = window.getSelection();
+      if (selection.rangeCount > 0) {
+        currentCursorPosition = selection.getRangeAt(0).cloneRange();
+      }
+    }
+
+    function restoreCursor() {
+      if (currentCursorPosition) {
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(currentCursorPosition);
+      }
+    }
+
+    function processContentAndSaveCursor(isBlur = false) {
+      // 1. Simpan kursor
+      saveCursor();
+
+      // 2. Lakukan Auto-Linking
+      const newContent = autoLinker(codeArea.innerHTML);
+
+      // 3. Update konten hanya jika ada perubahan
+      if (newContent !== codeArea.innerHTML) {
+        codeArea.innerHTML = newContent;
+      }
+
+      // 4. Kembalikan kursor
+      restoreCursor();
+    }
+
+    // --- LOGIKA EVENT PENGEDITAN UNTUK AUTO-LINK ---
+    codeArea.addEventListener('input', () => {
+      // Gunakan jeda singkat untuk menghindari lag saat mengetik cepat
+      setTimeout(() => processContentAndSaveCursor(false), 50);
+    });
+
+    codeArea.addEventListener('blur', () => {
+      if (codeArea.getAttribute('contenteditable') === 'true') {
+        processContentAndSaveCursor(true); // Proses lebih menyeluruh saat blur
+      }
+    });
+
+
+    // --- Fungsi Render Tree & File Management (Diubah untuk Sorting) ---
+
+    /**
+     * Comparator untuk sorting alfanumerik (menggunakan Int'l collation untuk angka dan teks)
+     */
+    function sortItems(a, b) {
+      const nameA = a.name.toLowerCase();
+      const nameB = b.name.toLowerCase();
+
+      // Aturan 1: Folder selalu di atas File
+      if (a.type === 'folder' && b.type === 'file') return -1;
+      if (a.type === 'file' && b.type === 'folder') return 1;
+
+      // Aturan 2: Sorting alfanumerik untuk nama (A-Z)
+      return nameA.localeCompare(nameB, undefined, {
+        numeric: true,
+        sensitivity: 'base'
+      });
+    }
 
     function renderTree(obj, parentEl, path = "") {
       parentEl.innerHTML = "";
 
+      // 1. Ubah objek menjadi array agar bisa disortir
+      const items = [];
+      for (const key in obj) {
+        if (obj[key]) {
+          items.push({
+            key,
+            data: obj[key],
+            name: obj[key].name || (obj[key].type === 'folder' ? 'Untitled Folder' : 'untitled')
+          });
+        }
+      }
+
+      // 2. Sortir array
+      items.sort(sortItems);
+
       const fragment = document.createDocumentFragment();
 
-      for (const key in obj) {
-        const data = obj[key];
-        if (!data) continue;
-
+      items.forEach(({
+        key,
+        data,
+        name
+      }) => {
         if (data.type === "folder") {
           const folderKeyPath = path + "/" + key;
           const isOpen = !!expandedFolders[folderKeyPath];
@@ -773,7 +930,7 @@
           const nameEl = document.createElement("div");
           nameEl.className = "name";
           nameEl.setAttribute("spellcheck", "false");
-          nameEl.textContent = data.name;
+          nameEl.textContent = name; // Gunakan nama dari array yang sudah disortir
 
           itemEl.appendChild(iconEl);
           itemEl.appendChild(nameEl);
@@ -807,12 +964,12 @@
           }
 
           const iconEl = document.createElement('span');
-          iconEl.innerHTML = getFileIcon(data.name);
+          iconEl.innerHTML = getFileIcon(name);
 
           const nameEl = document.createElement("div");
           nameEl.className = "name";
           nameEl.setAttribute("spellcheck", "false");
-          nameEl.textContent = data.name;
+          nameEl.textContent = name; // Gunakan nama dari array yang sudah disortir
 
           itemEl.appendChild(iconEl);
           itemEl.appendChild(nameEl);
@@ -826,9 +983,10 @@
 
           fragment.appendChild(itemEl);
         }
-      }
+      });
       parentEl.appendChild(fragment);
     }
+
 
     function toggleFolder(path, iconEl, childrenEl) {
       expandedFolders[path] = !expandedFolders[path];
@@ -865,6 +1023,7 @@
           e.preventDefault();
           nameEl.contentEditable = "false";
           renamingElement = null;
+          // Refresh tree agar nama kembali ke nilai lama
           db.ref(DB_ROOT).once("value", snap => {
             renderTree(snap.val() || {}, treeEl, "");
           });
@@ -961,6 +1120,11 @@
       let content, filename, mimeType;
       const baseName = name.replace(/\.(md|txt|html|doc)$/i, '');
 
+      // Pastikan konten editor telah diproses autoLinker sebelum diunduh
+      if (currentFilePath && currentFileName === name) {
+        contentHtml = autoLinker(contentHtml);
+      }
+
       if (format === 'txt') {
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = contentHtml;
@@ -1016,7 +1180,10 @@
           if (data.type === "file") {
             const baseName = (data.name || "dokumen_tanpa_judul").replace(/\.(md|txt|html|doc)$/i, '');
             const filename = baseName + extension;
-            const contentHtml = data.content || "";
+            let contentHtml = data.content || "";
+
+            // Auto-Linker untuk konten file yang diunduh secara massal
+            contentHtml = autoLinker(contentHtml);
 
             let content, mimeType;
 
@@ -1050,9 +1217,8 @@
       }
     }
 
-    // --- LOGIKA CONTEXT MENU (Diperbarui untuk Mendengarkan #sidebar) ---
+    // --- LOGIKA CONTEXT MENU ---
 
-    // Mengganti listener dari treeEl ke sidebar
     sidebar.addEventListener('contextmenu', function(e) {
       const itemEl = e.target.closest('.item');
 
@@ -1062,7 +1228,6 @@
       contextMenu.innerHTML = '';
       let targetPath, targetName, targetType;
 
-      // Cek apakah klik pada elemen brand atau elemen yang tidak boleh memicu menu root
       const isBrandClick = e.target.closest('.brand');
 
       // --- LOGIKA KLIK KANAN DI RUANG KOSONG (ROOT) ---
@@ -1262,12 +1427,16 @@
       contextMenu.style.opacity = '1';
     });
 
-    // --- LOGIKA SAVE & FIREBASE (Tidak Berubah) ---
+    // --- LOGIKA SAVE & FIREBASE ---
 
     saveBtn.onclick = () => saveFile();
 
     function saveFile() {
       if (!currentFilePath || !currentFileName || saveBtn.disabled) return;
+
+      // Pastikan konten diproses autoLinker sebelum disimpan
+      processContentAndSaveCursor(true);
+
       saveBtn.disabled = true;
 
       const content = codeArea.innerHTML;
