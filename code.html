@@ -42,6 +42,8 @@
       --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       --font-code: "Consolas", "Monaco", monospace;
       --radius: 6px;
+      /* Variabel untuk transisi sidebar */
+      --sidebar-transition: transform 0.3s ease-in-out;
     }
 
     html,
@@ -58,6 +60,7 @@
       display: flex;
       height: 100vh;
       overflow: hidden;
+      position: relative;
     }
 
     /* ---------------------------------
@@ -71,6 +74,9 @@
       box-sizing: border-box;
       overflow-y: auto;
       flex-shrink: 0;
+      z-index: 100;
+      /* Penting untuk mobile */
+      transition: var(--sidebar-transition);
 
       scrollbar-width: thin;
       scrollbar-color: #666 var(--bg-secondary);
@@ -83,6 +89,64 @@
     .sidebar::-webkit-scrollbar-thumb {
       background-color: #666;
       border-radius: 4px;
+    }
+
+    /* ---------------------------------
+       MOBILE-SPECIFIC STYLES
+       --------------------------------- */
+    .menu-toggle {
+      display: none;
+      /* Default: hidden on desktop */
+      background: none;
+      border: none;
+      color: var(--accent-color);
+      font-size: 1.5em;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    /* Hanya tampilkan tombol menu di layar kecil */
+    @media (max-width: 768px) {
+
+      /* Menghilangkan sidebar secara default */
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        height: 100%;
+        transform: translateX(-100%);
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+      }
+
+      /* Tampilkan sidebar saat kelas 'open' ada */
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      /* Munculkan tombol menu */
+      .menu-toggle {
+        display: block;
+      }
+
+      /* Main content menggunakan seluruh lebar */
+      .main {
+        width: 100%;
+      }
+
+      /* Overlay saat sidebar terbuka */
+      .app.sidebar-open::after {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 90;
+        /* Di bawah sidebar, di atas main content */
+        pointer-events: auto;
+        /* Agar bisa diklik untuk menutup */
+      }
     }
 
 
@@ -274,12 +338,28 @@
     .header-actions {
       display: flex;
       gap: 10px;
-      margin-left: auto;
+      /* Tambahkan margin di kiri untuk memisahkan dari tombol menu */
     }
 
     .filename {
       font-weight: 500;
       color: var(--text-primary);
+      /* Di mobile, sembunyikan nama file jika sidebar terbuka */
+      @media (max-width: 768px) {
+        flex: 1;
+        /* Ambil ruang sebanyak mungkin */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+
+    /* Style untuk menampung tombol toggle dan nama file */
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
     }
 
     .action-btn {
@@ -485,8 +565,8 @@
 </head>
 
 <body>
-  <div class="app">
-    <aside class="sidebar">
+  <div class="app" id="app">
+    <aside class="sidebar" id="sidebar">
       <div class="brand">Explorer</div>
       <div class="add-buttons">
         <button id="addFolderBtn" type="button"><i class="fas fa-folder-plus"></i> Folder</button>
@@ -496,7 +576,12 @@
     </aside>
     <main class="main">
       <div class="header">
-        <div class="filename" id="fileName"><i class="fas fa-info-circle"></i> Pilih file untuk mulai mengedit</div>
+        <!-- Struktur baru untuk Mobile -->
+        <div class="header-left">
+          <button class="menu-toggle" id="menuToggle" aria-label="Toggle Sidebar"><i class="fas fa-bars"></i></button>
+          <div class="filename" id="fileName"><i class="fas fa-info-circle"></i> Pilih file untuk mulai mengedit</div>
+        </div>
+        <!-- End Struktur baru untuk Mobile -->
         <div class="header-actions">
           <button class="action-btn download-btn" id="downloadBtn" type="button" disabled><i class="fas fa-download"></i> Download</button>
           <button class="action-btn save-btn" id="saveBtn" type="button" disabled><i class="fas fa-save"></i> Simpan (Ctrl+S)</button>
@@ -545,6 +630,10 @@
     const db = firebase.database();
 
     // Elemen DOM
+    const appEl = document.getElementById("app"); // Dapatkan elemen app
+    const sidebarEl = document.getElementById("sidebar"); // Dapatkan elemen sidebar
+    const menuToggleBtn = document.getElementById("menuToggle"); // Tombol toggle baru
+
     const treeEl = document.getElementById("tree");
     const codeArea = document.getElementById("codeArea"); // Textarea yang digunakan
     const fileNameEl = document.getElementById("fileName");
@@ -564,6 +653,47 @@
     const expandedFolders = {};
     let renamingElement = null;
     let treeDataCache = {};
+
+    // ===================================
+    // LOGIKA SIDEBAR MOBILE
+    // ===================================
+    function closeSidebar() {
+      sidebarEl.classList.remove('open');
+      appEl.classList.remove('sidebar-open');
+    }
+
+    function openSidebar() {
+      sidebarEl.classList.add('open');
+      appEl.classList.add('sidebar-open');
+    }
+
+    // Toggle sidebar saat tombol menu diklik
+    menuToggleBtn.onclick = () => {
+      if (sidebarEl.classList.contains('open')) {
+        closeSidebar();
+      } else {
+        openSidebar();
+      }
+    };
+
+    // Tutup sidebar saat mengklik area main content (overlay) di mobile
+    appEl.addEventListener('click', (e) => {
+      // Periksa apakah klik terjadi pada overlay (area di luar sidebar)
+      if (window.innerWidth <= 768 && sidebarEl.classList.contains('open') && e.target === appEl) {
+        closeSidebar();
+      }
+    });
+
+    // Tutup sidebar setelah file dibuka di mobile
+    function closeSidebarIfMobile() {
+      if (window.innerWidth <= 768) {
+        closeSidebar();
+      }
+    }
+    // ===================================
+    // END LOGIKA SIDEBAR MOBILE
+    // ===================================
+
 
     // Tidak perlu CodeMirror init, cukup aktifkan shortcut save
     document.addEventListener("keydown", (e) => {
@@ -673,6 +803,7 @@
             document.querySelectorAll('.item.selected').forEach(el => el.classList.remove('selected'));
             itemEl.classList.add('selected');
             openFile(path + "/" + key, data);
+            closeSidebarIfMobile(); // Tutup sidebar setelah memilih file
           }
 
           fragment.appendChild(itemEl);
