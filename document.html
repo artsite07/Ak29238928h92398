@@ -5,16 +5,14 @@
   <meta charset="utf-8" />
   <title>Modern Document Storage</title>
   <link rel="icon" type="image/png" href="1.png">
-  <!-- PENTING: Viewport untuk Responsif -->
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-  <!-- Font Awesome untuk Ikon -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
   <style>
     /* ---------------------------------
-       MODERN DARK MODE STYLES (Vibrant Cyan Accent + Animation)
+       MODERN DARK MODE STYLES (Dark Cyan Accent + Animation)
        --------------------------------- */
     :root {
       --bg-primary: #1e1e1e;
@@ -29,14 +27,14 @@
       /* Main Text Sidebar */
       --text-secondary: #cccccc;
       /* Subtle Text/Icons */
-      --accent-color: #00FFFF;
-      /* Vibrant Cyan (Aksen Utama) */
+      --accent-color: #00AAAA;
+      /* Dark Cyan (Aksen Utama) */
       --error-color: #ff5555;
       /* Red for Delete */
       --border-color: #383838;
       /* Subtle border -> Dark gray */
-      --hover-bg: rgba(0, 255, 255, 0.15);
-      /* Vibrant Cyan hover (15% opacity) */
+      --hover-bg: rgba(0, 170, 170, 0.15);
+      /* Dark Cyan hover (15% opacity) */
       --success-color: #50fa7b;
       /* Green for success/download */
       --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -196,6 +194,7 @@
       font-weight: 600;
       padding: 12px 10px;
       color: var(--accent-color);
+      /* Menggunakan Dark Cyan */
       border-bottom: 1px solid var(--border-color);
     }
 
@@ -206,27 +205,49 @@
       border-bottom: 1px solid var(--border-color);
     }
 
+    /* PENTING: Gaya Soft Icon Button untuk Sidebar */
     .add-buttons button {
       flex: 1;
-      padding: 6px 10px;
-      background: var(--bg-primary);
+      padding: 8px;
+      /* Padding lebih kecil */
+      background: rgba(255, 255, 255, 0.05);
+      /* Soft background */
       border: 1px solid var(--border-color);
       border-radius: var(--radius);
       color: var(--text-primary);
       cursor: pointer;
-      font-size: 13px;
+      font-size: 14px;
+      /* Ukuran font ikon */
       transition: background 0.2s, border-color 0.2s, transform 0.1s;
+      display: flex;
+      /* Untuk memusatkan ikon */
+      justify-content: center;
+      align-items: center;
+    }
+
+    .add-buttons button i {
+      margin: 0;
+      /* Hilangkan margin ikon jika ada */
+      color: var(--text-secondary);
+      font-size: 16px;
     }
 
     .add-buttons button:hover {
       background: var(--hover-bg);
+      /* Menggunakan Dark Cyan hover */
       border-color: var(--accent-color);
+      /* Menggunakan Dark Cyan */
+    }
+
+    .add-buttons button:hover i {
       color: var(--accent-color);
+      /* Menggunakan Dark Cyan */
     }
 
     .add-buttons button:active {
       transform: scale(0.98);
     }
+
 
     .tree {
       font-size: 13px;
@@ -249,11 +270,14 @@
 
     .item.selected {
       background: var(--hover-bg);
+      /* Menggunakan Dark Cyan hover */
       outline: 1px solid var(--accent-color);
+      /* Menggunakan Dark Cyan */
     }
 
     .item:not(.selected):hover {
       background: var(--hover-bg);
+      /* Menggunakan Dark Cyan hover */
     }
 
     .item i {
@@ -265,6 +289,7 @@
 
     .item.selected i {
       color: var(--accent-color);
+      /* Menggunakan Dark Cyan */
     }
 
     .item .name {
@@ -279,11 +304,13 @@
     .item .name[contenteditable="true"] {
       background: var(--bg-secondary);
       border: 1px solid var(--accent-color);
+      /* Menggunakan Dark Cyan */
       padding: 1px 4px;
       margin: -1px 0;
       border-radius: 3px;
       outline: none;
       color: var(--accent-color);
+      /* Menggunakan Dark Cyan */
     }
 
     .children {
@@ -291,24 +318,9 @@
       border-left: 1px dashed var(--border-color);
     }
 
+    /* Hapus tombol 'Tambah Dokumen' di dalam folder dari renderTree, kini ada di context menu */
     .add-file-btn {
-      display: block;
-      margin: 4px 10px 6px 20px;
-      padding: 4px 8px;
-      background: transparent;
-      border: 1px dashed var(--border-color);
-      border-radius: var(--radius);
-      color: var(--text-secondary);
-      cursor: pointer;
-      font-size: 12px;
-      text-align: left;
-      transition: all 0.2s;
-    }
-
-    .add-file-btn:hover {
-      border-color: var(--accent-color);
-      color: var(--accent-color);
-      background: var(--hover-bg);
+      display: none;
     }
 
     .header-actions {
@@ -328,31 +340,45 @@
       text-overflow: ellipsis;
     }
 
+    /* PENTING: Gaya Soft Icon Button untuk Header */
     .action-btn {
-      padding: 8px 12px;
-      border: none;
-      color: var(--bg-primary);
+      padding: 8px;
+      /* Padding ikon */
+      width: 40px;
+      /* Ukuran tetap untuk ikon */
+      height: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-sizing: border-box;
+
+      border: 1px solid var(--border-color);
       cursor: pointer;
       border-radius: var(--radius);
-      transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
-      font-size: 14px;
-      font-weight: 600;
+      transition: background 0.2s, box-shadow 0.2s, transform 0.1s, border-color 0.2s;
+      font-size: 16px;
+      /* Ukuran Ikon */
       flex-shrink: 0;
-      /* Penting untuk mobile agar tombol tidak mengecil */
+
+      /* Aturan umum untuk semua action-btn */
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-primary);
     }
 
     .action-btn:active {
-      transform: scale(0.98);
+      transform: scale(0.95);
     }
 
     .save-btn {
-      background: var(--accent-color);
-      color: #1e1e1e;
+      background: rgba(0, 170, 170, 0.1);
+      /* Soft Dark Cyan */
+      color: var(--accent-color);
+      /* Dark Cyan */
     }
 
     .save-btn:hover:not(:disabled) {
-      background: #7FFFFF;
-      box-shadow: 0 4px 10px rgba(0, 255, 255, 0.4);
+      background: rgba(0, 170, 170, 0.2);
+      border-color: var(--accent-color);
     }
 
     .download-menu {
@@ -360,16 +386,16 @@
     }
 
     .download-btn {
-      background: var(--success-color);
-      color: #1e1e1e;
-      display: flex;
-      align-items: center;
-      gap: 5px;
+      /* Menggunakan Dark Cyan untuk Download juga agar seragam */
+      background: rgba(0, 170, 170, 0.1);
+      /* Soft Dark Cyan */
+      color: var(--accent-color);
+      /* Dark Cyan */
     }
 
     .download-btn:hover:not(:disabled) {
-      background: #7CFF9B;
-      box-shadow: 0 4px 10px rgba(80, 250, 123, 0.4);
+      background: rgba(0, 170, 170, 0.2);
+      border-color: var(--accent-color);
     }
 
     .download-dropdown {
@@ -413,10 +439,12 @@
 
     .save-btn:disabled,
     .download-btn:disabled {
-      background: var(--border-color);
+      background: rgba(255, 255, 255, 0.05);
+      /* Soft Disabled */
       color: var(--text-secondary);
       cursor: not-allowed;
       box-shadow: none;
+      border-color: var(--border-color);
     }
 
     /* Context Menu Styles */
@@ -556,10 +584,12 @@
       bottom: 20px;
       right: 20px;
       background: var(--accent-color);
+      /* Menggunakan Dark Cyan */
       color: var(--bg-primary);
       padding: 10px 15px;
       border-radius: var(--radius);
-      box-shadow: 0 4px 15px rgba(0, 255, 255, 0.5);
+      box-shadow: 0 4px 15px rgba(0, 170, 170, 0.5);
+      /* Shadow Dark Cyan */
       display: none;
       z-index: 2000;
       font-size: 14px;
@@ -634,8 +664,10 @@
 
       /* Kecilkan font tombol jika perlu */
       .action-btn {
-        font-size: 12px;
-        padding: 6px 10px;
+        width: 36px;
+        height: 36px;
+        padding: 5px;
+        font-size: 14px;
       }
 
       /* Posisikan toast di tengah bawah pada mobile */
@@ -674,53 +706,44 @@
 
 <body>
   <div class="app">
-    <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
       <div class="brand">Penyimpanan Dokumen</div>
       <div class="add-buttons">
-        <button id="addFolderBtn" type="button"><i class="fas fa-folder-plus"></i> Folder</button>
-        <button id="addFileBtn" type="button"><i class="fas fa-file-alt"></i> Dokumen</button>
+        <button id="addFolderBtn" type="button" title="Tambah Folder"><i class="fas fa-folder-plus"></i></button>
+        <button id="addFileBtn" type="button" title="Tambah Dokumen"><i class="fas fa-file-alt"></i></button>
       </div>
       <div id="tree" class="tree" aria-label="Explorer tree"></div>
     </aside>
 
-    <!-- Overlay untuk menutup sidebar di mobile -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-    <!-- Konten Utama (Header + Editor) -->
     <main class="main">
       <div class="header">
-        <!-- Tombol Toggle Sidebar (Hanya terlihat di Mobile) -->
         <button id="toggleSidebarBtn" type="button" aria-label="Toggle Sidebar"><i class="fas fa-bars"></i></button>
 
         <div class="filename" id="fileName"><i class="fas fa-info-circle"></i> Pilih dokumen untuk mulai mengedit</div>
         <div class="header-actions">
-          <!-- Tombol Download Utama sekarang menjadi Toggle -->
           <div class="download-menu" id="downloadMenu">
-            <button class="action-btn download-btn" id="downloadBtn" type="button" disabled>
-              <i class="fas fa-download"></i> Download
+            <button class="action-btn download-btn" id="downloadBtn" type="button" disabled title="Download">
+              <i class="fas fa-download"></i>
             </button>
             <div class="download-dropdown" id="downloadDropdown">
               <button type="button" data-format="doc"><i class="fas fa-file-word"></i> Dokumen Word (.doc)</button>
               <button type="button" data-format="txt"><i class="fas fa-file-alt"></i> Teks Biasa (.txt)</button>
             </div>
           </div>
-          <button class="action-btn save-btn" id="saveBtn" type="button" disabled><i class="fas fa-save"></i> Simpan</button>
+          <button class="action-btn save-btn" id="saveBtn" type="button" disabled title="Simpan"><i class="fas fa-save"></i></button>
         </div>
       </div>
       <div class="editor">
-        <!-- Konten Dokumen (Content Editable Div) -->
         <div id="codeArea" contenteditable="false" placeholder="Pilih dokumen dari sidebar untuk mulai mengedit..." role="textbox" aria-multiline="true" spellcheck="true"></div>
       </div>
     </main>
   </div>
 
-  <!-- Context Menu (Menu Klik Kanan Kustom) -->
   <div id="contextMenu">
-    <!-- Konten diisi oleh JS -->
-  </div>
+    </div>
 
-  <!-- Popup confirm -->
   <div class="popup-overlay" id="popupOverlay" role="dialog" aria-modal="true" aria-hidden="true">
     <div class="popup">
       <p id="popupMsg">Apakah Anda yakin ingin menghapus item ini?</p>
@@ -731,7 +754,6 @@
     </div>
   </div>
 
-  <!-- Toast -->
   <div class="toast" id="toast">Berhasil disimpan!</div>
 
   <script>
@@ -767,6 +789,7 @@
     const popupYes = document.getElementById("popupYes");
     const popupNo = document.getElementById("popupNo");
     const addFileBtnRoot = document.getElementById("addFileBtn");
+    const addFolderBtnRoot = document.getElementById("addFolderBtn"); // Tambahkan ini
     const contextMenu = document.getElementById('contextMenu');
 
     // Elemen baru untuk mobile
@@ -885,19 +908,7 @@
             renderTree(data.children, childrenEl, folderKeyPath + "/children");
           }
 
-          const addFileBtn = document.createElement("button");
-          addFileBtn.className = "add-file-btn";
-          addFileBtn.innerHTML = '<i class="fas fa-file-medical"></i> Tambah Dokumen';
-          addFileBtn.onclick = (e) => {
-            e.stopPropagation();
-            db.ref(DB_ROOT + folderKeyPath + "/children").push({
-              type: "file",
-              name: "dokumen_baru.txt",
-              content: ""
-            });
-            expandedFolders[folderKeyPath] = true;
-          };
-          childrenEl.appendChild(addFileBtn);
+          // **LOGIKA TAMBAH FILE DIHAPUS DARI SINI (PINDAH KE CONTEXT MENU)**
 
           wrapperEl.appendChild(childrenEl);
           fragment.appendChild(wrapperEl);
@@ -1029,7 +1040,7 @@
     }
 
     // ===================================
-    // LOGIKA DOWNLOAD (Diperbarui untuk DOC)
+    // LOGIKA DOWNLOAD
     // ===================================
 
     // Helper untuk memicu download
@@ -1054,14 +1065,17 @@
      * @param {string} [contentHtml=codeArea.innerHTML] - Konten HTML (opsional, untuk download folder).
      */
     function downloadFile(name, format, contentHtml = codeArea.innerHTML) {
-      if (!name || codeArea.getAttribute('contenteditable') !== 'true') return;
+      if (!name) return;
 
       let content, filename, mimeType;
       const baseName = name.replace(/\.(md|txt|html|doc)$/i, '');
 
       if (format === 'txt') {
         // Mode Teks Biasa: Ambil teks murni (strip HTML)
-        content = codeArea.textContent;
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = contentHtml;
+        content = tempDiv.textContent;
+
         filename = baseName + '.txt';
         mimeType = 'text/plain';
         showToast(`Dokumen "${filename}" berhasil diunduh (teks biasa).`);
@@ -1087,18 +1101,6 @@
           xmlns="http://www.w3.org/TR/REC-html40">
           <head><meta charset="utf-8">
           <title>${name}</title>
-          <!--[if gte mso 9]><xml>
-          <w:WordDocument>
-          <w:View>Print</w:View>
-          <w:Zoom>100</w:Zoom>
-          <w:TrackMoves>false</w:TrackMoves>
-          <w:TrackFormatting/>
-          <w:PunctuationKerning/>
-          <w:ValidateAgainstSchemas/>
-          <w:SaveIfAOC/>
-          <w:DataBinding/>
-          </w:WordDocument>
-          </xml><![endif]-->
           ${style}
           </head>
           <body>${contentHtml}</body>
@@ -1167,7 +1169,7 @@
     }
 
     // ===================================
-    // LOGIKA CONTEXT MENU (Diperbarui untuk 2 opsi download)
+    // LOGIKA CONTEXT MENU & POSITIONING BARU
     // ===================================
 
     document.addEventListener('click', () => {
@@ -1192,6 +1194,45 @@
 
       contextMenu.innerHTML = '';
 
+      // --- OPSI TAMBAH FOLDER/DOKUMEN DI DALAM FOLDER ---
+      if (type === 'folder') {
+        // Opsi Tambah Folder di dalam folder
+        const addFolderItem = document.createElement('div');
+        addFolderItem.className = 'context-item';
+        addFolderItem.innerHTML = `<i class="fas fa-folder-plus"></i> Tambah Folder`;
+        addFolderItem.onclick = () => {
+          contextMenu.style.display = 'none';
+          db.ref(DB_ROOT + path + "/children").push({
+            type: "folder",
+            name: "Folder Baru",
+            children: {}
+          });
+          // Pastikan folder terbuka setelah menambah
+          expandedFolders[path] = true;
+        };
+        contextMenu.appendChild(addFolderItem);
+
+        // Opsi Tambah Dokumen di dalam folder
+        const addFileItem = document.createElement('div');
+        addFileItem.className = 'context-item';
+        addFileItem.innerHTML = `<i class="fas fa-file-alt"></i> Tambah Dokumen`;
+        addFileItem.onclick = () => {
+          contextMenu.style.display = 'none';
+          db.ref(DB_ROOT + path + "/children").push({
+            type: "file",
+            name: "dokumen_baru.txt",
+            content: ""
+          });
+          // Pastikan folder terbuka setelah menambah
+          expandedFolders[path] = true;
+        };
+        contextMenu.appendChild(addFileItem);
+
+        contextMenu.appendChild(document.createElement('div')).className = 'context-separator';
+      }
+      // --- AKHIR OPSI TAMBAH ---
+
+
       // Opsi Download Word (.doc)
       const downloadWordItem = document.createElement('div');
       downloadWordItem.className = 'context-item';
@@ -1201,8 +1242,8 @@
         if (type === 'file') {
           downloadFileFromDbOrEditor(path, name, 'doc');
         } else {
-          const folderKey = path.split('/')[1];
-          const folderData = treeDataCache[folderKey];
+          // Folder di root
+          const folderData = treeDataCache[path.split('/')[1]];
           if (folderData) {
             downloadFolderMassal(folderData, name, 'doc');
           }
@@ -1219,8 +1260,8 @@
         if (type === 'file') {
           downloadFileFromDbOrEditor(path, name, 'txt');
         } else {
-          const folderKey = path.split('/')[1];
-          const folderData = treeDataCache[folderKey];
+          // Folder di root
+          const folderData = treeDataCache[path.split('/')[1]];
           if (folderData) {
             downloadFolderMassal(folderData, name, 'txt');
           }
@@ -1237,11 +1278,14 @@
           // Jika file tertutup, ambil dari DB
           db.ref(DB_ROOT + path).once("value").then(snap => {
             const data = snap.val();
-            if (data && data.content) {
+            if (data && data.content !== undefined) {
               downloadFile(name, format, data.content);
             } else {
               showToast("Gagal mengambil konten dokumen!");
             }
+          }).catch(err => {
+            console.error("Download from DB error:", err);
+            showToast("Gagal mengambil konten dokumen!");
           });
         }
       }
@@ -1274,23 +1318,39 @@
       };
       contextMenu.appendChild(deleteItem);
 
-      // Tampilkan menu
-      // Posisikan context menu agar tidak keluar layar di mobile
+      // --- LOGIKA POSISI MENU AGAR TIDAK TERPOTONG ---
+
+      // 1. Tampilkan sebentar dan reset posisi untuk mendapatkan dimensi menu yang akurat
+      contextMenu.style.display = 'block';
+      contextMenu.style.opacity = '0'; // Sembunyikan dengan opacity
+      contextMenu.style.top = '0px';
+      contextMenu.style.left = '0px';
+
+      // 2. Hitung posisi
+      const menuWidth = contextMenu.offsetWidth;
+      const menuHeight = contextMenu.offsetHeight;
       let x = e.clientX;
       let y = e.clientY;
 
-      // Ensure menu doesn't go off the right edge
-      if (x + 180 > window.innerWidth) {
-        x = window.innerWidth - 185;
-      }
-      // Ensure menu doesn't go off the bottom edge
-      if (y + contextMenu.offsetHeight > window.innerHeight) {
-        y = window.innerHeight - contextMenu.offsetHeight - 5;
+      // Check Horizontal (Right Edge)
+      if (x + menuWidth > window.innerWidth) {
+        x = window.innerWidth - menuWidth - 5; // Geser ke kiri
       }
 
+      // Check Vertical (Bottom Edge)
+      if (y + menuHeight > window.innerHeight) {
+        // Jika menu terpotong, geser ke atas kursor
+        y = y - menuHeight;
+        // Pastikan tidak terpotong di bagian atas
+        if (y < 5) {
+          y = 5; // Pin ke bagian atas layar
+        }
+      }
+
+      // 3. Terapkan posisi final dan tampilkan
       contextMenu.style.left = x + 'px';
       contextMenu.style.top = y + 'px';
-      contextMenu.style.display = 'block';
+      contextMenu.style.opacity = '1';
     });
 
     // ===================================
@@ -1359,8 +1419,8 @@
       }, ms);
     }
 
-    // Tambah folder (root) (sama seperti sebelumnya)
-    document.getElementById("addFolderBtn").onclick = () => {
+    // Tambah folder (root) (sama seperti sebelumnya, hanya menggunakan variabel baru)
+    addFolderBtnRoot.onclick = () => {
       // Tutup sidebar setelah aksi di mobile
       closeSidebarIfMobile();
       db.ref(DB_ROOT).push({
