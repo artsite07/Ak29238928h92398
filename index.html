@@ -11,16 +11,19 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
-  <!-- CSS Layar Kunci dengan Tema Abu-abu/Hitam -->
+  <!-- CSS Layar Kunci dengan Tema Cyan Gelap Gradasi -->
   <style>
     :root {
-      /* Warna utama diubah menjadi abu-abu netral */
-      --bg-dark: #121212;
+      /* Warna utama diubah menjadi gradasi Cyan Gelap */
+      --bg-dark-start: #001f3f;
+      /* Dark Navy/Cyan Tua */
+      --bg-dark-end: #000c1f;
+      /* Lebih gelap lagi */
       --text-light: #f0f0f0;
-      --primary: #9E9E9E;
-      /* Abu-abu netral, pengganti Cyan */
-      --primary-hover: #757575;
-      /* Abu-abu lebih gelap untuk hover */
+      --primary: #00BCD4;
+      /* Warna Cyan */
+      --primary-hover: #0097A7;
+      /* Cyan lebih gelap untuk hover */
       --input-bg: rgba(255, 255, 255, 0.05);
       --input-border: rgba(255, 255, 255, 0.2);
       --font-main: 'Poppins', sans-serif;
@@ -43,22 +46,21 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      /* Menggunakan bg.png sebagai gambar latar belakang */
-      background: var(--bg-dark) url('bg.png') no-repeat center center fixed;
-      background-size: cover;
+      /* MENGHAPUS GAMBAR LATAR BELAKANG */
+      background: linear-gradient(135deg, var(--bg-dark-start) 0%, var(--bg-dark-end) 100%);
       color: var(--text-light);
       transition: background-color 0.5s ease;
     }
 
-    /* ---------------------- LAYAR KUNCI/LOGIN TUNGGAL ---------------------- */
+    /* ---------------------- LAYAR KUNCI / LOGIN TUNGGAL ---------------------- */
     #lockScreen {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      /* Overlay gelap dikurangi (0.6) agar BG terlihat jelas */
-      background: rgba(18, 18, 18, 0.6);
+      /* Menggunakan background transparan agar gradasi body terlihat */
+      background: transparent; 
       color: var(--text-light);
       display: none;
       flex-direction: column;
@@ -83,8 +85,9 @@
       margin-bottom: 0.2rem;
       letter-spacing: -3px;
       line-height: 1;
-      /* Bayangan putih lembut, pengganti bayangan Cyan */
-      text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+      /* Bayangan Cyan lembut */
+      text-shadow: 0 0 10px rgba(0, 188, 212, 0.5);
+      color: var(--primary);
       transition: font-size 0.3s ease;
     }
 
@@ -144,11 +147,11 @@
 
     .password-input:focus {
       border-color: var(--primary);
-      /* Border abu-abu saat focus */
+      /* Border cyan saat focus */
       background: rgba(255, 255, 255, 0.1);
       /* Background lebih terang saat focus */
-      /* Bayangan putih/abu-abu, pengganti bayangan Cyan */
-      box-shadow: 0 0 15px rgba(255, 255, 255, 0.1), var(--shadow-soft);
+      box-shadow: 0 0 15px rgba(0, 188, 212, 0.2), var(--shadow-soft);
+      /* Bayangan Cyan */
     }
 
     .password-input:focus+.input-icon {
@@ -161,8 +164,8 @@
       width: 100%;
       padding: 0.8rem;
       background: var(--primary);
-      /* Abu-abu sebagai warna tombol */
-      color: var(--bg-dark);
+      /* Cyan sebagai warna tombol */
+      color: var(--bg-dark-start); /* Menggunakan warna gelap dari gradasi */
       font-weight: 600;
       border: none;
       border-radius: 8px;
@@ -176,7 +179,7 @@
 
     button:hover:not(:disabled) {
       background-color: var(--primary-hover);
-      /* Abu-abu lebih gelap saat hover */
+      /* Cyan lebih gelap saat hover */
       color: var(--text-light);
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
     }
@@ -462,7 +465,7 @@
     let timeoutTimer;
     // INACTIVITY_TIMEOUT diatur menjadi 10 detik (10000 ms)
     const INACTIVITY_TIMEOUT = 10000;
-    
+
     // Simpan referensi listener agar bisa dihapus/ditambahkan di iframe
     let iframeInactivityListeners = [];
     let isIframeListenersActive = false;
@@ -475,7 +478,7 @@
      * FUNGSI DINONAKTIFKAN: Menghapus semua listener interaksi dari iframe
      */
     function removeIframeInactivityListeners() {
-        // Logika dihapus
+      // Logika dihapus
     }
 
     /**
@@ -522,7 +525,8 @@
         lockScreen.classList.add('active');
         berandaContainer.style.display = 'none';
         document.body.style.display = 'flex';
-        document.body.style.background = 'var(--bg-dark) url(\'bg.png\') no-repeat center center fixed'; // Tetapkan latar belakang gambar
+        // Menggunakan Gradasi Cyan Gelap untuk latar belakang body
+        document.body.style.background = 'linear-gradient(135deg, var(--bg-dark-start) 0%, var(--bg-dark-end) 100%)'; 
         document.body.style.backgroundSize = 'cover';
 
         pwInputLock.value = '';
@@ -563,7 +567,7 @@
     function resetTimer() {
       clearTimeout(timeoutTimer);
       // Logika di dalamnya dihapus agar timer tidak pernah diatur
-      console.log('Fitur kunci otomatis dinonaktifkan.'); 
+      console.log('Fitur kunci otomatis dinonaktifkan.');
     }
 
     /**
@@ -575,7 +579,7 @@
       setInterval(updateClock, 1000); // Perbarui setiap detik
 
       // Panggil setupInactivityListeners() hanya untuk logging/konsistensi, tapi fungsinya kosong
-      setupInactivityListeners(); 
+      setupInactivityListeners();
 
       // Tampilkan Layar Otentikasi
       lockScreen.classList.add('active');
