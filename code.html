@@ -8,10 +8,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-  <!-- Font Awesome untuk Ikon -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
-  <!-- Beautifier -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify-html.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify-css.min.js"></script>
@@ -80,6 +78,8 @@
 
       scrollbar-width: thin;
       scrollbar-color: #666 var(--bg-secondary);
+      /* Memberi padding bawah agar klik kanan di area kosong lebih mudah */
+      padding-bottom: 20px;
     }
 
     .sidebar::-webkit-scrollbar {
@@ -217,37 +217,9 @@
       /* Cyan cerah */
       border-bottom: 1px solid var(--border-color);
     }
-
-    .add-buttons {
-      display: flex;
-      gap: 8px;
-      padding: 10px;
-      border-bottom: 1px solid var(--border-color);
-    }
-
-    .add-buttons button {
-      flex: 1;
-      padding: 6px 10px;
-      background: var(--bg-primary);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius);
-      color: var(--text-primary);
-      cursor: pointer;
-      font-size: 13px;
-      transition: background 0.2s, border-color 0.2s, transform 0.1s;
-      /* Animasi */
-    }
-
-    .add-buttons button:hover {
-      background: var(--hover-bg);
-      border-color: var(--accent-color);
-      color: var(--accent-color);
-    }
-
-    .add-buttons button:active {
-      transform: scale(0.98);
-      /* Efek klik */
-    }
+    
+    /* Tombol Add dihapus dari sini, jadi bagian ini juga dihapus */
+    /* .add-buttons { ... } */
 
     .tree {
       font-size: 13px;
@@ -315,25 +287,16 @@
       border-left: 1px dashed var(--border-color);
     }
 
-    .add-file-btn {
-      display: block;
-      margin: 4px 10px 6px 20px;
-      padding: 4px 8px;
-      background: transparent;
-      border: 1px dashed var(--border-color);
-      border-radius: var(--radius);
-      color: var(--text-secondary);
-      cursor: pointer;
-      font-size: 12px;
-      text-align: left;
-      transition: all 0.2s;
+    /* Tombol Add File/Folder di dalam folder: Dihapus dan diganti dengan menu konteks,
+       tapi kita pertahankan gaya minimalis untuk baris ini jika diperlukan di masa depan.
+       Di sini tidak lagi dipakai karena pembuatan file/folder di dalam folder juga melalui klik kanan. */
+    .add-in-folder-actions {
+      display: none; /* Sembunyikan div ini */
+    }
+    .add-item-btn {
+      display: none; /* Sembunyikan tombol-tombol ini */
     }
 
-    .add-file-btn:hover {
-      border-color: var(--accent-color);
-      color: var(--accent-color);
-      background: var(--hover-bg);
-    }
 
     .header-actions {
       display: flex;
@@ -344,6 +307,7 @@
     .filename {
       font-weight: 500;
       color: var(--text-primary);
+
       /* Di mobile, sembunyikan nama file jika sidebar terbuka */
       @media (max-width: 768px) {
         flex: 1;
@@ -362,52 +326,65 @@
       flex: 1;
     }
 
+    /* General action button style (more compact) (CUSTOM) */
     .action-btn {
-      padding: 8px 12px;
+      padding: 8px;
+      /* Lebih kecil */
+      width: 34px;
+      /* Untuk membuat tombol menjadi kotak */
+      height: 34px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       border: none;
       color: var(--bg-primary);
-      /* Teks gelap di atas tombol cerah */
       cursor: pointer;
       border-radius: var(--radius);
       transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
-      /* Animasi */
-      font-size: 14px;
-      font-weight: 600;
+      font-size: 16px;
+      /* Ukuran ikon */
+      font-weight: normal;
+      /* Tidak perlu bold */
     }
 
     .action-btn:active {
       transform: scale(0.98);
     }
 
-    .save-btn {
-      background: var(--accent-color);
-      /* Cyan cerah */
-      color: #1e1e1e;
-    }
-
-    .save-btn:hover:not(:disabled) {
-      background: #7FFFFF;
-      /* Cyan lebih terang on hover */
-      box-shadow: 0 4px 10px rgba(0, 255, 255, 0.4);
+    /* Soft style for header buttons (CUSTOM) */
+    .save-btn,
+    .download-btn {
+      background: var(--bg-secondary);
+      /* Background tombol lebih soft/samar */
+      color: var(--accent-color);
+      /* Warna ikon Cyan */
+      border: 1px solid var(--border-color);
+      box-shadow: none;
     }
 
     .download-btn {
-      background: var(--success-color);
-      /* Hijau cerah */
-      color: #1e1e1e;
+      color: var(--success-color);
+      /* Ikon Download Hijau */
+    }
+
+    .save-btn:hover:not(:disabled) {
+      background: var(--hover-bg);
+      border-color: var(--accent-color);
+      box-shadow: none;
     }
 
     .download-btn:hover:not(:disabled) {
-      background: #7CFF9B;
-      box-shadow: 0 4px 10px rgba(80, 250, 123, 0.4);
+      background: var(--hover-bg);
+      border-color: var(--success-color);
+      box-shadow: none;
     }
 
     .save-btn:disabled,
     .download-btn:disabled {
-      background: var(--border-color);
+      background: var(--bg-secondary);
       color: var(--text-secondary);
+      border-color: var(--border-color);
       cursor: not-allowed;
-      box-shadow: none;
     }
 
     /* Context Menu Styles */
@@ -421,6 +398,9 @@
       display: none;
       padding: 5px 0;
       min-width: 150px;
+      /* Aturan untuk mencegah terpotong (CUSTOM) */
+      max-height: calc(100vh - 10px);
+      overflow-y: auto;
     }
 
     .context-item {
@@ -455,6 +435,13 @@
 
     .context-item.delete-action:hover i {
       color: var(--error-color);
+    }
+    
+    /* Pemisah Menu */
+    .context-separator {
+        height: 1px;
+        background: var(--border-color);
+        margin: 5px 0;
     }
 
     /* Popup confirm (Modern Modal) */
@@ -568,38 +555,28 @@
   <div class="app" id="app">
     <aside class="sidebar" id="sidebar">
       <div class="brand">Explorer</div>
-      <div class="add-buttons">
-        <button id="addFolderBtn" type="button"><i class="fas fa-folder-plus"></i> Folder</button>
-        <button id="addFileBtn" type="button"><i class="fas fa-file-code"></i> File</button>
-      </div>
       <div id="tree" class="tree" aria-label="Explorer tree"></div>
     </aside>
     <main class="main">
       <div class="header">
-        <!-- Struktur baru untuk Mobile -->
         <div class="header-left">
           <button class="menu-toggle" id="menuToggle" aria-label="Toggle Sidebar"><i class="fas fa-bars"></i></button>
           <div class="filename" id="fileName"><i class="fas fa-info-circle"></i> Pilih file untuk mulai mengedit</div>
         </div>
-        <!-- End Struktur baru untuk Mobile -->
         <div class="header-actions">
-          <button class="action-btn download-btn" id="downloadBtn" type="button" disabled><i class="fas fa-download"></i> Download</button>
-          <button class="action-btn save-btn" id="saveBtn" type="button" disabled><i class="fas fa-save"></i> Simpan (Ctrl+S)</button>
+          <button class="action-btn download-btn" id="downloadBtn" type="button" disabled aria-label="Download"><i class="fas fa-download"></i></button>
+          <button class="action-btn save-btn" id="saveBtn" type="button" disabled aria-label="Simpan"><i class="fas fa-save"></i></button>
         </div>
       </div>
       <div class="editor">
-        <!-- Kembali menggunakan textarea biasa. Pastikan placeholder terlihat jika kosong -->
         <textarea id="codeArea" placeholder="Pilih file dari sidebar untuk mulai mengedit..." spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" wrap="off" disabled></textarea>
       </div>
     </main>
   </div>
 
-  <!-- Context Menu (Menu Klik Kanan Kustom) -->
   <div id="contextMenu">
-    <!-- Konten diisi oleh JS -->
-  </div>
+    </div>
 
-  <!-- Popup confirm -->
   <div class="popup-overlay" id="popupOverlay" role="dialog" aria-modal="true" aria-hidden="true">
     <div class="popup">
       <p id="popupMsg">Apakah Anda yakin ingin menghapus item ini?</p>
@@ -610,7 +587,6 @@
     </div>
   </div>
 
-  <!-- Toast -->
   <div class="toast" id="toast">Berhasil disimpan!</div>
 
   <script>
@@ -644,7 +620,6 @@
     const popupMsg = document.getElementById("popupMsg");
     const popupYes = document.getElementById("popupYes");
     const popupNo = document.getElementById("popupNo");
-    const addFileBtnRoot = document.getElementById("addFileBtn");
     const contextMenu = document.getElementById('contextMenu');
 
     let currentFilePath = null;
@@ -759,20 +734,11 @@
           if (data.children) {
             renderTree(data.children, childrenEl, folderKeyPath + "/children");
           }
-
-          const addFileBtn = document.createElement("button");
-          addFileBtn.className = "add-file-btn";
-          addFileBtn.innerHTML = '<i class="fas fa-file-medical"></i> Tambah File';
-          addFileBtn.onclick = (e) => {
-            e.stopPropagation();
-            db.ref("explorer" + folderKeyPath + "/children").push({
-              type: "file",
-              name: "untitled.txt",
-              content: ""
-            });
-            expandedFolders[folderKeyPath] = true;
-          };
-          childrenEl.appendChild(addFileBtn);
+          
+          // Hilangkan tombol Add File/Folder di dalam folder karena menggunakan klik kanan
+          // const addFolderFileContainer = document.createElement("div");
+          // ...
+          // childrenEl.appendChild(addFolderFileContainer);
 
           wrapperEl.appendChild(childrenEl);
           fragment.appendChild(wrapperEl);
@@ -1019,89 +985,172 @@
       contextMenu.style.display = 'none';
     });
 
-    treeEl.addEventListener('contextmenu', function(e) {
-      const itemEl = e.target.closest('.item');
-      if (!itemEl) {
-        contextMenu.style.display = 'none';
-        return;
+    // FUNGSI BARU: Sesuaikan posisi context menu agar tidak terpotong
+    function adjustContextMenuPosition(e) {
+      // Tampilkan menu terlebih dahulu untuk mendapatkan dimensi
+      contextMenu.style.display = 'block';
+
+      const menuWidth = contextMenu.offsetWidth;
+      const menuHeight = contextMenu.offsetHeight;
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      let x = e.clientX;
+      let y = e.clientY;
+
+      // Sesuaikan posisi X
+      if (x + menuWidth > viewportWidth) {
+        x = viewportWidth - menuWidth - 10; // 10px margin
       }
 
+      // Sesuaikan posisi Y
+      if (y + menuHeight > viewportHeight) {
+        y = viewportHeight - menuHeight - 10; // 10px margin
+      }
+
+      // Pastikan tidak keluar di sisi atas/kiri
+      x = Math.max(10, x);
+      y = Math.max(10, y);
+
+      contextMenu.style.left = x + 'px';
+      contextMenu.style.top = y + 'px';
+    }
+
+    // Fungsi untuk membuat item menu
+    function createMenuItem(text, iconClass, className, onClick) {
+        const item = document.createElement('div');
+        item.className = 'context-item' + (className ? ' ' + className : '');
+        item.innerHTML = `<i class="${iconClass}"></i> ${text}`;
+        item.onclick = onClick;
+        return item;
+    }
+    
+    // Listeners untuk Menu Konteks
+    sidebarEl.addEventListener('contextmenu', function(e) {
       e.preventDefault();
+      contextMenu.innerHTML = ''; // Bersihkan menu
 
-      const path = itemEl.getAttribute('data-path');
-      const type = itemEl.getAttribute('data-type');
-      const nameEl = itemEl.querySelector('.name');
-      const name = nameEl.textContent;
-
-      if (!path || !type || !nameEl) return;
-
-      contextMenu.innerHTML = '';
-
-      // 1. Opsi Download
-      const downloadItem = document.createElement('div');
-      downloadItem.className = 'context-item';
-      downloadItem.innerHTML = `<i class="fas fa-download"></i> Download ${type === 'folder' ? 'Semua File' : 'File'}`;
-      downloadItem.onclick = () => {
-        contextMenu.style.display = 'none';
-        if (type === 'file') {
-          // Untuk file: ambil konten terbaru dari editor atau cache
-          const content = (currentFilePath === path) ? codeArea.value : null;
-          if (content !== null) {
-            downloadFile(name, content);
-          } else {
-            db.ref("explorer" + path).once("value").then(snap => {
-              const data = snap.val();
-              if (data && data.content) {
-                downloadFile(data.name, data.content);
-              } else {
-                showToast("Gagal mengambil konten file untuk diunduh!");
-              }
-            });
-          }
-        } else {
-          // Untuk folder: gunakan fungsi massal
-          // Cari data folder di cache menggunakan key pertama di path
-          const folderKey = path.split('/')[1];
-          const folderData = treeDataCache[folderKey];
-          if (folderData) {
-            downloadFolderMassal(folderData, name);
-          } else {
-            showToast("Gagal menemukan data folder di cache!");
-          }
+      const itemEl = e.target.closest('.item');
+      
+      if (itemEl) {
+        // --- KLIK KANAN PADA FILE ATAU FOLDER ---
+        const path = itemEl.getAttribute('data-path');
+        const type = itemEl.getAttribute('data-type');
+        const nameEl = itemEl.querySelector('.name');
+        const name = nameEl.textContent;
+        
+        // Cek jika klik kanan pada Folder
+        if (type === 'folder') {
+            const folderPath = path; // path ke folder yang diklik kanan
+            
+            // Opsi 1: Tambah File di dalam folder
+            contextMenu.appendChild(createMenuItem('Tambah File', 'fas fa-file-code', null, () => {
+                contextMenu.style.display = 'none';
+                db.ref("explorer" + folderPath + "/children").push({
+                    type: "file",
+                    name: "untitled.txt",
+                    content: ""
+                });
+                expandedFolders[folderPath] = true;
+            }));
+            
+            // Opsi 2: Tambah Folder di dalam folder
+            contextMenu.appendChild(createMenuItem('Tambah Sub-Folder', 'fas fa-folder-plus', null, () => {
+                contextMenu.style.display = 'none';
+                db.ref("explorer" + folderPath + "/children").push({
+                    type: "folder",
+                    name: "New Sub Folder",
+                    children: {}
+                });
+                expandedFolders[folderPath] = true;
+            }));
+            
+            contextMenu.appendChild(document.createElement('div')).className = 'context-separator';
         }
-      };
-      contextMenu.appendChild(downloadItem);
 
-      // 2. Opsi Rename
-      const renameItem = document.createElement('div');
-      renameItem.className = 'context-item';
-      renameItem.innerHTML = '<i class="fas fa-pen"></i> Ubah Nama';
-      renameItem.onclick = () => {
+
+        // Opsi Download
+        const downloadText = type === 'folder' ? 'Download Semua File' : 'Download File';
+        contextMenu.appendChild(createMenuItem(downloadText, 'fas fa-download', null, () => {
+            contextMenu.style.display = 'none';
+            if (type === 'file') {
+                const content = (currentFilePath === path) ? codeArea.value : null;
+                if (content !== null) {
+                    downloadFile(name, content);
+                } else {
+                    db.ref("explorer" + path).once("value").then(snap => {
+                        const data = snap.val();
+                        if (data && data.content) {
+                            downloadFile(data.name, data.content);
+                        } else {
+                            showToast("Gagal mengambil konten file untuk diunduh!");
+                        }
+                    });
+                }
+            } else {
+                const pathParts = path.split('/');
+                const folderKey = pathParts[1];
+                const folderData = treeDataCache[folderKey];
+                if (folderData) {
+                    downloadFolderMassal(folderData, name);
+                } else {
+                    showToast("Gagal menemukan data folder di cache!");
+                }
+            }
+        }));
+
+        // Opsi Rename
+        contextMenu.appendChild(createMenuItem('Ubah Nama', 'fas fa-pen', null, () => {
+            contextMenu.style.display = 'none';
+            startRename(nameEl, path, type);
+        }));
+
+        // Opsi Delete
+        contextMenu.appendChild(createMenuItem('Hapus', 'fas fa-trash-alt', 'delete-action', () => {
+            contextMenu.style.display = 'none';
+            showPopup(`Yakin ingin menghapus ${type === 'folder' ? 'folder' : 'file'} "${name}"?`, () => {
+                db.ref("explorer" + path).remove();
+                if (currentFilePath === path) {
+                    clearEditor();
+                }
+            });
+        }));
+        
+      } else if (e.target === treeEl || e.target === sidebarEl) {
+        // --- KLIK KANAN PADA AREA KOSONG (ROOT) ---
+        
+        // Opsi 1: Tambah File di Root
+        contextMenu.appendChild(createMenuItem('Tambah File (Root)', 'fas fa-file-medical', null, () => {
+            contextMenu.style.display = 'none';
+            db.ref("explorer").push({
+                type: "file",
+                name: "new_file.txt",
+                content: ""
+            });
+        }));
+        
+        // Opsi 2: Tambah Folder di Root
+        contextMenu.appendChild(createMenuItem('Tambah Folder (Root)', 'fas fa-folder-plus', null, () => {
+            contextMenu.style.display = 'none';
+            db.ref("explorer").push({
+                type: "folder",
+                name: "New Folder",
+                children: {}
+            });
+        }));
+
+      } else {
+          contextMenu.style.display = 'none';
+          return;
+      }
+
+      // Tampilkan menu dan sesuaikan posisi
+      if (contextMenu.children.length > 0) {
+        adjustContextMenuPosition(e);
+      } else {
         contextMenu.style.display = 'none';
-        startRename(nameEl, path, type);
-      };
-      contextMenu.appendChild(renameItem);
-
-      // 3. Opsi Delete
-      const deleteItem = document.createElement('div');
-      deleteItem.className = 'context-item delete-action';
-      deleteItem.innerHTML = '<i class="fas fa-trash-alt"></i> Hapus';
-      deleteItem.onclick = () => {
-        contextMenu.style.display = 'none';
-        showPopup(`Yakin ingin menghapus ${type === 'folder' ? 'folder' : 'file'} "${name}"?`, () => {
-          db.ref("explorer" + path).remove();
-          if (currentFilePath === path) {
-            clearEditor();
-          }
-        });
-      };
-      contextMenu.appendChild(deleteItem);
-
-      // Tampilkan menu
-      contextMenu.style.left = e.clientX + 'px';
-      contextMenu.style.top = e.clientY + 'px';
-      contextMenu.style.display = 'block';
+      }
     });
+
 
     // ===================================
     // LOGIKA SAVE & FIREBASE
@@ -1178,25 +1227,6 @@
         setTimeout(() => toast.style.display = "none", 300);
       }, ms);
     }
-
-    // Tambah folder (root)
-    document.getElementById("addFolderBtn").onclick = () => {
-      db.ref("explorer").push({
-        type: "folder",
-        name: "New Folder",
-        children: {}
-      });
-    };
-
-    // Tambah file (root)
-    addFileBtnRoot.onclick = () => {
-      db.ref("explorer").push({
-        type: "file",
-        name: "new_file.txt",
-        content: ""
-      });
-    };
-
 
     // Render tree on DB changes
     db.ref("explorer").on("value", snap => {
