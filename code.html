@@ -217,7 +217,7 @@
       /* Cyan cerah */
       border-bottom: 1px solid var(--border-color);
     }
-    
+
     /* Tombol Add dihapus dari sini, jadi bagian ini juga dihapus */
     /* .add-buttons { ... } */
 
@@ -291,10 +291,13 @@
        tapi kita pertahankan gaya minimalis untuk baris ini jika diperlukan di masa depan.
        Di sini tidak lagi dipakai karena pembuatan file/folder di dalam folder juga melalui klik kanan. */
     .add-in-folder-actions {
-      display: none; /* Sembunyikan div ini */
+      display: none;
+      /* Sembunyikan div ini */
     }
+
     .add-item-btn {
-      display: none; /* Sembunyikan tombol-tombol ini */
+      display: none;
+      /* Sembunyikan tombol-tombol ini */
     }
 
 
@@ -436,12 +439,12 @@
     .context-item.delete-action:hover i {
       color: var(--error-color);
     }
-    
+
     /* Pemisah Menu */
     .context-separator {
-        height: 1px;
-        background: var(--border-color);
-        margin: 5px 0;
+      height: 1px;
+      background: var(--border-color);
+      margin: 5px 0;
     }
 
     /* Popup confirm (Modern Modal) */
@@ -575,7 +578,7 @@
   </div>
 
   <div id="contextMenu">
-    </div>
+  </div>
 
   <div class="popup-overlay" id="popupOverlay" role="dialog" aria-modal="true" aria-hidden="true">
     <div class="popup">
@@ -689,15 +692,39 @@
       return '<i class="fas fa-file"></i>';
     }
 
-    // Fungsi Utama untuk Merender Tree
+    // Fungsi Utama untuk Merender Tree (TELAH DIMODIFIKASI UNTUK PENGURUTAN A-Z)
     function renderTree(obj, parentEl, path = "") {
       parentEl.innerHTML = "";
 
       const fragment = document.createDocumentFragment();
 
-      for (const key in obj) {
-        const data = obj[key];
-        if (!data) continue;
+      // 1. Ubah objek menjadi array agar bisa diurutkan
+      const sortedItems = Object.keys(obj)
+        .filter(key => obj[key]) // Filter item yang null
+        .map(key => ({
+          key,
+          data: obj[key]
+        }));
+
+      // 2. Urutkan array berdasarkan nama (case-insensitive)
+      sortedItems.sort((a, b) => {
+        // Prioritas: Folder di atas file
+        if (a.data.type === 'folder' && b.data.type !== 'folder') return -1;
+        if (a.data.type !== 'folder' && b.data.type === 'folder') return 1;
+
+        // Urutkan berdasarkan nama (A-Z, case-insensitive)
+        const nameA = a.data.name ? a.data.name.toLowerCase() : '';
+        const nameB = b.data.name ? b.data.name.toLowerCase() : '';
+
+        if (nameA < nameB) return -1;
+        if (nameA > nameB) return 1;
+        return 0;
+      });
+
+      // 3. Loop melalui array yang sudah diurutkan
+      for (const item of sortedItems) {
+        const key = item.key;
+        const data = item.data;
 
         if (data.type === "folder") {
           const folderKeyPath = path + "/" + key;
@@ -732,9 +759,9 @@
           childrenEl.style.display = isOpen ? "block" : "none";
 
           if (data.children) {
-            renderTree(data.children, childrenEl, folderKeyPath + "/children");
+            renderTree(data.children, childrenEl, folderKeyPath);
           }
-          
+
           // Hilangkan tombol Add File/Folder di dalam folder karena menggunakan klik kanan
           // const addFolderFileContainer = document.createElement("div");
           // ...
@@ -951,14 +978,21 @@
       let fileCount = 0;
 
       function traverseAndDownload(obj) {
-        for (const key in obj) {
-          const data = obj[key];
+        // Harus menggunakan metode iterasi yang sama seperti renderTree (diurutkan)
+        const sortedItems = Object.keys(obj)
+          .filter(key => obj[key])
+          .map(key => ({ data: obj[key] }));
+          
+        for (const item of sortedItems) {
+          const data = item.data;
           if (!data) continue;
 
           if (data.type === "file") {
             const filename = data.name || "untitled.txt";
             const content = data.content || "";
-            downloadFile(filename, content);
+            // NOTE: Dalam aplikasi nyata, disarankan untuk mengunduh sebagai ZIP
+            // daripada memicu banyak unduhan file secara berurutan.
+            downloadFile(filename, content); 
             fileCount++;
           } else if (data.type === "folder" && data.children) {
             // Masuk ke sub-folder
@@ -1017,130 +1051,151 @@
 
     // Fungsi untuk membuat item menu
     function createMenuItem(text, iconClass, className, onClick) {
-        const item = document.createElement('div');
-        item.className = 'context-item' + (className ? ' ' + className : '');
-        item.innerHTML = `<i class="${iconClass}"></i> ${text}`;
-        item.onclick = onClick;
-        return item;
+      const item = document.createElement('div');
+      item.className = 'context-item' + (className ? ' ' + className : '');
+      item.innerHTML = `<i class="${iconClass}"></i> ${text}`;
+      item.onclick = onClick;
+      return item;
     }
-    
+
     // Listeners untuk Menu Konteks
     sidebarEl.addEventListener('contextmenu', function(e) {
       e.preventDefault();
       contextMenu.innerHTML = ''; // Bersihkan menu
 
       const itemEl = e.target.closest('.item');
-      
+
       if (itemEl) {
         // --- KLIK KANAN PADA FILE ATAU FOLDER ---
         const path = itemEl.getAttribute('data-path');
         const type = itemEl.getAttribute('data-type');
         const nameEl = itemEl.querySelector('.name');
         const name = nameEl.textContent;
-        
+
         // Cek jika klik kanan pada Folder
         if (type === 'folder') {
-            const folderPath = path; // path ke folder yang diklik kanan
-            
-            // Opsi 1: Tambah File di dalam folder
-            contextMenu.appendChild(createMenuItem('Tambah File', 'fas fa-file-code', null, () => {
-                contextMenu.style.display = 'none';
-                db.ref("explorer" + folderPath + "/children").push({
-                    type: "file",
-                    name: "untitled.txt",
-                    content: ""
-                });
-                expandedFolders[folderPath] = true;
-            }));
-            
-            // Opsi 2: Tambah Folder di dalam folder
-            contextMenu.appendChild(createMenuItem('Tambah Sub-Folder', 'fas fa-folder-plus', null, () => {
-                contextMenu.style.display = 'none';
-                db.ref("explorer" + folderPath + "/children").push({
-                    type: "folder",
-                    name: "New Sub Folder",
-                    children: {}
-                });
-                expandedFolders[folderPath] = true;
-            }));
-            
-            contextMenu.appendChild(document.createElement('div')).className = 'context-separator';
+          const folderPath = path; // path ke folder yang diklik kanan
+
+          // Opsi 1: Tambah File di dalam folder
+          contextMenu.appendChild(createMenuItem('Tambah File', 'fas fa-file-code', null, () => {
+            contextMenu.style.display = 'none';
+            db.ref("explorer" + folderPath + "/children").push({
+              type: "file",
+              name: "untitled.txt",
+              content: ""
+            });
+            expandedFolders[folderPath] = true;
+          }));
+
+          // Opsi 2: Tambah Sub-Folder di dalam folder
+          contextMenu.appendChild(createMenuItem('Tambah Sub-Folder', 'fas fa-folder-plus', null, () => {
+            contextMenu.style.display = 'none';
+            db.ref("explorer" + folderPath + "/children").push({
+              type: "folder",
+              name: "New Sub Folder",
+              children: {}
+            });
+            expandedFolders[folderPath] = true;
+          }));
+
+          contextMenu.appendChild(document.createElement('div')).className = 'context-separator';
         }
 
 
         // Opsi Download
         const downloadText = type === 'folder' ? 'Download Semua File' : 'Download File';
         contextMenu.appendChild(createMenuItem(downloadText, 'fas fa-download', null, () => {
-            contextMenu.style.display = 'none';
-            if (type === 'file') {
-                const content = (currentFilePath === path) ? codeArea.value : null;
-                if (content !== null) {
-                    downloadFile(name, content);
-                } else {
-                    db.ref("explorer" + path).once("value").then(snap => {
-                        const data = snap.val();
-                        if (data && data.content) {
-                            downloadFile(data.name, data.content);
-                        } else {
-                            showToast("Gagal mengambil konten file untuk diunduh!");
-                        }
-                    });
-                }
+          contextMenu.style.display = 'none';
+          if (type === 'file') {
+            const content = (currentFilePath === path) ? codeArea.value : null;
+            if (content !== null) {
+              downloadFile(name, content);
             } else {
-                const pathParts = path.split('/');
-                const folderKey = pathParts[1];
-                const folderData = treeDataCache[folderKey];
-                if (folderData) {
-                    downloadFolderMassal(folderData, name);
+              db.ref("explorer" + path).once("value").then(snap => {
+                const data = snap.val();
+                if (data && data.content) {
+                  downloadFile(data.name, data.content);
                 } else {
-                    showToast("Gagal menemukan data folder di cache!");
+                  showToast("Gagal mengambil konten file untuk diunduh!");
                 }
+              });
             }
+          } else {
+            // Logika untuk mengambil data folder dari cache root
+            // Path folder terlihat seperti "/-M...key_folder"
+            const pathParts = path.split('/');
+            const folderKey = pathParts[pathParts.length - 1]; 
+            
+            // Coba cari di root cache jika pathParts.length == 2
+            let folderData = treeDataCache[folderKey];
+
+            // Jika bukan di root, cari di children (ini akan lebih kompleks jika bersarang dalam)
+            if (!folderData && pathParts.length > 2) {
+                // Untuk kesederhanaan, kita hanya mengunduh dari folder root atau yang terbuka
+                // Mengambil data dari Firebase lebih akurat untuk nested folder
+                db.ref("explorer" + path).once("value").then(snap => {
+                    const data = snap.val();
+                    if (data && data.children) {
+                        downloadFolderMassal(data, name);
+                    } else if (data) {
+                        // Folder kosong, tapi kita bisa menggunakan fungsi yang sama
+                        downloadFolderMassal(data, name);
+                    } else {
+                        showToast("Gagal mengambil data folder untuk diunduh!");
+                    }
+                });
+                return;
+            } else if (folderData) {
+              downloadFolderMassal(folderData, name);
+            } else {
+              showToast("Gagal menemukan data folder di cache!");
+            }
+          }
         }));
 
         // Opsi Rename
         contextMenu.appendChild(createMenuItem('Ubah Nama', 'fas fa-pen', null, () => {
-            contextMenu.style.display = 'none';
-            startRename(nameEl, path, type);
+          contextMenu.style.display = 'none';
+          startRename(nameEl, path, type);
         }));
 
         // Opsi Delete
         contextMenu.appendChild(createMenuItem('Hapus', 'fas fa-trash-alt', 'delete-action', () => {
-            contextMenu.style.display = 'none';
-            showPopup(`Yakin ingin menghapus ${type === 'folder' ? 'folder' : 'file'} "${name}"?`, () => {
-                db.ref("explorer" + path).remove();
-                if (currentFilePath === path) {
-                    clearEditor();
-                }
-            });
+          contextMenu.style.display = 'none';
+          showPopup(`Yakin ingin menghapus ${type === 'folder' ? 'folder' : 'file'} "${name}"?`, () => {
+            db.ref("explorer" + path).remove();
+            if (currentFilePath === path) {
+              clearEditor();
+            }
+          });
         }));
-        
+
       } else if (e.target === treeEl || e.target === sidebarEl) {
         // --- KLIK KANAN PADA AREA KOSONG (ROOT) ---
-        
+
         // Opsi 1: Tambah File di Root
         contextMenu.appendChild(createMenuItem('Tambah File (Root)', 'fas fa-file-medical', null, () => {
-            contextMenu.style.display = 'none';
-            db.ref("explorer").push({
-                type: "file",
-                name: "new_file.txt",
-                content: ""
-            });
+          contextMenu.style.display = 'none';
+          db.ref("explorer").push({
+            type: "file",
+            name: "new_file.txt",
+            content: ""
+          });
         }));
-        
+
         // Opsi 2: Tambah Folder di Root
         contextMenu.appendChild(createMenuItem('Tambah Folder (Root)', 'fas fa-folder-plus', null, () => {
-            contextMenu.style.display = 'none';
-            db.ref("explorer").push({
-                type: "folder",
-                name: "New Folder",
-                children: {}
-            });
+          contextMenu.style.display = 'none';
+          db.ref("explorer").push({
+            type: "folder",
+            name: "New Folder",
+            children: {}
+          });
         }));
 
       } else {
-          contextMenu.style.display = 'none';
-          return;
+        contextMenu.style.display = 'none';
+        return;
       }
 
       // Tampilkan menu dan sesuaikan posisi
