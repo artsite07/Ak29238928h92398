@@ -54,28 +54,11 @@
       -webkit-text-fill-color: transparent;
     }
 
-    h2.category-title {
-      font-size: 1.4rem;
-      font-weight: 600;
-      color: var(--text-color);
-      margin-top: 25px;
-      margin-bottom: 15px;
-      padding-bottom: 5px;
-      border-bottom: 1px dashed var(--muted-text);
-    }
-
-    .form-input-group {
-      border: 1px solid var(--border-color);
-      padding: 20px;
-      margin-bottom: 30px;
-      border-radius: 10px;
-    }
-
     .form-input {
       display: grid;
       grid-template-columns: 1fr 2fr auto;
       gap: 12px;
-      margin-top: 15px;
+      margin-bottom: 30px;
     }
 
     .form-input input {
@@ -121,7 +104,6 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
-      margin-top: 0;
     }
 
     .nav-item {
@@ -318,39 +300,21 @@
 
 <body>
   <div class="container">
-    <h1>Kelola Navigasi</h1>
-    <p style="color:var(--muted-text); margin-bottom:25px;">Drag & Drop item untuk mengurutkannya. Urutan akan tersimpan otomatis.</p>
+    <h1>Kelola Navigasi Utama</h1>
+    <p style="color:var(--muted-text); margin-bottom:25px;">Drag & Drop item di bawah ini untuk mengurutkannya. Urutan akan tersimpan otomatis.</p>
 
-    <h2 class="category-title">Navigasi Utama</h2>
-    <div class="form-input-group">
-        <p style="color:var(--muted-text); margin-bottom: 0;">Tambah Menu Navigasi Utama</p>
-        <div class="form-input">
-            <input type="text" id="navNameUtama" placeholder="Nama Menu (misal: Beranda)" />
-            <input type="text" id="navLinkUtama" placeholder="Link (misal: beranda.html)" />
-            <button onclick="addNav('utama')">Tambah</button>
-        </div>
+    <div class="form-input">
+      <input type="text" id="navName" placeholder="Nama Menu (misal: Beranda)" />
+      <input type="text" id="navLink" placeholder="Link (misal: beranda.html)" />
+      <button onclick="addNav()">Tambah</button>
     </div>
-    <ul class="nav-list" id="navListUtama">
+
+    <ul class="nav-list" id="navList">
       <li style="opacity:.6; color: var(--muted-text); text-align:center;">Memuat daftar navigasi...</li>
     </ul>
-
-    <hr style="border: 0; height: 1px; background: var(--border-color); margin: 30px 0;" />
-
-    <h2 class="category-title">Navigasi Sekunder</h2>
-    <div class="form-input-group">
-        <p style="color:var(--muted-text); margin-bottom: 0;">Tambah Menu Navigasi Sekunder</p>
-        <div class="form-input">
-            <input type="text" id="navNameSekunder" placeholder="Nama Menu (misal: Kontak)" />
-            <input type="text" id="navLinkSekunder" placeholder="Link (misal: kontak.html)" />
-            <button onclick="addNav('sekunder')">Tambah</button>
-        </div>
-    </div>
-    <ul class="nav-list" id="navListSekunder">
-      <li style="opacity:.6; color: var(--muted-text); text-align:center;">Memuat daftar navigasi sekunder...</li>
-    </ul>
-
   </div>
 
+  <!-- Popup Delete -->
   <div class="popup-overlay" id="deleteOverlay">
     <div class="popup">
       <h3>Konfirmasi Hapus</h3>
@@ -378,96 +342,70 @@
     if (typeof firebase !== 'undefined' && !firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database ? firebase.database() : null;
 
-    // Definisikan referensi untuk kedua kategori
-    const refs = {
-      utama: {
-        name: 'Navigasi Utama',
-        ref: db ? db.ref("navigation") : null,
-        listEl: document.getElementById("navListUtama"),
-        nameInput: document.getElementById("navNameUtama"),
-        linkInput: document.getElementById("navLinkUtama"),
-      },
-      sekunder: {
-        name: 'Navigasi Sekunder',
-        ref: db ? db.ref("secondaryNavigation") : null, // LOKASI BARU DI FIREBASE
-        listEl: document.getElementById("navListSekunder"),
-        nameInput: document.getElementById("navNameSekunder"),
-        linkInput: document.getElementById("navLinkSekunder"),
-      }
-    };
-
-    let isReordering = {
-      utama: false,
-      sekunder: false
-    };
-
-    let deleteId = null;
-    let deleteCategory = null;
+    const nameInput = document.getElementById("navName");
+    const linkInput = document.getElementById("navLink");
+    const listEl = document.getElementById("navList");
+    const navRef = db ? db.ref("navigation") : null;
+    let isReordering = false;
 
     function escapeHTML(s) {
       return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
     }
 
-    // --- CRUD Reusable Functions ---
-
-    // Tambah Navigasi
-    function addNav(category) {
-      const data = refs[category];
-      if (!data.ref) return;
-
-      const name = data.nameInput.value.trim();
-      const link = data.linkInput.value.trim();
+    // --- CRUD ---
+    function addNav() {
+      if (!navRef) return;
+      const name = nameInput.value.trim();
+      const link = linkInput.value.trim();
       if (!name || !link) {
-        alert(`Nama dan Link wajib diisi untuk ${data.name}.`);
+        alert('Nama dan Link wajib diisi.');
         return;
       }
 
-      data.ref.limitToLast(1).once('value', snapshot => {
+      navRef.limitToLast(1).once('value', snapshot => {
         let nextOrder = 1;
         snapshot.forEach(child => {
           if (child.val().order) nextOrder = child.val().order + 1;
         });
-
-        data.ref.push({
+        navRef.push({
           name,
           link,
           order: nextOrder
         }).then(() => {
-          data.nameInput.value = "";
-          data.linkInput.value = "";
+          nameInput.value = "";
+          linkInput.value = "";
         }).catch(console.error);
       }, console.error);
     }
 
-    // Hapus Navigasi
-    function delNav(id, category) {
-      const item = document.getElementById(`nav-item-${category}-${id}`);
-      const name = item.querySelector('.name').textContent;
+    let deleteId = null;
 
+    function askDelete(id, name) {
       deleteId = id;
-      deleteCategory = category;
-      document.getElementById('deleteMessage').innerHTML = `Yakin ingin menghapus item <strong>${name}</strong> dari <strong>${refs[category].name}</strong>?`;
+      document.getElementById('deleteMessage').innerHTML = `Yakin ingin menghapus: <strong>${name}</strong>?`;
       document.getElementById('deleteOverlay').style.display = 'flex';
     }
 
     document.getElementById('confirmDelete').onclick = () => {
-      if (!deleteId || !deleteCategory) return;
-      refs[deleteCategory].ref.child(deleteId).remove().catch(console.error);
+      if (!deleteId) return;
+      navRef.child(deleteId).remove().catch(console.error);
       document.getElementById('deleteOverlay').style.display = 'none';
       deleteId = null;
-      deleteCategory = null;
     }
 
     document.getElementById('cancelDelete').onclick = () => {
       document.getElementById('deleteOverlay').style.display = 'none';
       deleteId = null;
-      deleteCategory = null;
     }
 
-    // Simpan Edit
-    function saveEdit(id, category) {
-      const data = refs[category];
-      const item = document.getElementById(`nav-item-${category}-${id}`);
+    function delNav(id) {
+      const item = document.getElementById('nav-item-' + id);
+      const name = item.querySelector('.name').textContent;
+      askDelete(id, name);
+    }
+
+    function saveEdit(id) {
+      const item = document.getElementById('nav-item-' + id);
       if (!item) return;
       const newName = item.querySelector('.name-input').value.trim();
       const newLink = item.querySelector('.link-input').value.trim();
@@ -475,8 +413,7 @@
         alert('Nama dan Link wajib diisi.');
         return;
       }
-
-      data.ref.child(id).update({
+      navRef.child(id).update({
         name: newName,
         link: newLink
       }).then(() => {
@@ -487,65 +424,74 @@
       }).catch(console.error);
     }
 
-    // Toggle Edit Mode
-    function handleEditClick(id, category, button) {
-      const item = document.getElementById(`nav-item-${category}-${id}`);
+    function toggleEdit(id) {
+      const item = document.getElementById('nav-item-' + id);
       if (!item) return;
-
-      if (!item.classList.contains('edit-mode')) {
+      const isEditing = item.classList.contains('edit-mode');
+      if (isEditing) item.classList.remove('edit-mode');
+      else {
         const currentName = item.querySelector('.nav-info .name').textContent;
-        const currentLink = item.querySelector('.nav-info .link').textContent.split(' (Order:')[0];
+        const currentLink = item.querySelector('.nav-info .link').textContent;
         item.querySelector('.name-input').value = currentName;
         item.querySelector('.link-input').value = currentLink;
         item.classList.add('edit-mode');
-
-        button.textContent = 'Simpan';
-        button.style.backgroundColor = 'var(--cyan-start)';
-      } else {
-        saveEdit(id, category);
       }
     }
 
-    // Update Order (Sortable onEnd)
-    function updateOrder(sortableList) {
-      const category = sortableList.id === 'navListUtama' ? 'utama' : 'sekunder';
-      const data = refs[category];
-      if (!data.ref) return;
+    function handleEditClick(id, button) {
+      const item = document.getElementById('nav-item-' + id);
+      if (!item.classList.contains('edit-mode')) {
+        toggleEdit(id);
+        button.textContent = 'Simpan';
+        button.style.backgroundColor = 'var(--cyan-start)';
+      } else saveEdit(id);
+    }
 
-      isReordering[category] = true;
+    function updateOrder(sortableList) {
+      if (!navRef) return;
+      isReordering = true;
       const updates = {};
       Array.from(sortableList.children).forEach((li, index) => {
         const id = li.dataset.id;
         updates[id + '/order'] = index + 1;
       });
-
-      data.ref.update(updates).then(() => {
-        setTimeout(() => isReordering[category] = false, 500);
+      navRef.update(updates).then(() => {
+        setTimeout(() => isReordering = false, 500);
       }).catch(() => {
-        isReordering[category] = false;
+        isReordering = false;
       });
     }
 
-    // Render Item (Reusable)
-    function renderNav(snap, category) {
-      const data = refs[category];
-      if (isReordering[category]) return;
-
-      data.listEl.innerHTML = "";
-      if (!snap.exists()) {
-        data.listEl.innerHTML = `<li style='opacity:.6; color: var(--muted-text); text-align: center; padding:15px;'>Tidak ada menu ${data.name} yang tersimpan.</li>`;
-        return;
+    window.onload = () => {
+      if (typeof Sortable !== 'undefined') {
+        Sortable.create(listEl, {
+          animation: 150,
+          handle: '.nav-item',
+          onEnd: evt => updateOrder(evt.from)
+        });
       }
 
-      snap.forEach(child => {
-        const id = child.key;
-        const d = child.val();
-        const orderDisplay = d.order === undefined ? '?' : d.order;
-        const li = document.createElement("li");
-        li.className = "nav-item";
-        li.id = `nav-item-${category}-${id}`; // ID unik per kategori
-        li.dataset.id = id;
-        li.innerHTML = `
+      linkInput.addEventListener("keypress", e => {
+        if (e.key === "Enter") addNav();
+      });
+
+      if (navRef) {
+        navRef.orderByChild('order').on("value", snap => {
+          if (isReordering) return;
+          listEl.innerHTML = "";
+          if (!snap.exists()) {
+            listEl.innerHTML = "<li style='opacity:.6; color: var(--muted-text); text-align: center; padding:15px;'>Tidak ada menu navigasi yang tersimpan.</li>";
+            return;
+          }
+          snap.forEach(child => {
+            const id = child.key;
+            const d = child.val();
+            const orderDisplay = d.order === undefined ? '?' : d.order;
+            const li = document.createElement("li");
+            li.className = "nav-item";
+            li.id = 'nav-item-' + id;
+            li.dataset.id = id;
+            li.innerHTML = `
             <div class="nav-info">
               <div class="name">${escapeHTML(d.name||'Nama Kosong')}</div>
               <div class="link">${escapeHTML(d.link||'#')} (Order: ${orderDisplay})</div>
@@ -555,73 +501,34 @@
               <input type="text" class="link-input" placeholder="Link" />
             </div>
             <div class="nav-actions">
-              <button class="edit" onclick="handleEditClick('${id}', '${category}', this)">Edit</button>
-              <button class="del" onclick="delNav('${id}', '${category}')">Hapus</button>
+              <button class="edit" onclick="handleEditClick('${id}', this)">Edit</button>
+              <button class="del" onclick="delNav('${id}')">Hapus</button>
             </div>`;
-        data.listEl.appendChild(li);
-      });
-    }
-
-    // --- Inisialisasi ---
-    window.onload = () => {
-      if (typeof Sortable !== 'undefined') {
-        // Sortable untuk Navigasi Utama
-        Sortable.create(refs.utama.listEl, {
-          animation: 150,
-          handle: '.nav-item',
-          onEnd: evt => updateOrder(evt.from)
-        });
-
-        // Sortable untuk Navigasi Sekunder
-        Sortable.create(refs.sekunder.listEl, {
-          animation: 150,
-          handle: '.nav-item',
-          onEnd: evt => updateOrder(evt.from)
-        });
-      }
-
-      // Listener untuk Firebase Navigasi Utama
-      if (refs.utama.ref) {
-        refs.utama.ref.orderByChild('order').on("value", snap => renderNav(snap, 'utama'));
-        refs.utama.linkInput.addEventListener("keypress", e => {
-            if (e.key === "Enter") addNav('utama');
-        });
-      }
-
-      // Listener untuk Firebase Navigasi Sekunder
-      if (refs.sekunder.ref) {
-        refs.sekunder.ref.orderByChild('order').on("value", snap => renderNav(snap, 'sekunder'));
-        refs.sekunder.linkInput.addEventListener("keypress", e => {
-            if (e.key === "Enter") addNav('sekunder');
+            listEl.appendChild(li);
+          });
         });
       }
     };
-    
-    // Global Key Handlers
+
     document.addEventListener('keydown', e => {
-        // Handle Popup Delete
-        const overlayVisible = document.getElementById('deleteOverlay').style.display === 'flex';
-        if (overlayVisible) {
-            if (e.key === 'Escape') document.getElementById('cancelDelete').click();
-            if (e.key === 'Enter') document.getElementById('confirmDelete').click();
+      const overlayVisible = document.getElementById('deleteOverlay').style.display === 'flex';
+      if (overlayVisible) {
+        if (e.key === 'Escape') document.getElementById('cancelDelete').click();
+        if (e.key === 'Enter') document.getElementById('confirmDelete').click();
+      }
+      const editingItem = document.querySelector('.nav-item.edit-mode');
+      if (editingItem) {
+        if (e.key === 'Escape') {
+          editingItem.classList.remove('edit-mode');
+          const btn = editingItem.querySelector('.edit');
+          btn.textContent = 'Edit';
+          btn.style.backgroundColor = 'var(--green-soft)';
         }
-
-        // Handle Edit Mode
-        const editingItem = document.querySelector('.nav-item.edit-mode');
-        if (editingItem) {
-            const id = editingItem.getAttribute('data-id');
-            const category = editingItem.closest('#navListUtama') ? 'utama' : 'sekunder';
-
-            if (e.key === 'Escape') {
-                editingItem.classList.remove('edit-mode');
-                const btn = editingItem.querySelector('.edit');
-                btn.textContent = 'Edit';
-                btn.style.backgroundColor = 'var(--green-soft)';
-            }
-            if (e.key === 'Enter') {
-                saveEdit(id, category);
-            }
+        if (e.key === 'Enter') {
+          const id = editingItem.getAttribute('data-id');
+          saveEdit(id);
         }
+      }
     });
   </script>
 </body>
