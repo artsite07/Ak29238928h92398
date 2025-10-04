@@ -23,9 +23,9 @@
       --bg-secondary: #252526;
       /* Sidebar/Header */
       --editor-bg: #2d2d2d;
-      /* NEW: Editor Background -> Darker for Code */
-      --editor-text: #f0f0f0;
-      /* NEW: Editor Text -> Light Gray */
+      /* NEW: Editor Background -> Dark Gray */
+      --editor-text: #FF8C00;
+      /* NEW: Editor Text -> Bright Orange */
       --text-primary: #ffffff;
       /* Main Text Sidebar */
       --text-secondary: #cccccc;
@@ -42,7 +42,7 @@
       /* Green for success/download */
       --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       --font-code: "Roboto Mono", "Consolas", "Monaco", monospace;
-      /* Font baru untuk kode */
+      /* Font monospace untuk editor */
       --radius: 6px;
     }
 
@@ -150,12 +150,13 @@
       border: none;
 
       font-family: var(--font-code);
-      /* FONT MONOSPACE UNTUK KODE */
+      /* Font monospace untuk kode */
       font-size: 14px;
-      /* Ukuran font lebih kecil untuk kode */
       line-height: 1.5;
       background: var(--editor-bg);
+      /* Background Gelap */
       color: var(--editor-text);
+      /* Teks Oranye */
 
       padding: 20px;
       /* Padding lebih kecil */
@@ -303,10 +304,6 @@
       border-color: var(--accent-color);
     }
 
-    .download-menu {
-      position: relative;
-    }
-
     .download-btn {
       background: rgba(0, 170, 170, 0.1);
       color: var(--accent-color);
@@ -315,45 +312,6 @@
     .download-btn:hover:not(:disabled) {
       background: rgba(0, 170, 170, 0.2);
       border-color: var(--accent-color);
-    }
-
-    .download-dropdown {
-      position: absolute;
-      top: 100%;
-      right: 0;
-      margin-top: 5px;
-      background: var(--bg-secondary);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-      z-index: 100;
-      display: none;
-      padding: 5px 0;
-      min-width: 180px;
-    }
-
-    .download-dropdown button {
-      width: 100%;
-      text-align: left;
-      padding: 8px 15px;
-      border: none;
-      background: transparent;
-      color: var(--text-primary);
-      cursor: pointer;
-      transition: background 0.2s;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .download-dropdown button:hover {
-      background: var(--hover-bg);
-      color: var(--accent-color);
-    }
-
-    .download-dropdown button i {
-      width: 16px;
     }
 
     .save-btn:disabled,
@@ -619,18 +577,9 @@
 
         <div class="filename" id="fileName"><i class="fas fa-info-circle"></i> Pilih file untuk mulai mengedit</div>
         <div class="header-actions">
-          <div class="download-menu" id="downloadMenu">
-            <button class="action-btn download-btn" id="downloadBtn" type="button" disabled title="Download">
-              <i class="fas fa-download"></i>
-            </button>
-            <div class="download-dropdown" id="downloadDropdown">
-              <button type="button" data-format="html"><i class="fas fa-file-code" style="color:#E34C26;"></i> Kode HTML (.html)</button>
-              <button type="button" data-format="css"><i class="fab fa-css3-alt" style="color:#1572B6;"></i> Kode CSS (.css)</button>
-              <button type="button" data-format="js"><i class="fab fa-js-square" style="color:#F7DF1E;"></i> Kode JS (.js)</button>
-              <button type="button" data-format="json"><i class="fas fa-file-code" style="color:#D8BFD8;"></i> Kode JSON (.json)</button>
-              <button type="button" data-format="txt"><i class="fas fa-file-alt"></i> Teks Biasa (.txt)</button>
-            </div>
-          </div>
+          <button class="action-btn download-btn" id="downloadBtn" type="button" disabled title="Download">
+            <i class="fas fa-download"></i>
+          </button>
           <button class="action-btn save-btn" id="saveBtn" type="button" disabled title="Simpan"><i class="fas fa-save"></i></button>
         </div>
       </div>
@@ -680,7 +629,6 @@
     const fileNameEl = document.getElementById("fileName");
     const saveBtn = document.getElementById("saveBtn");
     const downloadBtn = document.getElementById("downloadBtn");
-    const downloadDropdown = document.getElementById("downloadDropdown");
     const toast = document.getElementById("toast");
     const popupOverlay = document.getElementById("popupOverlay");
     const popupMsg = document.getElementById("popupMsg");
@@ -700,6 +648,40 @@
     const expandedFolders = {};
     let renamingElement = null;
     let treeDataCache = {};
+
+
+    // --- LOGIKA EDITOR TAMBAHAN (Pencegahan Paste Format) ---
+    codeArea.addEventListener('paste', function(e) {
+        // Hentikan perilaku paste default
+        e.preventDefault(); 
+        
+        // Ambil teks murni dari clipboard
+        const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+        
+        // --- LOGIKA PENYISIPAN BARU YANG LEBIH CEPAT ---
+        const selection = window.getSelection();
+        if (!selection.rangeCount) return;
+
+        // Dapatkan range kursor saat ini
+        const range = selection.getRangeAt(0);
+        
+        // Hapus konten yang terseleksi (jika ada)
+        range.deleteContents();
+        
+        // Buat Text Node baru dan sisipkan
+        const textNode = document.createTextNode(text);
+        range.insertNode(textNode);
+        
+        // Pindahkan kursor ke akhir teks yang baru disisipkan
+        range.setStartAfter(textNode);
+        range.setEndAfter(textNode);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        // --- AKHIR LOGIKA PENYISIPAN BARU ---
+        
+        showToast("Hanya teks murni yang diperbolehkan (Format telah dihapus).");
+    });
+    // --- AKHIR LOGIKA EDITOR TAMBAHAN ---
 
 
     // --- LOGIKA MOBILE ---
@@ -726,30 +708,6 @@
         saveFile();
       }
     });
-
-    // Toggle dropdown download
-    downloadBtn.onclick = (e) => {
-      if (downloadBtn.disabled) return;
-      e.stopPropagation();
-      downloadDropdown.style.display = downloadDropdown.style.display === 'block' ? 'none' : 'block';
-    };
-
-    // Close dropdown saat klik di luar
-    document.addEventListener('click', () => {
-      downloadDropdown.style.display = 'none';
-      contextMenu.style.display = 'none';
-    });
-
-    // Delegasikan klik item dropdown Header (Mempertahankan fungsionalitas unduh format fleksibel)
-    downloadDropdown.querySelectorAll('button').forEach(btn => {
-      btn.onclick = (e) => {
-        e.stopPropagation();
-        const format = btn.getAttribute('data-format');
-        downloadFile(currentFileName, format); // <-- Ini memaksa format
-        downloadDropdown.style.display = 'none';
-      };
-    });
-
 
     // Ikon Helper
     function getFileIcon(filename) {
@@ -1014,23 +972,23 @@
       }
     }
 
-    // Digunakan oleh HEADER Dropdown: Memaksa unduhan menjadi format tertentu
-    function downloadFile(name, format, content = codeArea.textContent) {
-      if (!name) return;
+    // LOGIKA TOMBOL DOWNLOAD HEADER: Selalu download dengan nama asli dan konten terbaru dari editor
+    downloadBtn.onclick = () => {
+        if (!currentFilePath || downloadBtn.disabled) return;
+        
+        const name = currentFileName; 
+        const content = codeArea.textContent;
+        
+        const extensionMatch = name.match(/\.([a-z0-9]+)$/i);
+        const extension = extensionMatch ? extensionMatch[1] : 'txt';
+        const mimeType = getMimeType(extension);
 
-      // Hapus ekstensi yang ada
-      const baseName = name.replace(/\.(html|js|css|json|txt|md)$/i, '');
-      const extension = '.' + format;
-      const mimeType = getMimeType(format); // Gunakan format yang DIPILIH untuk MIME type
-      const filename = baseName + extension;
-
-      triggerDownload(content, filename, mimeType);
-      showToast(`File "${baseName + extension}" berhasil diunduh.`);
-    }
-
+        triggerDownload(content, name, mimeType);
+        showToast(`File "${name}" berhasil diunduh.`);
+    };
+    
     /**
      * Digunakan oleh Context Menu Folder: Unduh semua file di level folder ini.
-     * Fungsi ini diasumsikan dipanggil setelah memastikan TIDAK ADA sub-folder.
      */
     function downloadFolderMassal(folderData, folderName) {
       showToast(`Mulai mengunduh file dari folder "${folderName}" secara massal...`, 3000);
@@ -1270,6 +1228,12 @@
       contextMenu.style.top = y + 'px';
       contextMenu.style.opacity = '1';
     });
+
+    // Close context menu saat klik di luar
+    document.addEventListener('click', () => {
+      contextMenu.style.display = 'none';
+    });
+
 
     // --- LOGIKA SAVE & FIREBASE ---
 
