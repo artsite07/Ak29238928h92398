@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Shortcut URL Realtime</title>
+    
+    <script type="module">
+        // Import modul Firebase yang diperlukan: App dan Realtime Database.
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getDatabase, ref, onValue, push, remove } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+        
+        // --- Konfigurasi Firebase Anda ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCba6M_spBXvuG91Zn-XWJ4bSTX6vNcST0",
+            authDomain: "index-68220.firebaseapp.com",
+            databaseURL: "https://index-68220-default-rtdb.firebaseio.com",
+            projectId: "index-68220",
+            storageBucket: "index-68220.firebasestorage.app",
+            messagingSenderId: "633087068802",
+            appId: "1:633087068802:web:f8aa1f2ef9c00b99d1429b",
+            measurementId: "G-2VQCRFJQCM"
+        };
+        
+        // ID statis yang aman untuk jalur RTDB
+        const SAFE_APP_ID = 'user-shortcuts'; 
+        
+        // Inisialisasi Firebase App dan Realtime Database
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        
+        // Path ke daftar shortcut di Realtime Database
+        const shortcutRef = ref(db, 'artifacts/' + SAFE_APP_ID + '/shortcuts/list');
+
+        let shortcutsData = {};
+        
+        // Fungsi untuk memulai listener Realtime Database (Real-time update)
+        function startRealtimeListener() {
+            onValue(shortcutRef, (snapshot) => {
+                const data = snapshot.val();
+                shortcutsData = data || {};
+                renderShortcuts();
+            }, (error) => {
+                console.error("Error membaca data RTDB:", error);
+                document.getElementById('shortcut-container').innerHTML = 
+                    '<p style="color:red; font-weight:bold;">Gagal terhubung ke Firebase. Pastikan rules database Anda mengizinkan akses tanpa autentikasi.</p>';
+            });
+        }
+        
+        // Fungsi untuk merender daftar shortcut dari data Realtime Database
+        function renderShortcuts() {
+            const grid = document.getElementById('app-grid');
+            grid.innerHTML = ''; 
+            const adminGrid = document.getElementById('admin-list-container');
+            adminGrid.innerHTML = ''; 
+
+            const sortedKeys = Object.keys(shortcutsData).sort((a, b) => {
+                const nameA = shortcutsData[a].name.toLowerCase();
+                const nameB = shortcutsData[b].name.toLowerCase();
+                return nameA < nameB ? -1 : (nameA > nameB ? 1 : 0);
+            });
+
+            if (sortedKeys.length === 0) {
+                grid.innerHTML = '<p class="text-info">Belum ada shortcut. Buka Mode Admin untuk menambahkan.</p>';
+                adminGrid.innerHTML = '<p class="text-info">Belum ada shortcut.</p>';
+                return;
+            }
+
+            sortedKeys.forEach(key => {
+                const item = shortcutsData[key];
+                const initial = item.name.charAt(0).toUpperCase(); 
+
+                // 1. Render item di tampilan utama (Grid Aplikasi)
+                const appItem = document.createElement('a');
+                appItem.href = '#';
+                appItem.className = 'app-item';
+                appItem.onclick = (e) => {
+                    e.preventDefault();
+                    loadContent(item.url);
+                };
+                appItem.innerHTML = `
+                    <div class="app-icon-initial">${initial}</div>
+                    <span>${item.name}</span>
+                `;
+                grid.appendChild(appItem);
+
+                // 2. Render item di tampilan Admin
+                const adminItem = document.createElement('div');
+                adminItem.className = 'admin-list-item';
+                adminItem.innerHTML = `
+                    <span class="admin-item-name">${item.name}</span>
+                    <span class="admin-item-url">${item.url.substring(0, 40)}...</span>
+                    <button class="delete-button" data-key="${key}">Hapus</button>
+                `;
+                adminGrid.appendChild(adminItem);
+            });
+
+            // Tambahkan event listener untuk tombol hapus
+            document.querySelectorAll('.delete-button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const key = e.target.getAttribute('data-key');
+                    deleteShortcut(key);
+                });
+            });
+        }
+
+        // --- CRUD Operations ---
+
+        // Tambah Shortcut ke RTDB
+        window.addShortcut = () => {
+            const nameInput = document.getElementById('shortcut-name');
+            const urlInput = document.getElementById('shortcut-url');
+            const name = nameInput.value.trim();
+            let url = urlInput.value.trim();
+
+            if (!name || !url) {
+                console.warn('Nama dan URL tidak boleh kosong!');
+                return;
+            }
+            
+            // Tambahkan http/https jika hilang
+            if (!url.match(/^[a-zA-Z]+:\/\//)) {
+                url = 'http://' + url;
+            }
+
+            const newShortcut = { name, url, created: Date.now() };
+            
+            push(shortcutRef, newShortcut)
+                .then(() => {
+                    nameInput.value = '';
+                    urlInput.value = '';
+                })
+                .catch(error => {
+                    console.error("Gagal menambahkan shortcut:", error);
+                    console.error('Gagal menambahkan shortcut. (Kemungkinan error rules database)');
+                });
+        };
+
+        // Hapus Shortcut dari RTDB
+        function deleteShortcut(key) {
+            // Mengganti window.confirm dengan console.log/custom modal
+            if (confirm(`Apakah Anda yakin ingin menghapus shortcut "${shortcutsData[key]?.name}"?`)) { 
+                const itemRef = ref(db, 'artifacts/' + SAFE_APP_ID + '/shortcuts/list/' + key);
+                remove(itemRef)
+                    .catch(error => {
+                        console.error("Gagal menghapus shortcut:", error);
+                        console.error('Gagal menghapus shortcut. (Kemungkinan error rules database)');
+                    });
+            }
+        }
+
+        // --- Iframe Navigation Logic ---
+
+        window.loadContent = (url) => {
+            const iframeWrapper = document.getElementById('iframe-wrapper');
+            const contentFrame = document.getElementById('content-frame');
+            const shortcutContainer = document.getElementById('shortcut-container');
+            const toggleButton = document.getElementById('toggle-admin-button'); // Ambil tombol admin
+
+            contentFrame.src = url;
+            shortcutContainer.style.display = 'none'; 
+            iframeWrapper.style.display = 'block'; 
+            toggleButton.style.display = 'none'; // Sembunyikan tombol admin saat iframe muncul
+        };
+
+        window.goBackToShortcuts = () => {
+            const iframeWrapper = document.getElementById('iframe-wrapper');
+            const contentFrame = document.getElementById('content-frame');
+            const shortcutContainer = document.getElementById('shortcut-container');
+            const toggleButton = document.getElementById('toggle-admin-button'); // Ambil tombol admin
+
+            iframeWrapper.style.display = 'none';    
+            shortcutContainer.style.display = 'flex'; 
+            contentFrame.src = 'about:blank'; // Bersihkan iframe
+            toggleButton.style.display = 'block'; // Tampilkan tombol admin saat kembali ke daftar
+        };
+
+        // --- Admin Mode Toggle ---
+        window.toggleAdmin = () => {
+            const adminArea = document.getElementById('admin-management');
+            const toggleButton = document.getElementById('toggle-admin-button');
+            const isHidden = adminArea.style.display === 'none' || adminArea.style.display === '';
+            
+            adminArea.style.display = isHidden ? 'block' : 'none';
+            toggleButton.textContent = isHidden ? 'Sembunyikan Admin' : 'Mode Admin';
+        };
+
+        // Mulai listener Realtime Database langsung
+        startRealtimeListener();
+
+    </script>
+    
+    <style>
+        /* Variabel Warna Dark Cyan/Slate */
+        :root {
+            --color-bg-primary: #0f172a; /* Slate 900 */
+            --color-bg-secondary: #1e293b; /* Slate 800 */
+            --color-text-primary: #e2e8f0; /* Slate 200 */
+            --color-accent-cyan: #06b6d4; /* Cyan 500 */
+            --color-accent-dark: #0891b2; /* Cyan 600 */
+        }
+
+        /* Reset dan Full Screen (Dark Theme) */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; 
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-bg-primary);
+            color: var(--color-text-primary);
+        }
+
+        /* Container Daftar Aplikasi (Tampilan Penuh) */
+        #shortcut-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+            text-align: center;
+            /* Gradient gelap */
+            background: linear-gradient(135deg, var(--color-bg-primary) 0%, #0c121e 100%);
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .text-info {
+            color: #94a3b8; /* Slate 400 */
+            font-size: 1.1em;
+            margin-top: 20px;
+        }
+
+        /* Tombol Admin Toggle (Cyan Dark) */
+        #toggle-admin-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            background-color: var(--color-accent-dark);
+            color: var(--color-bg-primary);
+            border: none;
+            border-radius: 8px; /* Lebih rounded */
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(6, 182, 212, 0.4);
+            font-weight: 600;
+            z-index: 50;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        #toggle-admin-button:hover {
+            background-color: var(--color-accent-cyan);
+            transform: translateY(-2px);
+        }
+        
+        /* Area Manajemen Admin (Dark Component) */
+        #admin-management {
+            background-color: var(--color-bg-secondary);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+            max-width: 600px;
+            width: 100%;
+            margin-top: 30px;
+            display: none; 
+            text-align: left;
+            border: 1px solid #334155; /* Garis tipis */
+        }
+
+        #admin-management h2, #admin-management h3 {
+            color: var(--color-accent-cyan);
+            margin-top: 0;
+        }
+
+        #admin-management input {
+            background-color: #334155; /* Input lebih gelap */
+            color: var(--color-text-primary);
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 6px;
+            border: 1px solid #475569;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        #admin-management button.add-button {
+            background-color: #10b981; /* Hijau yang lebih cerah untuk Tambah */
+            color: var(--color-bg-primary);
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background-color 0.2s;
+        }
+        #admin-management button.add-button:hover {
+            background-color: #059669;
+        }
+
+        /* Daftar Admin Item Styling */
+        .admin-list-container {
+            max-height: 250px;
+            overflow-y: auto;
+            border-top: 1px solid #475569;
+            margin-top: 15px;
+            padding-top: 10px;
+        }
+        .admin-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #334155;
+        }
+        
+        .admin-item-name {
+            font-weight: 600;
+            flex: 1;
+            color: var(--color-text-primary);
+        }
+        .admin-item-url {
+            flex: 2;
+            color: #94a3b8;
+            font-size: 0.9em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding-right: 10px;
+        }
+        .delete-button {
+            width: auto !important;
+            padding: 6px 12px !important;
+            background-color: #ef4444; /* Merah yang lebih cerah */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85em;
+            margin-left: 10px;
+            flex-shrink: 0;
+        }
+
+        /* --- Gaya Grid Aplikasi --- */
+        .app-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); 
+            gap: 35px;
+            max-width: 850px;
+            width: 100%;
+            justify-items: center;
+            margin-bottom: 40px; 
+        }
+
+        .app-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: var(--color-text-primary);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            padding: 20px;
+            border-radius: 18px;
+            background-color: var(--color-bg-secondary);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            width: 120px; 
+            border: 1px solid #334155;
+        }
+
+        .app-item:hover {
+            transform: translateY(-8px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(6, 182, 212, 0.2);
+        }
+
+        .app-icon-initial {
+            width: 65px;
+            height: 65px;
+            background-color: var(--color-accent-cyan); 
+            color: var(--color-bg-primary);
+            border-radius: 15px; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.8em; 
+            font-weight: bold;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+        }
+        
+        /* Variasi warna ikon */
+        .app-item:nth-child(2n) .app-icon-initial { background-color: #8b5cf6; } /* Violet */
+        .app-item:nth-child(3n) .app-icon-initial { background-color: #f97316; } /* Orange */
+        .app-item:nth-child(4n) .app-icon-initial { background-color: #ec4899; } /* Pink */
+        .app-item:nth-child(5n) .app-icon-initial { background-color: #3b82f6; } /* Blue */
+
+        .app-item span {
+            font-size: 1.1em;
+            font-weight: 600;
+            text-align: center;
+            color: var(--color-text-primary);
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            width: 100%;
+        }
+
+        /* Container Iframe dan Tombol Kembali */
+        #iframe-wrapper {
+            position: relative; 
+            width: 100vw;
+            height: 100vh;
+            display: none; 
+        }
+
+        #content-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+            background-color: white; /* Iframe biasanya menampilkan konten terang */
+        }
+
+        /* Tombol Kembali (Dark Theme) */
+        #back-button {
+            position: fixed; 
+            top: 20px;
+            left: 20px;
+            z-index: 1000; 
+            background-color: var(--color-accent-dark); 
+            color: white;
+            border: none;
+            border-radius: 50%; 
+            width: 50px; /* Sedikit lebih besar */
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5em; 
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        #back-button:hover {
+            background-color: var(--color-accent-cyan);
+            transform: scale(1.1);
+        }
+
+        #back-button::before {
+            content: "\2190"; /* Panah kiri Unicode */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- CONTAINER AWAL: Pilihan Shortcut (Full Screen) -->
+    <div id="shortcut-container">
+        
+        <div class="app-grid" id="app-grid">
+            <!-- Daftar Shortcut akan dimuat di sini secara real-time dari Firebase -->
+        </div>
+
+        <!-- Area Manajemen Admin -->
+        <div id="admin-management">
+            <h2>Tambah Shortcut Baru</h2>
+            <input type="text" id="shortcut-name" placeholder="Nama Aplikasi (Contoh: Google)" />
+            <input type="text" id="shortcut-url" placeholder="URL Lengkap (Contoh: https://www.google.com)" />
+            <button class="add-button" onclick="addShortcut()">Tambahkan</button>
+
+            <h3>Daftar Shortcut Aktif</h3>
+            <div id="admin-list-container" class="admin-list-container">
+                <!-- Daftar manajemen akan muncul di sini dengan tombol hapus -->
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- WRAPPER IFRAME DAN TOMBOL KEMBALI -->
+    <div id="iframe-wrapper">
+        <button id="back-button" onclick="goBackToShortcuts()"></button>
+        
+        <iframe id="content-frame" title="Area Konten">
+            Browser Anda tidak mendukung iframe.
+        </iframe>
+    </div>
+    
+    <!-- Tombol untuk Beralih ke Mode Admin. Visibilitas diatur di fungsi JS. -->
+    <button id="toggle-admin-button" onclick="toggleAdmin()">Mode Admin</button>
+
+
+</body>
+</html>
