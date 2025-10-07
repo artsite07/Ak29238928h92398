@@ -1,21 +1,20 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Adlan Madjied Ridho</title>
+  <title>Portal Adlan M.R - Hamburger Menu Mobile</title>
   <link rel="icon" href="1.png" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <style>
     :root {
-      --bg: #0f172a;
-      --sidebar-bg: rgba(30, 41, 59, 0.95);
-      --card-bg: #334155;
-      --cyan: #00f0ff;
-      --muted-text: #94a3b8;
-      --white: #f8fafc;
+      --bg: #f0f2f5;
+      /* Dark Theme Variables for Header */
+      --header-bg: #1e293b;
+      --text-color: #f8fafc;
+      --primary-color: #00f0ff;
+      --hover-bg: #334155;
     }
 
     * {
@@ -27,353 +26,259 @@
     body {
       font-family: 'Inter', sans-serif;
       background: var(--bg);
-      color: var(--white);
+      color: #1c1e21;
       display: flex;
       flex-direction: column;
       height: 100vh;
       overflow: hidden;
     }
 
-    .main-grid {
+    /* 1. Header Styling (Desktop Base) */
+    header {
+      background-color: var(--header-bg);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+      padding: 0 20px;
       display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 60px;
+      flex-shrink: 0;
+      position: relative; /* Penting untuk positioning dropdown */
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+    }
+
+    .header-left img {
+      width: 40px;
+      height: 40px;
+      margin-right: 10px;
+      border-radius: 50%;
+    }
+
+    .header-left span {
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: var(--text-color);
+    }
+
+    /* 2. Navigation Styling (Desktop Base) */
+    #desktopNav {
+      display: block; /* Default: Tampil di desktop */
+    }
+
+    #desktopNav a {
+      text-decoration: none;
+      color: var(--text-color);
+      padding: 10px 15px;
+      margin-left: 5px;
+      border-radius: 4px;
+      transition: background-color 0.2s, color 0.2s;
+      display: inline-block;
+    }
+
+    #desktopNav a:hover {
+      background-color: var(--hover-bg);
+    }
+
+    #desktopNav a.active {
+      color: var(--primary-color);
+      font-weight: 600;
+      border-bottom: 2px solid var(--primary-color);
+    }
+    
+    /* Tombol Hamburger (Default Sembunyi) */
+    #mobileMenuToggle {
+        display: none;
+        background: none;
+        border: none;
+        font-size: 1.8rem;
+        color: var(--text-color);
+        cursor: pointer;
+        padding: 0 10px;
+    }
+
+    /* Dropdown Menu Mobile (Default Sembunyi) */
+    #mobileDropdownMenu {
+        position: absolute;
+        top: 60px; /* Di bawah header */
+        right: 0;
+        width: 100%; /* Ambil lebar penuh */
+        background-color: var(--header-bg);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        border-top: 1px solid var(--hover-bg);
+        z-index: 1000;
+        display: none; /* Sembunyi secara default */
+    }
+
+    #mobileDropdownMenu.show {
+        display: block; /* Tampil saat ada class 'show' */
+    }
+
+    #mobileDropdownMenu a {
+        display: block;
+        padding: 12px 20px;
+        text-decoration: none;
+        color: var(--text-color);
+        border-bottom: 1px solid var(--hover-bg);
+        transition: background-color 0.2s;
+    }
+
+    #mobileDropdownMenu a:last-child {
+        border-bottom: none;
+    }
+
+    #mobileDropdownMenu a:hover,
+    #mobileDropdownMenu a.active {
+        background-color: var(--hover-bg);
+        color: var(--primary-color);
+    }
+
+    /* 3. Content Area Styling (Iframe Container - Fullscreen) */
+    .content-area {
       flex: 1;
       overflow: hidden;
-    }
-
-    /* Sidebar */
-    .sidebar {
-      background: var(--sidebar-bg);
-      padding: 1rem;
-      display: flex;
-      flex-direction: column;
-      overflow-y: auto;
-      width: 260px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
-      border-radius: 1rem;
-      backdrop-filter: blur(8px);
-      scrollbar-width: thin;
-      scrollbar-color: transparent transparent;
-      position: relative;
-      z-index: 10;
-    }
-
-    .sidebar::-webkit-scrollbar {
-      width: 0px;
-      background: transparent;
-    }
-
-    .profile-card {
-      text-align: center;
-      margin-bottom: 2rem;
-      background: var(--card-bg);
-      border-radius: 1rem;
-      padding: 1rem;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-    }
-
-    .profile-card img {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      margin-bottom: .5rem;
-    }
-
-    h2 {
-      font-size: 1rem;
-      margin-bottom: .5rem;
-      color: var(--cyan);
-    }
-
-    .nav-group {
-      list-style: none;
-    }
-
-    .nav-group li {
-      margin: .3rem 0;
-    }
-
-    .nav-group a {
-      color: var(--white);
-      text-decoration: none;
-      padding: .5rem;
-      display: block;
-      border-radius: .5rem;
-      transition: background .2s, color .2s;
-    }
-
-    .nav-group a:hover {
-      background: rgba(0, 240, 255, .1);
-      color: var(--cyan);
-    }
-
-    .nav-group a.active {
-      background: var(--cyan);
-      color: var(--bg);
-    }
-
-    .logout-container {
-      margin-top: auto;
-    }
-
-    .logout-button {
-      width: 100%;
-      padding: .7rem;
-      background: transparent;
-      border: 1px solid var(--cyan);
-      border-radius: .5rem;
-      color: var(--cyan);
-      font-weight: 600;
-      cursor: pointer;
-      transition: all .2s;
-    }
-
-    .logout-button:hover {
-      background: var(--cyan);
-      color: var(--bg);
-    }
-
-    .content-area {
-      position: relative;
-      flex: 1;
-      overflow: auto;
-      background: rgba(20, 25, 40, 0.95);
-      border-radius: 1rem;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
-      backdrop-filter: blur(6px);
-      scrollbar-width: thin;
-      scrollbar-color: transparent transparent;
-      z-index: 1;
-      margin: 1rem;
-      padding: 1rem;
-    }
-
-    .content-area::-webkit-scrollbar {
-      width: 0px;
-      background: transparent;
+      padding: 0; 
     }
 
     .content-area iframe {
-      position: relative;
-      top: 0;
-      left: 0;
       width: 100%;
       height: 100%;
       border: none;
-      border-radius: 0.8rem;
-      z-index: 1;
+      border-radius: 0;
       display: none;
-      background: transparent;
     }
 
-    #overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 998;
+    .content-area iframe.active {
+      display: block;
     }
 
-    #mobileToggle {
-      display: none;
-      position: fixed;
-      bottom: 1rem;
-      right: 1rem;
-      width: 48px;
-      height: 48px;
-      background: var(--cyan);
-      color: var(--bg);
-      font-weight: 600;
-      font-size: 1.2rem;
-      border: none;
-      border-radius: 50%;
-      cursor: pointer;
-      z-index: 1000;
-    }
-
-    @media(max-width:768px) {
-      .sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100%;
-        transform: translateX(-100%);
-        transition: transform .3s ease;
-        z-index: 999;
+    /* ===================================== */
+    /* RESPONSIVE CSS (Mobile View - Max 600px) */
+    /* ===================================== */
+    @media (max-width: 600px) {
+      /* Sembunyikan Navigasi Tautan di Mobile */
+      #desktopNav {
+        display: none;
       }
 
-      .sidebar.show {
-        transform: translateX(0);
-      }
-
-      #overlay.show {
+      /* Tampilkan Tombol Hamburger */
+      #mobileMenuToggle {
         display: block;
-      }
-
-      #mobileToggle {
-        display: block;
-      }
-    }
-
-    @media(min-width:769px) {
-      .sidebar {
-        transform: translateX(-100%);
-        transition: transform 1s ease;
-      }
-
-      .sidebar.show {
-        transform: translateX(0);
-      }
-
-      .content-area iframe {
-        transform: none;
-        transition: none;
-        opacity: 1;
       }
     }
   </style>
 </head>
 
 <body>
-  <div id="overlay"></div>
-  <button id="mobileToggle">></button>
+  <header>
+    <div class="header-left">
+      <img src="1.png" onerror="this.onerror=null;this.src='https://placehold.co/40x40/00f0ff/1e293b';" alt="Logo">
+      <span>Adlan M.R</span> 
+    </div>
+    
+    <nav id="desktopNav">
+      <a href="home.html" data-target="home-frame">Home</a>
+      <a href="document.html" data-target="document-frame">Document</a>
+      <a href="code.html" data-target="code-frame">Code</a>
+      <a href="codingin.html" data-target="codingin-frame">Codingin</a>
+      <a href="aplikasi.html" data-target="aplikasi-frame">Aplikasi</a>
+    </nav>
+    
+    <button id="mobileMenuToggle" aria-label="Toggle navigation">&#9776;</button>
+    
+    <nav id="mobileDropdownMenu">
+      <a href="home.html" data-target="home-frame">Home</a>
+      <a href="document.html" data-target="document-frame">Document</a>
+      <a href="code.html" data-target="code-frame">Code</a>
+      <a href="codingin.html" data-target="codingin-frame">Codingin</a>
+      <a href="aplikasi.html" data-target="aplikasi-frame">Aplikasi</a>
+    </nav>
+  </header>
 
-  <div class="main-grid">
-    <aside class="sidebar" id="sidebar">
-      <div class="profile-card">
-        <img src="1.png" onerror="this.onerror=null;this.src='https://placehold.co/80x80/00f0ff/111827?text=AM';" alt="Foto Profil">
-        <h3>Adlan M.R</h3>
-        <p>Administrator Portal</p>
-      </div>
-      <h2 id="navTitle">Navigation</h2>
-      <ul class="nav-group" id="navList">
-        <li style="opacity:.6; color: var(--muted-text);">Welcome Adlan Madjied Ridho</li>
-      </ul>
-      <div class="logout-container">
-        <button id="logoutButton" class="logout-button">Logout</button>
-      </div>
-    </aside>
-
-    <section class="content-area" id="contentArea"></section>
-  </div>
+  <section class="content-area" id="contentArea">
+    <iframe id="home-frame" src="home.html" class="active"></iframe>
+    <iframe id="document-frame" src="document.html"></iframe>
+    <iframe id="code-frame" src="code.html"></iframe>
+    <iframe id="codingin-frame" src="codingin.html"></iframe>
+    <iframe id="aplikasi-frame" src="aplikasi.html"></iframe>
+  </section>
 
   <script>
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('overlay');
-    const mobileToggle = document.getElementById('mobileToggle');
+    const desktopNavLinks = document.querySelectorAll('#desktopNav a');
+    const mobileDropdownLinks = document.querySelectorAll('#mobileDropdownMenu a');
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const mobileDropdownMenu = document.getElementById('mobileDropdownMenu');
+    const allNavLinks = [...desktopNavLinks, ...mobileDropdownLinks];
+    const iframes = document.querySelectorAll('#contentArea iframe');
+    const ACTIVE_URL_KEY = 'simpleActivePage';
+    const DEFAULT_TARGET = 'home-frame';
 
-    function openSidebar() {
-      sidebar.classList.add('show');
-      overlay.classList.add('show');
-      mobileToggle.textContent = '<';
-    }
+    /**
+     * Mengatur iframe mana yang aktif dan link mana yang diberi highlight/selected.
+     * @param {string} targetId - ID dari iframe yang harus ditampilkan (misal: 'home-frame').
+     */
+    function setActivePage(targetId) {
+      // 1. Nonaktifkan semua link navigasi
+      allNavLinks.forEach(link => link.classList.remove('active'));
 
-    function closeSidebar() {
-      sidebar.classList.remove('show');
-      overlay.classList.remove('show');
-      mobileToggle.textContent = '>';
-    }
+      // 2. Nonaktifkan semua iframe
+      iframes.forEach(iframe => iframe.classList.remove('active'));
 
-    mobileToggle.addEventListener('click', () => {
-      if (sidebar.classList.contains('show')) closeSidebar();
-      else openSidebar();
-    });
+      // 3. Aktifkan link desktop & dropdown yang sesuai
+      allNavLinks.filter(link => link.getAttribute('data-target') === targetId)
+                 .forEach(link => link.classList.add('active'));
 
-    overlay.addEventListener('click', closeSidebar);
-
-    // ===== Firebase Init =====
-    const firebaseConfig = {
-      apiKey: "AIzaSyCba6M_spBXvuG91Zn-XWJ4bSTX6vNcST0",
-      authDomain: "index-68220.firebaseapp.com",
-      databaseURL: "https://index-68220-default-rtdb.firebaseio.com",
-      projectId: "index-68220",
-      storageBucket: "index-68220.firebasestorage.app",
-      messagingSenderId: "633087068802",
-      appId: "1:633087068802:web:f8aa1f2ef9c00b99d1429b",
-      measurementId: "G-2VQCRFJQCM"
-    };
-    if (typeof firebase !== 'undefined' && !firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
-    const db = typeof firebase !== 'undefined' ? firebase.database() : null;
-
-    function escapeHTML(s) {
-      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
-    }
-
-    // Logout hanya efek UI
-    document.getElementById('logoutButton').addEventListener('click', () => {
-      alert("Anda telah logout");
-    });
-
-    const navList = document.getElementById('navList');
-    const contentArea = document.getElementById('contentArea');
-    const ACTIVE_URL_KEY = 'activeNavUrl';
-    const DEFAULT_URL = "https://www.google.com/search?q=selamat+datang+di+portal+admin";
-    const iframeMap = {};
-
-    function setActivePage(url) {
-      Object.keys(iframeMap).forEach(key => {
-        iframeMap[key].style.display = (key === url) ? "block" : "none";
-        if (window.innerWidth > 768) iframeMap[key].classList.add('show');
-        else iframeMap[key].classList.remove('show');
-      });
-      sessionStorage.setItem(ACTIVE_URL_KEY, url);
-      document.querySelectorAll('#navList a').forEach(a => a.classList.remove('active'));
-      const activeLink = document.querySelector(`#navList a[href="${url}"]`);
-      if (activeLink) activeLink.classList.add('active');
-      if (window.innerWidth <= 768) closeSidebar();
-    }
-
-    // ===== Firebase Navigation =====
-    if (db) {
-      db.ref('navigation').orderByChild('order').on('value', snap => {
-        navList.innerHTML = '';
-        contentArea.innerHTML = '';
-        Object.keys(iframeMap).forEach(k => delete iframeMap[k]);
-        if (!snap.exists()) {
-          navList.innerHTML = '<li style="opacity:.6;color: var(--muted-text);">Tidak ada navigasi</li>';
-          return;
-        }
-        let firstUrl = null;
-        const fragment = document.createDocumentFragment();
-        snap.forEach(child => {
-          const d = child.val();
-          if (!d.link || !d.name) return;
-          const url = d.link.split('?')[0];
-          if (!firstUrl) firstUrl = url;
-          const li = document.createElement('li');
-          const a = document.createElement('a');
-          a.href = url;
-          a.textContent = escapeHTML(d.name);
-          a.addEventListener('click', e => {
-            e.preventDefault();
-            setActivePage(url);
-          });
-          li.appendChild(a);
-          fragment.appendChild(li);
-          const iframe = document.createElement('iframe');
-          iframe.src = url;
-          iframe.name = "frame_" + btoa(url);
-          iframe.style.display = "none";
-          contentArea.appendChild(iframe);
-          iframeMap[url] = iframe;
-        });
-        navList.appendChild(fragment);
-        const storedUrl = sessionStorage.getItem(ACTIVE_URL_KEY);
-        const urlToShow = storedUrl && iframeMap[storedUrl] ? storedUrl : firstUrl || DEFAULT_URL;
-        if (iframeMap[urlToShow]) setActivePage(urlToShow);
-      });
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      if (window.innerWidth > 768) {
-        setTimeout(() => sidebar.classList.add('show'), 100);
-        const storedUrl = sessionStorage.getItem(ACTIVE_URL_KEY);
-        if (storedUrl && iframeMap[storedUrl]) setTimeout(() => iframeMap[storedUrl].classList.add('show'), 500);
+      // 4. Aktifkan iframe yang sesuai
+      const activeIframe = document.getElementById(targetId);
+      if (activeIframe) {
+        activeIframe.classList.add('active');
       }
+      
+      // 5. Tutup dropdown mobile setelah pemilihan (jika aktif)
+      mobileDropdownMenu.classList.remove('show');
+
+      // 6. Simpan status ke sessionStorage
+      sessionStorage.setItem(ACTIVE_URL_KEY, targetId);
+    }
+
+    // --- Event Listeners ---
+
+    // Listener untuk Toggle Hamburger
+    mobileMenuToggle.addEventListener('click', () => {
+        mobileDropdownMenu.classList.toggle('show');
+    });
+
+    // Listener untuk semua link navigasi (desktop dan mobile)
+    allNavLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetId = e.currentTarget.getAttribute('data-target');
+        setActivePage(targetId);
+      });
+    });
+
+    // Listener untuk menutup menu jika mengklik di luar menu (opsional, tapi disarankan)
+    document.addEventListener('click', (e) => {
+        if (!mobileDropdownMenu.contains(e.target) && e.target !== mobileMenuToggle) {
+            mobileDropdownMenu.classList.remove('show');
+        }
+    });
+
+    // Inisialisasi: Muat halaman terakhir yang dilihat atau default
+    document.addEventListener('DOMContentLoaded', () => {
+      const storedTarget = sessionStorage.getItem(ACTIVE_URL_KEY);
+      
+      let initialTarget = DEFAULT_TARGET;
+
+      // Cek apakah target yang tersimpan valid
+      if (storedTarget && document.getElementById(storedTarget)) {
+        initialTarget = storedTarget;
+      } 
+      
+      setActivePage(initialTarget);
     });
   </script>
 </body>
