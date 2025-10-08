@@ -1,282 +1,176 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Portal Adlan M.R - Navigasi Ikon Modern</title>
-  <link rel="icon" href="1.png" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <!-- Font Awesome Modern Icons -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Adlan M.R - Sidebar Kiri Responsif</title>
+  <link rel="icon" href="1.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-  
   <style>
-    :root {
-      --bg: #f0f2f5;
-      --header-bg: #1e293b;
-      --text-color: #f8fafc;
-      --primary-color: #00f0ff;
-      --hover-bg: #334155;
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
     body {
+      margin: 0;
       font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      color: #1c1e21;
+      background: #0a0a0a;
+      color: #fff;
       display: flex;
-      flex-direction: column;
       height: 100vh;
       overflow: hidden;
     }
 
-    header {
-      background-color: var(--header-bg);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-      padding: 0 20px;
+    /* Sidebar kiri */
+    #sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 80px;
+      height: 100vh;
+      background-color: #111;
+      border-right: 1px solid #222;
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
       align-items: center;
-      height: 60px;
-      flex-shrink: 0;
-      position: relative;
-    }
-
-    .header-left {
-      display: flex;
-      align-items: center;
-    }
-
-    .header-left img {
-      width: 40px;
-      height: 40px;
-      margin-right: 10px;
-      border-radius: 50%;
-    }
-
-    .header-left span {
-      font-weight: 700;
-      font-size: 1.2rem;
-      color: var(--text-color);
-    }
-
-    /* Navigasi Desktop */
-    #desktopNav {
-      display: flex;
-      align-items: center;
-    }
-
-    #desktopNav a {
-      text-decoration: none;
-      color: var(--text-color);
-      padding: 10px 12px;
-      margin-left: 2px;
-      border-radius: 4px;
-      transition: background-color 0.2s, border-bottom 0.2s;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      height: 40px;
-    }
-
-    #desktopNav a span.icon {
-      font-size: 1.5rem;
-      line-height: 1;
-      transition: color 0.2s;
-    }
-
-    #desktopNav a:hover {
-      background-color: var(--hover-bg);
-    }
-
-    #desktopNav a.active {
-      border-bottom: 2px solid var(--primary-color);
-    }
-
-    #desktopNav a.active span.icon {
-      color: var(--primary-color);
-    }
-
-    /* Tombol Hamburger */
-    #mobileMenuToggle {
-      display: none;
-      background: none;
-      border: none;
-      font-size: 1.8rem;
-      color: var(--text-color);
-      cursor: pointer;
-      padding: 0 10px;
-    }
-
-    /* Dropdown Mobile */
-    #mobileDropdownMenu {
-      position: absolute;
-      top: 60px;
-      right: 0;
-      width: 100%;
-      background-color: var(--header-bg);
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-      border-top: 1px solid var(--hover-bg);
+      padding-top: 15px;
       z-index: 1000;
-      display: none;
     }
 
-    #mobileDropdownMenu.show {
-      display: block;
+    /* Foto profil */
+    #sidebar img {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: 2px solid cyan;
+      margin-bottom: 25px;
+      transition: transform 0.3s ease, border-color 0.3s ease;
     }
 
-    #mobileDropdownMenu a {
-      display: block;
-      padding: 12px 20px;
+    #sidebar img:hover {
+      transform: scale(1.1);
+      border-color: #00ffffaa;
+    }
+
+    /* Navigasi ikon */
+    #sidebar a {
+      color: #aaa;
       text-decoration: none;
-      color: var(--text-color);
-      border-bottom: 1px solid var(--hover-bg);
-      transition: background-color 0.2s;
-      text-align: center;
+      font-size: 1.6rem;
+      margin: 20px 0;
+      transition: color 0.2s ease, transform 0.2s ease;
     }
 
-    #mobileDropdownMenu a span.icon {
-      font-size: 1.4rem;
-      transition: color 0.2s;
+    #sidebar a:hover {
+      color: cyan;
+      transform: scale(1.2);
     }
 
-    #mobileDropdownMenu a:last-child {
-      border-bottom: none;
+    #sidebar a.active {
+      color: cyan;
     }
 
-    #mobileDropdownMenu a:hover {
-      background-color: var(--hover-bg);
-    }
-
-    #mobileDropdownMenu a.active span.icon {
-      color: var(--primary-color);
-    }
-
-    /* Area Konten (Iframe) */
-    .content-area {
+    /* Area konten utama */
+    #mainContent {
       flex: 1;
-      overflow: hidden;
-      padding: 0;
+      margin-left: 80px;
+      width: calc(100% - 80px);
+      height: 100vh;
     }
 
-    .content-area iframe {
+    iframe {
       width: 100%;
       height: 100%;
       border: none;
       display: none;
     }
 
-    .content-area iframe.active {
+    iframe.active {
       display: block;
     }
 
+    /* === Responsif untuk HP === */
     @media (max-width: 600px) {
-      #desktopNav {
+      body {
+        flex-direction: column;
+      }
+
+      #sidebar {
+        flex-direction: row;
+        justify-content: space-around;
+        align-items: center;
+        width: 100%;
+        height: 60px;
+        border-right: none;
+        border-top: 1px solid #222;
+        bottom: 0;
+        top: auto;
+        padding: 5px 0;
+      }
+
+      #sidebar img {
         display: none;
       }
 
-      #mobileMenuToggle {
-        display: block;
+      #sidebar a {
+        font-size: 1.4rem;
+        margin: 0 10px;
       }
 
-      #mobileDropdownMenu a {
-        text-align: center;
-        padding: 15px;
+      #mainContent {
+        margin-left: 0;
+        margin-bottom: 60px;
+        width: 100%;
+        height: calc(100vh - 60px);
       }
     }
   </style>
 </head>
-
 <body>
-  <header>
-    <div class="header-left">
-      <img src="1.png" onerror="this.onerror=null;this.src='https://placehold.co/40x40/00f0ff/1e293b';" alt="Logo">
-      <span>Adlan M.R</span>
-    </div>
+  <!-- Sidebar -->
+  <nav id="sidebar">
+    <img src="1.png" alt="Profil">
+    <a href="home.html" data-target="home-frame" title="Home"><i class="fa-solid fa-house"></i></a>
+    <a href="document.html" data-target="document-frame" title="Dokumen"><i class="fa-solid fa-file-lines"></i></a>
+    <a href="code.html" data-target="code-frame" title="Kode"><i class="fa-solid fa-code"></i></a>
+    <a href="codingin.html" data-target="codingin-frame" title="Codingin"><i class="fa-solid fa-terminal"></i></a>
+    <a href="aplikasi.html" data-target="aplikasi-frame" title="Aplikasi"><i class="fa-solid fa-cubes"></i></a>
+  </nav>
 
-    <nav id="desktopNav">
-      <a href="home.html" data-target="home-frame" title="Home"><span class="icon"><i class="fa-solid fa-house"></i></span></a>
-      <a href="document.html" data-target="document-frame" title="Dokumen"><span class="icon"><i class="fa-solid fa-file-lines"></i></span></a>
-      <a href="code.html" data-target="code-frame" title="Kode"><span class="icon"><i class="fa-solid fa-code"></i></span></a>
-      <a href="codingin.html" data-target="codingin-frame" title="Codingin"><span class="icon"><i class="fa-solid fa-terminal"></i></span></a>
-      <a href="aplikasi.html" data-target="aplikasi-frame" title="Aplikasi"><span class="icon"><i class="fa-solid fa-cubes"></i></span></a>
-    </nav>
-
-    <button id="mobileMenuToggle" aria-label="Toggle navigation"><i class="fa-solid fa-bars"></i></button>
-
-    <nav id="mobileDropdownMenu">
-      <a href="home.html" data-target="home-frame" title="Home"><span class="icon"><i class="fa-solid fa-house"></i></span></a>
-      <a href="document.html" data-target="document-frame" title="Dokumen"><span class="icon"><i class="fa-solid fa-file-lines"></i></span></a>
-      <a href="code.html" data-target="code-frame" title="Kode"><span class="icon"><i class="fa-solid fa-code"></i></span></a>
-      <a href="codingin.html" data-target="codingin-frame" title="Codingin"><span class="icon"><i class="fa-solid fa-terminal"></i></span></a>
-      <a href="aplikasi.html" data-target="aplikasi-frame" title="Aplikasi"><span class="icon"><i class="fa-solid fa-cubes"></i></span></a>
-    </nav>
-  </header>
-
-  <section class="content-area" id="contentArea">
+  <!-- Konten utama -->
+  <div id="mainContent">
     <iframe id="home-frame" src="home.html" class="active"></iframe>
     <iframe id="document-frame" src="document.html"></iframe>
     <iframe id="code-frame" src="code.html"></iframe>
     <iframe id="codingin-frame" src="codingin.html"></iframe>
     <iframe id="aplikasi-frame" src="aplikasi.html"></iframe>
-  </section>
+  </div>
 
   <script>
-    const desktopNavLinks = document.querySelectorAll('#desktopNav a');
-    const mobileDropdownLinks = document.querySelectorAll('#mobileDropdownMenu a');
-    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-    const mobileDropdownMenu = document.getElementById('mobileDropdownMenu');
-    const allNavLinks = [...desktopNavLinks, ...mobileDropdownLinks];
-    const iframes = document.querySelectorAll('#contentArea iframe');
-    const ACTIVE_URL_KEY = 'simpleActivePage';
-    const DEFAULT_TARGET = 'home-frame';
+    const links = document.querySelectorAll('#sidebar a');
+    const iframes = document.querySelectorAll('iframe');
+    const ACTIVE_KEY = 'activePage';
+    const DEFAULT_PAGE = 'home-frame';
 
-    function setActivePage(targetId) {
-      allNavLinks.forEach(link => link.classList.remove('active'));
-      iframes.forEach(iframe => iframe.classList.remove('active'));
-
-      allNavLinks.filter(link => link.getAttribute('data-target') === targetId)
-        .forEach(link => link.classList.add('active'));
-
-      const activeIframe = document.getElementById(targetId);
-      if (activeIframe) activeIframe.classList.add('active');
-
-      mobileDropdownMenu.classList.remove('show');
-      sessionStorage.setItem(ACTIVE_URL_KEY, targetId);
-    }
-
-    mobileMenuToggle.addEventListener('click', () => {
-      mobileDropdownMenu.classList.toggle('show');
-    });
-
-    allNavLinks.forEach(link => {
+    links.forEach(link => {
       link.addEventListener('click', e => {
         e.preventDefault();
-        const targetId = e.currentTarget.getAttribute('data-target');
-        setActivePage(targetId);
+        const target = link.dataset.target;
+
+        iframes.forEach(f => f.classList.remove('active'));
+        document.getElementById(target).classList.add('active');
+
+        links.forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
+
+        sessionStorage.setItem(ACTIVE_KEY, target);
       });
     });
 
-    document.addEventListener('click', e => {
-      if (!mobileDropdownMenu.contains(e.target) && e.target !== mobileMenuToggle) {
-        mobileDropdownMenu.classList.remove('show');
-      }
-    });
-
     document.addEventListener('DOMContentLoaded', () => {
-      const storedTarget = sessionStorage.getItem(ACTIVE_URL_KEY);
-      let initialTarget = DEFAULT_TARGET;
-      if (storedTarget && document.getElementById(storedTarget)) {
-        initialTarget = storedTarget;
-      }
-      setActivePage(initialTarget);
+      const saved = sessionStorage.getItem(ACTIVE_KEY);
+      const target = saved && document.getElementById(saved) ? saved : DEFAULT_PAGE;
+      document.getElementById(target).classList.add('active');
+      links.forEach(l => {
+        if (l.dataset.target === target) l.classList.add('active');
+      });
     });
   </script>
 </body>
-
 </html>
