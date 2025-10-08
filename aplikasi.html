@@ -10,7 +10,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getDatabase, ref, onValue, push, remove } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
         
-        // --- Konfigurasi Firebase Anda ---
+        // --- Konfigurasi Firebase Anda (TIDAK DIUBAH) ---
         const firebaseConfig = {
             apiKey: "AIzaSyCba6M_spBXvuG91Zn-XWJ4bSTX6vNcST0",
             authDomain: "index-68220.firebaseapp.com",
@@ -22,19 +22,16 @@
             measurementId: "G-2VQCRFJQCM"
         };
         
-        // ID statis yang aman untuk jalur RTDB
         const SAFE_APP_ID = 'user-shortcuts'; 
         
-        // Inisialisasi Firebase App dan Realtime Database
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         
-        // Path ke daftar shortcut di Realtime Database
         const shortcutRef = ref(db, 'artifacts/' + SAFE_APP_ID + '/shortcuts/list');
 
         let shortcutsData = {};
-        
-        // Fungsi untuk memulai listener Realtime Database (Real-time update)
+        let activeIframeUrl = null;
+
         function startRealtimeListener() {
             onValue(shortcutRef, (snapshot) => {
                 const data = snapshot.val();
@@ -43,11 +40,10 @@
             }, (error) => {
                 console.error("Error membaca data RTDB:", error);
                 document.getElementById('shortcut-container').innerHTML = 
-                    '<p style="color:red; font-weight:bold;">Gagal terhubung ke Firebase. Pastikan rules database Anda mengizinkan akses tanpa autentikasi.</p>';
+                    '<p style="color:red; font-weight:bold; padding: 20px;">Gagal terhubung ke Firebase. Periksa konsol dan rules database.</p>';
             });
         }
         
-        // Fungsi untuk merender daftar shortcut dari data Realtime Database
         function renderShortcuts() {
             const grid = document.getElementById('app-grid');
             grid.innerHTML = ''; 
@@ -61,7 +57,7 @@
             });
 
             if (sortedKeys.length === 0) {
-                grid.innerHTML = '<p class="text-info">Belum ada shortcut. Buka Mode Admin untuk menambahkan.</p>';
+                grid.innerHTML = '<p class="text-info">Belum ada shortcut.</p>';
                 adminGrid.innerHTML = '<p class="text-info">Belum ada shortcut.</p>';
                 return;
             }
@@ -70,26 +66,36 @@
                 const item = shortcutsData[key];
                 const initial = item.name.charAt(0).toUpperCase(); 
 
-                // 1. Render item di tampilan utama (Grid Aplikasi)
+                // 1. Render item di Sidebar (Menu Utama)
                 const appItem = document.createElement('a');
                 appItem.href = '#';
                 appItem.className = 'app-item';
+                if (activeIframeUrl === item.url) {
+                     appItem.classList.add('active');
+                }
+                
                 appItem.onclick = (e) => {
                     e.preventDefault();
-                    loadContent(item.url);
+                    
+                    if (activeIframeUrl === item.url) {
+                        goBackToShortcuts();
+                    } else {
+                        loadContent(item.url);
+                    }
                 };
+                
                 appItem.innerHTML = `
                     <div class="app-icon-initial">${initial}</div>
                     <span>${item.name}</span>
                 `;
                 grid.appendChild(appItem);
 
-                // 2. Render item di tampilan Admin
+                // 2. Render item di Halaman Pengaturan (Admin)
                 const adminItem = document.createElement('div');
                 adminItem.className = 'admin-list-item';
                 adminItem.innerHTML = `
                     <span class="admin-item-name">${item.name}</span>
-                    <span class="admin-item-url">${item.url.substring(0, 40)}...</span>
+                    <span class="admin-item-url">${item.url}</span>
                     <button class="delete-button" data-key="${key}">Hapus</button>
                 `;
                 adminGrid.appendChild(adminItem);
@@ -105,8 +111,6 @@
         }
 
         // --- CRUD Operations ---
-
-        // Tambah Shortcut ke RTDB
         window.addShortcut = () => {
             const nameInput = document.getElementById('shortcut-name');
             const urlInput = document.getElementById('shortcut-url');
@@ -114,11 +118,10 @@
             let url = urlInput.value.trim();
 
             if (!name || !url) {
-                console.warn('Nama dan URL tidak boleh kosong!');
+                alert('Nama dan URL tidak boleh kosong!');
                 return;
             }
             
-            // Tambahkan http/https jika hilang
             if (!url.match(/^[a-zA-Z]+:\/\//)) {
                 url = 'http://' + url;
             }
@@ -132,75 +135,100 @@
                 })
                 .catch(error => {
                     console.error("Gagal menambahkan shortcut:", error);
-                    console.error('Gagal menambahkan shortcut. (Kemungkinan error rules database)');
+                    alert('Gagal menambahkan shortcut. (Kemungkinan error rules database)');
                 });
         };
 
-        // Hapus Shortcut dari RTDB
         function deleteShortcut(key) {
-            // Mengganti window.confirm dengan console.log/custom modal
             if (confirm(`Apakah Anda yakin ingin menghapus shortcut "${shortcutsData[key]?.name}"?`)) { 
                 const itemRef = ref(db, 'artifacts/' + SAFE_APP_ID + '/shortcuts/list/' + key);
                 remove(itemRef)
                     .catch(error => {
                         console.error("Gagal menghapus shortcut:", error);
-                        console.error('Gagal menghapus shortcut. (Kemungkinan error rules database)');
+                        alert('Gagal menghapus shortcut. (Kemungkinan error rules database)');
                     });
             }
         }
 
-        // --- Iframe Navigation Logic ---
+        // --- Iframe / Content Navigation Logic ---
 
         window.loadContent = (url) => {
             const iframeWrapper = document.getElementById('iframe-wrapper');
             const contentFrame = document.getElementById('content-frame');
-            const shortcutContainer = document.getElementById('shortcut-container');
-            const toggleButton = document.getElementById('toggle-admin-button'); // Ambil tombol admin
+            const emptyContent = document.getElementById('empty-content'); 
+            const adminPage = document.getElementById('admin-page-content');
 
+            activeIframeUrl = url; 
             contentFrame.src = url;
-            shortcutContainer.style.display = 'none'; 
             iframeWrapper.style.display = 'block'; 
-            toggleButton.style.display = 'none'; // Sembunyikan tombol admin saat iframe muncul
+            if (emptyContent) emptyContent.style.display = 'none'; 
+            if (adminPage) adminPage.style.display = 'none'; 
+            
+            renderShortcuts();
+        };
+
+        window.showSettingsPage = () => {
+            const iframeWrapper = document.getElementById('iframe-wrapper');
+            const contentFrame = document.getElementById('content-frame');
+            const emptyContent = document.getElementById('empty-content'); 
+            const adminPage = document.getElementById('admin-page-content'); 
+
+            iframeWrapper.style.display = 'none';
+            contentFrame.src = 'about:blank';
+            if (emptyContent) emptyContent.style.display = 'none'; 
+
+            if (adminPage) adminPage.style.display = 'flex'; 
+
+            activeIframeUrl = 'settings';
+            renderShortcuts();
         };
 
         window.goBackToShortcuts = () => {
             const iframeWrapper = document.getElementById('iframe-wrapper');
             const contentFrame = document.getElementById('content-frame');
-            const shortcutContainer = document.getElementById('shortcut-container');
-            const toggleButton = document.getElementById('toggle-admin-button'); // Ambil tombol admin
+            const emptyContent = document.getElementById('empty-content'); 
+            const adminPage = document.getElementById('admin-page-content'); 
 
+            activeIframeUrl = null; 
             iframeWrapper.style.display = 'none';    
-            shortcutContainer.style.display = 'flex'; 
-            contentFrame.src = 'about:blank'; // Bersihkan iframe
-            toggleButton.style.display = 'block'; // Tampilkan tombol admin saat kembali ke daftar
-        };
+            contentFrame.src = 'about:blank'; 
+            if (emptyContent) emptyContent.style.display = 'flex'; 
+            if (adminPage) adminPage.style.display = 'none';
 
-        // --- Admin Mode Toggle ---
-        window.toggleAdmin = () => {
-            const adminArea = document.getElementById('admin-management');
-            const toggleButton = document.getElementById('toggle-admin-button');
-            const isHidden = adminArea.style.display === 'none' || adminArea.style.display === '';
+            renderShortcuts();
+        };
+        
+        // --- Sidebar Toggle Logic ---
+        window.toggleSidebar = () => {
+            const mainContainer = document.getElementById('main-container');
+            mainContainer.classList.toggle('sidebar-collapsed');
             
-            adminArea.style.display = isHidden ? 'block' : 'none';
-            toggleButton.textContent = isHidden ? 'Sembunyikan Admin' : 'Mode Admin';
+            // Tutup halaman pengaturan jika sedang aktif saat sidebar ditutup (opsional)
+            if (mainContainer.classList.contains('sidebar-collapsed') && activeIframeUrl === 'settings') {
+                 goBackToShortcuts();
+            }
         };
 
-        // Mulai listener Realtime Database langsung
         startRealtimeListener();
 
     </script>
     
     <style>
-        /* Variabel Warna Dark Cyan/Slate */
+        /* Variabel Warna Dark Theme: Slate & Cyan */
         :root {
-            --color-bg-primary: #0f172a; /* Slate 900 */
-            --color-bg-secondary: #1e293b; /* Slate 800 */
-            --color-text-primary: #e2e8f0; /* Slate 200 */
-            --color-accent-cyan: #06b6d4; /* Cyan 500 */
-            --color-accent-dark: #0891b2; /* Cyan 600 */
+            --color-bg-primary: #0f172a; 
+            --color-bg-sidebar: #1e293b; 
+            --color-text-primary: #e2e8f0; 
+            --color-text-secondary: #94a3b8; 
+            --color-accent-cyan: #06b6d4; 
+            --color-accent-dark: #0891b2; 
+            --color-red: #ef4444; 
+            --color-green: #10b981; 
+            --sidebar-width-open: 280px;
+            --sidebar-width-closed: 80px;
         }
 
-        /* Reset dan Full Screen (Dark Theme) */
+        /* Reset dan Main Layout */
         html, body {
             height: 100%;
             margin: 0;
@@ -209,203 +237,218 @@
             font-family: 'Inter', sans-serif;
             background-color: var(--color-bg-primary);
             color: var(--color-text-primary);
+            display: flex; 
         }
 
-        /* Container Daftar Aplikasi (Tampilan Penuh) */
-        #shortcut-container {
+        /* Container Utama */
+        #main-container {
             display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
             height: 100vh;
             width: 100vw;
-            text-align: center;
-            /* Gradient gelap */
-            background: linear-gradient(135deg, var(--color-bg-primary) 0%, #0c121e 100%);
+            transition: all 0.3s ease; 
+        }
+
+        /* Sidebar Container (KIRI - LEBAR TERBUKA) */
+        #shortcut-container {
+            width: var(--sidebar-width-open); 
+            min-width: var(--sidebar-width-open);
+            background-color: var(--color-bg-sidebar);
+            display: flex;
+            flex-direction: column;
             padding: 20px;
             box-sizing: border-box;
-        }
-
-        .text-info {
-            color: #94a3b8; /* Slate 400 */
-            font-size: 1.1em;
-            margin-top: 20px;
-        }
-
-        /* Tombol Admin Toggle (Cyan Dark) */
-        #toggle-admin-button {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            padding: 10px 15px;
-            background-color: var(--color-accent-dark);
-            color: var(--color-bg-primary);
-            border: none;
-            border-radius: 8px; /* Lebih rounded */
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(6, 182, 212, 0.4);
-            font-weight: 600;
-            z-index: 50;
-            transition: background-color 0.2s, transform 0.2s;
-        }
-        #toggle-admin-button:hover {
-            background-color: var(--color-accent-cyan);
-            transform: translateY(-2px);
-        }
-        
-        /* Area Manajemen Admin (Dark Component) */
-        #admin-management {
-            background-color: var(--color-bg-secondary);
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
-            max-width: 600px;
-            width: 100%;
-            margin-top: 30px;
-            display: none; 
-            text-align: left;
-            border: 1px solid #334155; /* Garis tipis */
-        }
-
-        #admin-management h2, #admin-management h3 {
-            color: var(--color-accent-cyan);
-            margin-top: 0;
-        }
-
-        #admin-management input {
-            background-color: #334155; /* Input lebih gelap */
-            color: var(--color-text-primary);
-            padding: 12px;
-            margin: 8px 0;
-            border-radius: 6px;
-            border: 1px solid #475569;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        #admin-management button.add-button {
-            background-color: #10b981; /* Hijau yang lebih cerah untuk Tambah */
-            color: var(--color-bg-primary);
-            font-weight: bold;
-            border: none;
-            cursor: pointer;
-            margin-top: 15px;
-            transition: background-color 0.2s;
-        }
-        #admin-management button.add-button:hover {
-            background-color: #059669;
-        }
-
-        /* Daftar Admin Item Styling */
-        .admin-list-container {
-            max-height: 250px;
             overflow-y: auto;
-            border-top: 1px solid #475569;
-            margin-top: 15px;
-            padding-top: 10px;
-        }
-        .admin-list-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #334155;
+            /* FIX: Menghilangkan scrollbar horizontal yang tidak diinginkan */
+            overflow-x: hidden; 
+            border-right: 1px solid #334155; 
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+            transition: width 0.3s ease; 
         }
         
-        .admin-item-name {
-            font-weight: 600;
-            flex: 1;
-            color: var(--color-text-primary);
-        }
-        .admin-item-url {
-            flex: 2;
-            color: #94a3b8;
-            font-size: 0.9em;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            padding-right: 10px;
-        }
-        .delete-button {
-            width: auto !important;
-            padding: 6px 12px !important;
-            background-color: #ef4444; /* Merah yang lebih cerah */
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.85em;
-            margin-left: 10px;
-            flex-shrink: 0;
+        #shortcut-container h1 {
+            font-size: 1.5em; 
+            margin-bottom: 25px; 
+            color: var(--color-accent-cyan);
+            transition: opacity 0.3s;
         }
 
-        /* --- Gaya Grid Aplikasi --- */
+        /* --- Sidebar Toggle Button (Baru) --- */
+        #sidebar-toggle {
+            background: none;
+            border: none;
+            color: var(--color-text-primary);
+            font-size: 1.5em;
+            padding: 10px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            text-align: left;
+            transition: transform 0.3s ease;
+        }
+        #sidebar-toggle:hover {
+            color: var(--color-accent-cyan);
+        }
+
+        /* Daftar Menu di Sidebar */
         .app-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); 
-            gap: 35px;
-            max-width: 850px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
             width: 100%;
-            justify-items: center;
-            margin-bottom: 40px; 
+            margin-bottom: 20px; 
+            flex-grow: 1; 
         }
 
         .app-item {
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             align-items: center;
             text-decoration: none;
             color: var(--color-text-primary);
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-            padding: 20px;
-            border-radius: 18px;
-            background-color: var(--color-bg-secondary);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            width: 120px; 
-            border: 1px solid #334155;
+            transition: all 0.3s;
+            padding: 10px 15px;
+            border-radius: 8px;
+            background-color: transparent;
+            width: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        
+        .app-item span {
+            transition: opacity 0.3s;
         }
 
         .app-item:hover {
-            transform: translateY(-8px) scale(1.05);
-            box-shadow: 0 10px 30px rgba(6, 182, 212, 0.2);
+            background-color: #334155; 
+        }
+        
+        /* Status Aktif Item */
+        .app-item.active {
+            background-color: var(--color-accent-dark); 
+            color: white;
+            font-weight: 600;
+        }
+        .app-item.active .app-icon-initial {
+            background-color: white !important;
+            color: var(--color-accent-dark) !important;
         }
 
+        /* Ikon / Inisial */
         .app-icon-initial {
-            width: 65px;
-            height: 65px;
+            width: 30px;
+            height: 30px;
+            min-width: 30px; 
             background-color: var(--color-accent-cyan); 
             color: var(--color-bg-primary);
-            border-radius: 15px; 
+            border-radius: 6px; 
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 2.8em; 
+            font-size: 1.1em; 
             font-weight: bold;
-            margin-bottom: 12px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+            margin-right: 15px;
+            flex-shrink: 0;
+            transition: margin 0.3s;
         }
         
-        /* Variasi warna ikon */
-        .app-item:nth-child(2n) .app-icon-initial { background-color: #8b5cf6; } /* Violet */
-        .app-item:nth-child(3n) .app-icon-initial { background-color: #f97316; } /* Orange */
-        .app-item:nth-child(4n) .app-icon-initial { background-color: #ec4899; } /* Pink */
-        .app-item:nth-child(5n) .app-icon-initial { background-color: #3b82f6; } /* Blue */
-
-        .app-item span {
-            font-size: 1.1em;
-            font-weight: 600;
+        /* Warna Ikon Random */
+        .app-item:nth-child(2n) .app-icon-initial { background-color: #8b5cf6; } 
+        .app-item:nth-child(3n) .app-icon-initial { background-color: #f97316; } 
+        .app-item:nth-child(4n) .app-icon-initial { background-color: #ec4899; } 
+        .app-item:nth-child(5n) .app-icon-initial { background-color: #3b82f6; } 
+        
+        .text-info {
+            color: var(--color-text-secondary);
+            font-size: 0.9em;
+            padding: 15px 0;
             text-align: center;
-            color: var(--color-text-primary);
-            white-space: nowrap; 
-            overflow: hidden; 
-            text-overflow: ellipsis; 
-            width: 100%;
         }
 
-        /* Container Iframe dan Tombol Kembali */
+        /* --- Tombol Pengaturan (Gerigi) --- */
+        #settings-button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 20px;
+            background-color: var(--color-bg-primary); 
+            color: var(--color-accent-cyan);
+            border: 1px solid #334155;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            font-weight: 600;
+            transition: all 0.3s;
+            align-self: flex-end; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1em;
+            overflow: hidden;
+        }
+        #settings-button:hover {
+            background-color: #0891b240; 
+            color: var(--color-accent-cyan);
+            transform: translateY(-1px);
+        }
+        #settings-button::before {
+            content: "\2699"; /* Ikon Gerigi Unicode */
+            font-size: 1.2em;
+            margin-right: 8px;
+            transition: margin 0.3s;
+        }
+
+        /* --- COLLAPSED STATE (SB DITUTUP) --- */
+        
+        .sidebar-collapsed #shortcut-container {
+            width: var(--sidebar-width-closed); 
+            min-width: var(--sidebar-width-closed);
+            padding: 20px 0;
+            align-items: center;
+        }
+
+        /* Menyembunyikan dan mengatur posisi elemen saat ditutup */
+        .sidebar-collapsed #shortcut-container h1 {
+            opacity: 0;
+            height: 0;
+            margin-bottom: 0;
+        }
+        .sidebar-collapsed .app-item {
+            padding: 10px;
+            width: 60px; /* Lebar total item */
+            margin: 0 auto;
+            justify-content: center;
+        }
+        .sidebar-collapsed .app-icon-initial {
+            margin-right: 0;
+        }
+        .sidebar-collapsed .app-item span {
+            display: none;
+        }
+        .sidebar-collapsed #sidebar-toggle {
+            text-align: center;
+            transform: rotate(180deg);
+        }
+
+        /* Pengaturan Tombol Settings saat ditutup */
+        .sidebar-collapsed #settings-button {
+            width: 50px; 
+            height: 50px;
+            padding: 0;
+            margin: 20px auto;
+            border-radius: 50%;
+        }
+        .sidebar-collapsed #settings-button::before {
+            margin-right: 0;
+        }
+        .sidebar-collapsed #settings-button span {
+            display: none;
+        }
+        .sidebar-collapsed #settings-button:hover {
+            transform: none; 
+        }
+        
+        /* --- Konten KANAN (Content Area) --- */
+        
         #iframe-wrapper {
-            position: relative; 
-            width: 100vw;
+            flex-grow: 1; 
             height: 100vh;
             display: none; 
         }
@@ -415,76 +458,151 @@
             height: 100%;
             border: none;
             display: block;
-            background-color: white; /* Iframe biasanya menampilkan konten terang */
+            background-color: white; 
         }
 
-        /* Tombol Kembali (Dark Theme) */
-        #back-button {
-            position: fixed; 
-            top: 20px;
-            left: 20px;
-            z-index: 1000; 
-            background-color: var(--color-accent-dark); 
-            color: white;
-            border: none;
-            border-radius: 50%; 
-            width: 50px; /* Sedikit lebih besar */
-            height: 50px;
+        /* Halaman Kosong/Default */
+        #empty-content {
+            flex-grow: 1;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            font-size: 1.5em; 
+            font-size: 1.5em;
+            color: var(--color-text-secondary);
+            background-color: var(--color-bg-primary); 
+            text-align: center;
+        }
+        
+        /* Halaman Pengaturan */
+        #admin-page-content {
+            flex-grow: 1;
+            display: none; 
+            flex-direction: column;
+            padding: 40px;
+            box-sizing: border-box;
+            background-color: var(--color-bg-primary);
+            overflow-y: auto;
+        }
+        .admin-form-container h2 {
+            color: var(--color-accent-cyan);
+            margin-top: 0;
+            border-bottom: 2px solid var(--color-bg-sidebar);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .admin-form-container h3 {
+            color: var(--color-text-primary);
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        #admin-page-content input {
+            background-color: #334155; 
+            color: var(--color-text-primary);
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 6px;
+            border: 1px solid #475569;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        #admin-page-content button.add-button {
+            background-color: var(--color-green); 
+            color: var(--color-bg-primary);
+            font-weight: bold;
+            border: none;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-            transition: background-color 0.3s, transform 0.2s;
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 6px;
+            width: 100%;
+            transition: background-color 0.2s;
         }
-
-        #back-button:hover {
-            background-color: var(--color-accent-cyan);
-            transform: scale(1.1);
+        .admin-list-container {
+            max-height: 400px; 
+            overflow-y: auto;
+            border-top: 1px solid #475569;
+            margin-top: 10px;
+            padding-top: 10px;
         }
-
-        #back-button::before {
-            content: "\2190"; /* Panah kiri Unicode */
+        .admin-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #334155;
+        }
+        .admin-item-name {
+            font-weight: 500;
+            flex: 1;
+            color: var(--color-accent-cyan);
+        }
+        .admin-item-url {
+            flex: 2;
+            color: var(--color-text-secondary);
+            font-size: 0.9em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding-right: 10px;
+        }
+        .delete-button {
+            width: auto !important;
+            padding: 6px 12px !important;
+            background-color: var(--color-red); 
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85em;
+            margin-left: 10px;
+            flex-shrink: 0;
         }
     </style>
 </head>
 <body>
 
-    <!-- CONTAINER AWAL: Pilihan Shortcut (Full Screen) -->
-    <div id="shortcut-container">
-        
-        <div class="app-grid" id="app-grid">
-            <!-- Daftar Shortcut akan dimuat di sini secara real-time dari Firebase -->
+    <div id="main-container">
+
+        <div id="shortcut-container">
+            
+            <button id="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+            <h1>Dashboard</h1>
+
+            <div class="app-grid" id="app-grid">
+                </div>
+            
+            <button id="settings-button" onclick="showSettingsPage()">
+                <span>Pengaturan</span>
+            </button>
         </div>
 
-        <!-- Area Manajemen Admin -->
-        <div id="admin-management">
-            <h2>Tambah Shortcut Baru</h2>
-            <input type="text" id="shortcut-name" placeholder="Nama Aplikasi (Contoh: Google)" />
-            <input type="text" id="shortcut-url" placeholder="URL Lengkap (Contoh: https://www.google.com)" />
-            <button class="add-button" onclick="addShortcut()">Tambahkan</button>
+        <div id="admin-page-content">
+            <div class="admin-form-container">
+                <h2>Kelola Shortcut</h2>
+                <input type="text" id="shortcut-name" placeholder="Nama Aplikasi (Contoh: Google)" />
+                <input type="text" id="shortcut-url" placeholder="URL Lengkap (Contoh: https://www.google.com)" />
+                <button class="add-button" onclick="addShortcut()">Tambahkan Shortcut</button>
 
-            <h3>Daftar Shortcut Aktif</h3>
-            <div id="admin-list-container" class="admin-list-container">
-                <!-- Daftar manajemen akan muncul di sini dengan tombol hapus -->
+                <h3>Daftar Shortcut Aktif</h3>
+                <div id="admin-list-container" class="admin-list-container">
+                    </div>
             </div>
         </div>
-        
-    </div>
 
-    <!-- WRAPPER IFRAME DAN TOMBOL KEMBALI -->
-    <div id="iframe-wrapper">
-        <button id="back-button" onclick="goBackToShortcuts()"></button>
-        
-        <iframe id="content-frame" title="Area Konten">
-            Browser Anda tidak mendukung iframe.
-        </iframe>
-    </div>
-    
-    <!-- Tombol untuk Beralih ke Mode Admin. Visibilitas diatur di fungsi JS. -->
-    <button id="toggle-admin-button" onclick="toggleAdmin()">Mode Admin</button>
+        <div id="empty-content">
+            <h1>Selamat Datang</h1>
+            <p>Pilih salah satu shortcut dari sidebar untuk memuatnya di sini.</p>
+            <p class="text-info" style="margin-top: 15px;">Klik shortcut yang sedang aktif lagi untuk menutupnya.</p>
+        </div>
 
+        <div id="iframe-wrapper">
+            <iframe id="content-frame" title="Area Konten">
+                Browser Anda tidak mendukung iframe.
+            </iframe>
+        </div>
+
+    </div>
 
 </body>
 </html>
