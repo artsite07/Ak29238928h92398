@@ -13,14 +13,15 @@
     tailwind.config = {
       theme: {
         extend: {
+          // --- WARNA YANG SUDAH DISESUAIKAN DENGAN BERANDA.HTML (CYAN) ---
           colors: {
-            'dark-bg': '#0F172A',
-            'card-bg': '#1E293B',
-            'accent': '#38BDF8',
-            'text-light': '#F1F5F9',
-            'subtle-text': '#94A3B8',
-            'btn-hover': '#0EA5E9',
-            'danger': '#EF4444',
+            'dark-bg': '#0a0a0a', 
+            'card-bg': '#111111', 
+            'accent': '#00FFFF', 
+            'text-light': '#FFFFFF', 
+            'subtle-text': '#AAAAAA', 
+            'btn-hover': '#00DEDE', 
+            'danger': '#EF4444', 
           },
           fontFamily: {
             sans: ['Inter', 'sans-serif'],
@@ -68,16 +69,15 @@
 
   <div class="w-full max-w-4xl space-y-8">
 
-    <div class="text-center p-6 bg-card-bg rounded-2xl shadow-lg border border-sky-400/20 transition duration-300">
+    <div class="text-center p-6 bg-card-bg rounded-2xl shadow-lg border border-accent/30 transition duration-300">
       <div class="flex justify-center items-end">
         <span id="time" class="text-6xl md:text-8xl font-extrabold text-accent leading-none tracking-tighter drop-shadow transition duration-300">00:00:00</span>
-        <span id="period" class="text-xl md:text-3xl font-semibold ml-2 mb-1 text-subtle-text">AM</span>
-      </div>
+        </div>
       <div id="date" class="text-md md:text-xl text-accent/70 mt-3 font-medium">Loading date...</div>
     </div>
 
     <div id="messageAreaContainer" class="p-4 bg-accent/10 rounded-xl shadow-inner border border-accent/40 flex flex-col space-y-3">
-        <p id="motivationalMessage" class="text-center text-lg font-semibold text-accent/90 italic transition duration-1000 ease-in-out transform">
+        <p id="motivationalMessage" class="text-center text-lg font-semibold text-accent/90 transition duration-1000 ease-in-out transform">
             Loading message...
         </p>
         
@@ -95,7 +95,7 @@
             <p id="wordErrorMsg" class="text-red-500 mt-2 ml-4 hidden text-sm"></p>
         </div>
     </div>
-    <div class="p-6 bg-card-bg rounded-2xl shadow-lg border border-sky-400/20">
+    <div class="p-6 bg-card-bg rounded-2xl shadow-lg border border-accent/30">
 
       <ul id="taskList" class="space-y-3 mb-6 pt-1">
       </ul>
@@ -149,11 +149,16 @@
         let h = now.getHours();
         const m = now.getMinutes().toString().padStart(2, '0');
         const s = now.getSeconds().toString().padStart(2, '0');
-        const period = h >= 12 ? 'PM' : 'AM';
-        h = h % 12 || 12;
+        
+        // PERUBAHAN 1: Menghapus logika dan variabel AM/PM (hanya menampilkan format 24 jam)
+        // const period = h >= 12 ? 'PM' : 'AM'; 
+        // h = h % 12 || 12; // Konversi ke format 12 jam
 
+        // Menggunakan format 24 jam (h.toString().padStart(2,'0'))
         document.getElementById('time').textContent = `${h.toString().padStart(2,'0')}:${m}:${s}`;
-        document.getElementById('period').textContent = period;
+        
+        // document.getElementById('period').textContent = period; // DIHAPUS
+
         document.getElementById('date').textContent = now.toLocaleDateString('id-ID', {
           weekday: 'long',
           year: 'numeric',
@@ -246,7 +251,7 @@
             const li = document.createElement('li');
             li.className = 'flex justify-between items-center p-2 bg-card-bg rounded-lg border border-subtle-text/20';
             li.innerHTML = `
-                <span class="text-sm text-text-light italic max-w-[80%] break-words">${word.text}</span>
+                <span class="text-sm text-text-light max-w-[80%] break-words">${word.text}</span>
                 <button data-id="${word.id}" class="remove-word-btn text-danger hover:text-red-400 p-1 rounded-full transition duration-150 flex-shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 6h6v8a1 1 0 11-2 0V7a1 1 0 00-1-1H7z" clip-rule="evenodd" />
