@@ -57,7 +57,8 @@
             });
 
             if (sortedKeys.length === 0) {
-                grid.innerHTML = '<p class="text-info">Belum ada shortcut.</p>';
+                // Di mode ciut permanen, tampilkan pesan di area konten utama, bukan di sidebar
+                // grid.innerHTML = '<p class="text-info">Belum ada shortcut.</p>'; 
                 adminGrid.innerHTML = '<p class="text-info">Belum ada shortcut.</p>';
                 return;
             }
@@ -71,7 +72,7 @@
                 appItem.href = '#';
                 appItem.className = 'app-item';
                 if (activeIframeUrl === item.url) {
-                     appItem.classList.add('active');
+                       appItem.classList.add('active');
                 }
                 
                 appItem.onclick = (e) => {
@@ -84,6 +85,7 @@
                     }
                 };
                 
+                // Pastikan seluruh area 'a' adalah tombol dengan ikon di dalamnya
                 appItem.innerHTML = `
                     <div class="app-icon-initial">${initial}</div>
                     <span>${item.name}</span>
@@ -190,42 +192,37 @@
             const adminPage = document.getElementById('admin-page-content'); 
 
             activeIframeUrl = null; 
-            iframeWrapper.style.display = 'none';    
+            iframeWrapper.style.display = 'none';    
             contentFrame.src = 'about:blank'; 
             if (emptyContent) emptyContent.style.display = 'flex'; 
             if (adminPage) adminPage.style.display = 'none';
 
             renderShortcuts();
         };
-        
-        // --- Sidebar Toggle Logic ---
-        window.toggleSidebar = () => {
-            const mainContainer = document.getElementById('main-container');
-            mainContainer.classList.toggle('sidebar-collapsed');
-            
-            // Tutup halaman pengaturan jika sedang aktif saat sidebar ditutup (opsional)
-            if (mainContainer.classList.contains('sidebar-collapsed') && activeIframeUrl === 'settings') {
-                 goBackToShortcuts();
-            }
-        };
+
+        // Logika toggle dihilangkan karena sidebar ciut permanen
+        // window.toggleSidebar = () => { ... }
 
         startRealtimeListener();
 
     </script>
     
     <style>
-        /* Variabel Warna Dark Theme: Slate & Cyan */
+        /* Variabel Warna Dark Theme: Sesuai beranda.html (Dark & Cyan) */
         :root {
-            --color-bg-primary: #0f172a; 
-            --color-bg-sidebar: #1e293b; 
-            --color-text-primary: #e2e8f0; 
-            --color-text-secondary: #94a3b8; 
-            --color-accent-cyan: #06b6d4; 
-            --color-accent-dark: #0891b2; 
+            --color-bg-primary: #0a0a0a;
+            --color-bg-sidebar: #111111;
+            --color-text-primary: #FFFFFF;
+            --color-text-secondary: #AAAAAA;
+            --color-accent-cyan: #00FFFF;
+            --color-accent-dark: #00DEDE;
             --color-red: #ef4444; 
             --color-green: #10b981; 
-            --sidebar-width-open: 280px;
-            --sidebar-width-closed: 80px;
+            
+            --color-border-dark: #222222;
+            --color-hover-bg: #1A1A1A;
+
+            --sidebar-width-closed: 80px; /* Lebar ciut permanen */
         }
 
         /* Reset dan Main Layout */
@@ -245,56 +242,38 @@
             display: flex;
             height: 100vh;
             width: 100vw;
-            transition: all 0.3s ease; 
+            /* Flex direction default (row) akan menempatkan item sesuai urutan HTML.
+               Karena sidebar diletakkan terakhir di HTML, ia akan berada di kanan. */
         }
 
-        /* Sidebar Container (KIRI - LEBAR TERBUKA) */
+        /* Sidebar Container (KANAN - CIUT PERMANEN) */
         #shortcut-container {
-            width: var(--sidebar-width-open); 
-            min-width: var(--sidebar-width-open);
+            /* MENGATUR LEBAR CIUT PERMANEN */
+            width: var(--sidebar-width-closed); 
+            min-width: var(--sidebar-width-closed);
+            padding: 20px 0; /* Padding untuk ciut */
+            align-items: center; /* Mengatur konten ke tengah */
+            
             background-color: var(--color-bg-sidebar);
             display: flex;
             flex-direction: column;
-            padding: 20px;
             box-sizing: border-box;
             overflow-y: auto;
-            /* FIX: Menghilangkan scrollbar horizontal yang tidak diinginkan */
             overflow-x: hidden; 
-            border-right: 1px solid #334155; 
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
-            transition: width 0.3s ease; 
+            
+            /* Border di kiri sidebar */
+            border-left: 1px solid var(--color-border-dark); 
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.5); /* Shadow ke kiri */
         }
         
-        #shortcut-container h1 {
-            font-size: 1.5em; 
-            margin-bottom: 25px; 
-            color: var(--color-accent-cyan);
-            transition: opacity 0.3s;
-        }
-
-        /* --- Sidebar Toggle Button (Baru) --- */
-        #sidebar-toggle {
-            background: none;
-            border: none;
-            color: var(--color-text-primary);
-            font-size: 1.5em;
-            padding: 10px;
-            cursor: pointer;
-            margin-bottom: 10px;
-            text-align: left;
-            transition: transform 0.3s ease;
-        }
-        #sidebar-toggle:hover {
-            color: var(--color-accent-cyan);
-        }
-
         /* Daftar Menu di Sidebar */
         .app-grid {
             display: flex;
             flex-direction: column;
             gap: 5px;
-            width: 100%;
-            margin-bottom: 20px; 
+            /* Lebar item disesuaikan agar bisa di tengah di ruang 80px */
+            width: 60px; 
+            margin: 0 auto 20px auto; /* Di tengah dan beri margin bawah */
             flex-grow: 1; 
         }
 
@@ -305,20 +284,22 @@
             text-decoration: none;
             color: var(--color-text-primary);
             transition: all 0.3s;
-            padding: 10px 15px;
+            padding: 10px; /* Padding ciut: Area klik yang besar */
             border-radius: 8px;
             background-color: transparent;
-            width: 100%;
+            width: 100%; /* Mengisi lebar 60px yang telah di set di .app-grid */
             box-sizing: border-box;
             overflow: hidden;
+            justify-content: center; /* Pusatkan ikon */
         }
         
         .app-item span {
-            transition: opacity 0.3s;
+            display: none; /* Sembunyikan teks nama shortcut */
         }
 
+        /* Perubahan Hover Background */
         .app-item:hover {
-            background-color: #334155; 
+            background-color: var(--color-hover-bg); 
         }
         
         /* Status Aktif Item */
@@ -329,7 +310,7 @@
         }
         .app-item.active .app-icon-initial {
             background-color: white !important;
-            color: var(--color-accent-dark) !important;
+            color: var(--color-bg-sidebar) !important; 
         }
 
         /* Ikon / Inisial */
@@ -345,7 +326,7 @@
             align-items: center;
             font-size: 1.1em; 
             font-weight: bold;
-            margin-right: 15px;
+            margin-right: 0; /* Hapus margin agar ikon di tengah */
             flex-shrink: 0;
             transition: margin 0.3s;
         }
@@ -363,20 +344,21 @@
             text-align: center;
         }
 
-        /* --- Tombol Pengaturan (Gerigi) --- */
+        /* --- Tombol Pengaturan (Gerigi - Tampilan Ciut) --- */
         #settings-button {
-            width: 100%;
-            padding: 10px;
-            margin-top: 20px;
+            width: 50px; /* Ukuran tombol kecil */
+            height: 50px;
+            padding: 0;
+            margin: 20px auto; /* Di tengah */
+            border-radius: 50%;
             background-color: var(--color-bg-primary); 
             color: var(--color-accent-cyan);
-            border: 1px solid #334155;
-            border-radius: 8px;
+            border: 1px solid var(--color-border-dark);
             cursor: pointer;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
             font-weight: 600;
             transition: all 0.3s;
-            align-self: flex-end; 
+            align-self: center; /* Pastikan di tengah */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -384,68 +366,20 @@
             overflow: hidden;
         }
         #settings-button:hover {
-            background-color: #0891b240; 
+            background-color: #00FFFF40; 
             color: var(--color-accent-cyan);
-            transform: translateY(-1px);
+            transform: none;
         }
         #settings-button::before {
             content: "\2699"; /* Ikon Gerigi Unicode */
             font-size: 1.2em;
-            margin-right: 8px;
-            transition: margin 0.3s;
-        }
-
-        /* --- COLLAPSED STATE (SB DITUTUP) --- */
-        
-        .sidebar-collapsed #shortcut-container {
-            width: var(--sidebar-width-closed); 
-            min-width: var(--sidebar-width-closed);
-            padding: 20px 0;
-            align-items: center;
-        }
-
-        /* Menyembunyikan dan mengatur posisi elemen saat ditutup */
-        .sidebar-collapsed #shortcut-container h1 {
-            opacity: 0;
-            height: 0;
-            margin-bottom: 0;
-        }
-        .sidebar-collapsed .app-item {
-            padding: 10px;
-            width: 60px; /* Lebar total item */
-            margin: 0 auto;
-            justify-content: center;
-        }
-        .sidebar-collapsed .app-icon-initial {
             margin-right: 0;
         }
-        .sidebar-collapsed .app-item span {
-            display: none;
-        }
-        .sidebar-collapsed #sidebar-toggle {
-            text-align: center;
-            transform: rotate(180deg);
-        }
-
-        /* Pengaturan Tombol Settings saat ditutup */
-        .sidebar-collapsed #settings-button {
-            width: 50px; 
-            height: 50px;
-            padding: 0;
-            margin: 20px auto;
-            border-radius: 50%;
-        }
-        .sidebar-collapsed #settings-button::before {
-            margin-right: 0;
-        }
-        .sidebar-collapsed #settings-button span {
-            display: none;
-        }
-        .sidebar-collapsed #settings-button:hover {
-            transform: none; 
+        #settings-button span {
+            display: none; /* Sembunyikan teks "Pengaturan" */
         }
         
-        /* --- Konten KANAN (Content Area) --- */
+        /* --- Konten KIRI (Content Area) --- */
         
         #iframe-wrapper {
             flex-grow: 1; 
@@ -487,41 +421,15 @@
         .admin-form-container h2 {
             color: var(--color-accent-cyan);
             margin-top: 0;
-            border-bottom: 2px solid var(--color-bg-sidebar);
+            border-bottom: 2px solid var(--color-border-dark); 
             padding-bottom: 10px;
             margin-bottom: 20px;
         }
-        .admin-form-container h3 {
-            color: var(--color-text-primary);
-            margin-top: 30px;
-            margin-bottom: 15px;
-        }
-        #admin-page-content input {
-            background-color: #334155; 
-            color: var(--color-text-primary);
-            padding: 12px;
-            margin: 8px 0;
-            border-radius: 6px;
-            border: 1px solid #475569;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        #admin-page-content button.add-button {
-            background-color: var(--color-green); 
-            color: var(--color-bg-primary);
-            font-weight: bold;
-            border: none;
-            cursor: pointer;
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 6px;
-            width: 100%;
-            transition: background-color 0.2s;
-        }
+        /* Styling admin content lainnya tetap dipertahankan */
         .admin-list-container {
             max-height: 400px; 
             overflow-y: auto;
-            border-top: 1px solid #475569;
+            border-top: 1px solid #333333;
             margin-top: 10px;
             padding-top: 10px;
         }
@@ -530,7 +438,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 10px 0;
-            border-bottom: 1px solid #334155;
+            border-bottom: 1px solid #1A1A1A;
         }
         .admin-item-name {
             font-weight: 500;
@@ -563,20 +471,7 @@
 <body>
 
     <div id="main-container">
-
-        <div id="shortcut-container">
-            
-            <button id="sidebar-toggle" onclick="toggleSidebar()">☰</button>
-            <h1>Dashboard</h1>
-
-            <div class="app-grid" id="app-grid">
-                </div>
-            
-            <button id="settings-button" onclick="showSettingsPage()">
-                <span>Pengaturan</span>
-            </button>
-        </div>
-
+        
         <div id="admin-page-content">
             <div class="admin-form-container">
                 <h2>Kelola Shortcut</h2>
@@ -600,6 +495,15 @@
             <iframe id="content-frame" title="Area Konten">
                 Browser Anda tidak mendukung iframe.
             </iframe>
+        </div>
+
+        <div id="shortcut-container">
+            <div class="app-grid" id="app-grid">
+                </div>
+            
+            <button id="settings-button" onclick="showSettingsPage()">
+                <span>Pengaturan</span>
+            </button>
         </div>
 
     </div>
