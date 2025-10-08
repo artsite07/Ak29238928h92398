@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplikasi Shortcut URL Realtime (Header)</title>
+    <title>Aplikasi Shortcut URL Realtime (Urutan Manual)</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+
     <script type="module">
         // Import modul Firebase yang diperlukan: App, Realtime Database, dan fungsi Update
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -34,12 +36,15 @@
         let shortcutsData = {};
         let activeIframeUrl = null;
         let editingKey = null; // State untuk melacak item yang sedang diedit
+        let sortableInstance = null; // Instansi SortableJS
 
         function startRealtimeListener() {
             onValue(shortcutRef, (snapshot) => {
                 const data = snapshot.val();
                 shortcutsData = data || {};
                 renderShortcuts();
+                // Inisialisasi Sortable setelah data dimuat
+                initializeSortable();
             }, (error) => {
                 console.error("Error membaca data RTDB:", error);
                 document.getElementById('app-grid').innerHTML = 
@@ -53,11 +58,19 @@
             const adminGrid = document.getElementById('admin-list-container');
             adminGrid.innerHTML = ''; 
 
-            const sortedKeys = Object.keys(shortcutsData).sort((a, b) => {
-                const nameA = shortcutsData[a].name.toLowerCase();
-                const nameB = shortcutsData[b].name.toLowerCase();
-                return nameA < nameB ? -1 : (nameA > nameB ? 1 : 0);
+            // --- PERUBAHAN UTAMA UNTUK SORTING ---
+            // 1. Ambil keys
+            const keys = Object.keys(shortcutsData);
+            
+            // 2. Urutkan berdasarkan properti 'order' (angka). Jika tidak ada, gunakan Date.now()
+            const sortedKeys = keys.sort((a, b) => {
+                // Beri nilai order tinggi jika belum ada, agar item baru muncul di akhir
+                const orderA = shortcutsData[a].order === undefined ? Infinity : shortcutsData[a].order;
+                const orderB = shortcutsData[b].order === undefined ? Infinity : shortcutsData[b].order;
+                return orderA - orderB;
             });
+            // ----------------------------------------
+
 
             if (sortedKeys.length === 0) {
                 adminGrid.innerHTML = '<p class="text-info">Belum ada shortcut.</p>';
@@ -68,24 +81,21 @@
                 const item = shortcutsData[key];
                 const initial = item.name.charAt(0).toUpperCase(); 
                 
-                // Tentukan konten ikon: gunakan item.icon jika tersedia, jika tidak, gunakan inisial
+                // Tentukan konten ikon
                 let iconContent = '';
                 let isFontAwesome = false;
 
                 if (item.icon && item.icon.startsWith('fa-')) {
-                    // Font Awesome class (e.g., fa-solid fa-globe)
                     iconContent = `<i class="${item.icon}"></i>`;
                     isFontAwesome = true;
                 } else if (item.icon) {
-                    // Emoji atau karakter lain
                     iconContent = item.icon;
                 } else {
-                    // Fallback ke inisial
                     iconContent = initial;
                 }
 
 
-                // 1. Render item di Sidebar (Menu Utama)
+                // 1. Render item di Header
                 const appItem = document.createElement('a');
                 appItem.href = '#';
                 appItem.className = 'app-item';
@@ -103,7 +113,6 @@
                     }
                 };
                 
-                // Hapus `<span>${item.name}</span>` di desktop/header untuk menghemat ruang
                 appItem.innerHTML = `
                     <div class="app-icon-initial ${isFontAwesome ? 'fa-icon-style' : ''}">${iconContent}</div>
                 `;
@@ -112,7 +121,10 @@
                 // 2. Render item di Halaman Pengaturan (Admin)
                 const adminItem = document.createElement('div');
                 adminItem.className = 'admin-list-item';
+                // Tambahkan data-id untuk SortableJS
+                adminItem.setAttribute('data-id', key); 
                 adminItem.innerHTML = `
+                    <div class="drag-handle"><i class="fa-solid fa-grip-vertical"></i></div> 
                     <div class="admin-item-details">
                         <span class="admin-item-name">${item.name}</span>
                         <span class="admin-item-url">${item.url}</span>
@@ -139,6 +151,51 @@
                 });
             });
         }
+        
+        // --- LOGIC SORTABLEJS ---
+        function initializeSortable() {
+            const adminGrid = document.getElementById('admin-list-container');
+            
+            // Hapus instansi SortableJS yang lama jika ada
+            if (sortableInstance) {
+                sortableInstance.destroy();
+            }
+
+            if (adminGrid) {
+                sortableInstance = new Sortable(adminGrid, {
+                    animation: 150,
+                    handle: '.drag-handle', // Hanya elemen dengan kelas ini yang bisa diseret
+                    onEnd: function (evt) {
+                        // Dipanggil setelah item diseret dan dilepas
+                        const newOrder = Array.from(adminGrid.children).map(item => item.getAttribute('data-id'));
+                        updateShortcutOrder(newOrder);
+                    },
+                });
+            }
+        }
+        
+        // --- UPDATE ORDER KE FIREBASE ---
+        function updateShortcutOrder(newOrderKeys) {
+            const updates = {};
+            newOrderKeys.forEach((key, index) => {
+                // Setiap item diurutkan mendapat nilai 'order' sesuai indeksnya
+                updates[key + '/order'] = index; 
+            });
+
+            const listRef = ref(db, 'artifacts/' + SAFE_APP_ID + '/shortcuts/list');
+            
+            update(listRef, updates)
+                .then(() => {
+                    console.log("Urutan shortcut berhasil diperbarui di Firebase.");
+                    // Data akan di-render ulang otomatis oleh onValue listener
+                })
+                .catch(error => {
+                    console.error("Gagal memperbarui urutan:", error);
+                    alert('Gagal memperbarui urutan shortcut.');
+                });
+        }
+        // ------------------------------------
+
 
         // --- CRUD Operations ---
         window.addShortcut = () => {
@@ -178,6 +235,11 @@
                 // MODE TAMBAH BARU: PUSH DATA
                 shortcutData.created = Date.now();
                 
+                // Tambahkan properti order baru
+                const currentKeys = Object.keys(shortcutsData);
+                // Memberikan nilai order tertinggi + 1, agar muncul di paling akhir.
+                shortcutData.order = currentKeys.length > 0 ? currentKeys.length : 0; 
+
                 push(shortcutRef, shortcutData)
                     .then(() => {
                         resetForm();
@@ -227,6 +289,17 @@
                     .then(() => {
                         if (key === editingKey) {
                             resetForm();
+                        }
+                        // Setelah penghapusan, panggil update order untuk merapikan urutan
+                        const remainingKeys = Object.keys(shortcutsData).filter(k => k !== key);
+                        if(remainingKeys.length > 0) {
+                            // Ambil keys yang tersisa, urutkan dulu berdasarkan order lama, lalu kirim
+                            const reorderedKeys = remainingKeys.sort((a, b) => {
+                                const orderA = shortcutsData[a].order === undefined ? Infinity : shortcutsData[a].order;
+                                const orderB = shortcutsData[b].order === undefined ? Infinity : shortcutsData[b].order;
+                                return orderA - orderB;
+                            });
+                            updateShortcutOrder(reorderedKeys);
                         }
                     })
                     .catch(error => {
@@ -441,7 +514,7 @@
             background-color: var(--color-bg-primary); overflow-y: auto; height: 100%;
         }
         
-        /* Form Input (TIDAK BERUBAH) */
+        /* Form Input */
         .admin-form-container input {
             width: 100%;
             padding: 12px;
@@ -488,13 +561,44 @@
         .cancel-button:hover { background-color: #888888; }
 
 
-        /* Daftar Shortcut */
+        /* Daftar Shortcut (UPDATED for Drag & Drop) */
         .admin-list-container {
-            max-height: 400px; overflow-y: auto; border-top: 1px solid #333333; margin-top: 10px; padding-top: 10px;
+            max-height: 400px; 
+            overflow-y: auto; 
+            border-top: 1px solid #333333; 
+            margin-top: 10px; 
+            padding-top: 10px;
+            cursor: move; /* Indikasi bahwa daftar bisa dipindahkan */
         }
+
+        /* Item yang bisa diseret */
         .admin-list-item {
-            display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #1A1A1A;
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 10px 0; 
+            border-bottom: 1px solid #1A1A1A;
+            background-color: var(--color-bg-primary); /* Penting untuk visual drag */
+            transition: background-color 0.2s, transform 0.2s;
+            cursor: grab; /* Kursor seret */
         }
+        
+        /* Style saat item sedang diseret (dari SortableJS) */
+        .admin-list-item.sortable-chosen {
+            background-color: #1A1A1A; /* Warna latar belakang saat memilih item */
+            box-shadow: 0 4px 15px rgba(0, 255, 255, 0.2);
+            opacity: 0.9;
+            transform: scale(1.02);
+        }
+        
+        /* Indikator seret (drag handle) */
+        .drag-handle {
+            cursor: grab;
+            margin-right: 15px;
+            color: var(--color-text-secondary);
+            font-size: 1.1em;
+        }
+
         .admin-item-details {
             display: flex; flex-direction: column; flex-grow: 1; min-width: 0;
         }
@@ -533,10 +637,9 @@
         /* --- MEDIA QUERY: MOBILE (Max 768px) --- */
         /* ========================================================== */
         @media screen and (max-width: 768px) {
-            /* Perubahan di sini sebagian besar sama karena header sebelumnya sudah horizontal di mobile. */
 
             :root {
-                --header-height: 60px; /* Sedikit lebih tinggi di mobile */
+                --header-height: 60px; 
             }
 
             #main-header {
@@ -554,13 +657,13 @@
             }
             
             .app-icon-initial { 
-                width: 35px; /* Sedikit lebih besar dari desktop */
+                width: 35px; 
                 height: 35px;
                 min-width: 35px;
                 font-size: 1.1em;
             }
 
-            /* Penyesuaian Halaman Admin di Mobile (TIDAK BERUBAH) */
+            /* Penyesuaian Halaman Admin di Mobile */
             #admin-page-content {
                 padding: 20px;
             }
@@ -569,6 +672,18 @@
                 align-items: flex-start;
                 padding-bottom: 15px;
             }
+            /* Pindahkan drag handle agar lebih mudah disentuh di mobile */
+            .drag-handle {
+                position: absolute;
+                right: 20px;
+                margin-right: 0;
+                top: 10px;
+            }
+            
+            .admin-list-item {
+                position: relative; /* Untuk menempatkan drag handle absolut */
+            }
+
             .admin-item-details {
                 margin-bottom: 5px;
             }
@@ -612,7 +727,7 @@
                     <button class="cancel-button" onclick="resetForm()">Batal Edit</button>
                 </div>
 
-                <h3>Daftar Shortcut Aktif</h3>
+                <h3>Daftar Shortcut Aktif (Seret untuk Mengatur Urutan)</h3>
                 <div id="admin-list-container" class="admin-list-container">
                 </div>
             </div>
