@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Adlan Madjied Ridho - Kunci Layar</title>
+  <title>Adlan M.R</title>
   <!-- Favicon menggunakan 1.png -->
   <link rel="icon" href="1.png">
   <!-- Menggunakan Poppins untuk kesan yang lebih lembut dan elegan -->
@@ -15,9 +15,9 @@
   <style>
     :root {
       /* Warna utama diubah menjadi gradasi Cyan Gelap */
-      --bg-dark-start: #001f3f;
+      --bg-dark-start: #000000;
       /* Dark Navy/Cyan Tua */
-      --bg-dark-end: #000c1f;
+      --bg-dark-end: #000000;
       /* Lebih gelap lagi */
       --text-light: #f0f0f0;
       --primary: #00BCD4;
@@ -25,7 +25,7 @@
       --primary-hover: #0097A7;
       /* Cyan lebih gelap untuk hover */
       --input-bg: rgba(255, 255, 255, 0.05);
-      --input-border: rgba(255, 255, 255, 0.2);
+      --input-border: rgba(255, 255, 255, 0.2);   
       --font-main: 'Poppins', sans-serif;
       --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.6);
     }
@@ -60,7 +60,7 @@
       width: 100%;
       height: 100%;
       /* Menggunakan background transparan agar gradasi body terlihat */
-      background: transparent; 
+      background: transparent;
       color: var(--text-light);
       display: none;
       flex-direction: column;
@@ -165,7 +165,8 @@
       padding: 0.8rem;
       background: var(--primary);
       /* Cyan sebagai warna tombol */
-      color: var(--bg-dark-start); /* Menggunakan warna gelap dari gradasi */
+      color: var(--bg-dark-start);
+      /* Menggunakan warna gelap dari gradasi */
       font-weight: 600;
       border: none;
       border-radius: 8px;
@@ -526,7 +527,7 @@
         berandaContainer.style.display = 'none';
         document.body.style.display = 'flex';
         // Menggunakan Gradasi Cyan Gelap untuk latar belakang body
-        document.body.style.background = 'linear-gradient(135deg, var(--bg-dark-start) 0%, var(--bg-dark-end) 100%)'; 
+        document.body.style.background = 'linear-gradient(135deg, var(--bg-dark-start) 0%, var(--bg-dark-end) 100%)';
         document.body.style.backgroundSize = 'cover';
 
         pwInputLock.value = '';
