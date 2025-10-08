@@ -5,10 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aplikasi Shortcut URL Realtime</title>
     
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    
     <script type="module">
-        // Import modul Firebase yang diperlukan: App dan Realtime Database.
+        // Import modul Firebase yang diperlukan: App, Realtime Database, dan fungsi Update
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getDatabase, ref, onValue, push, remove } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+        import { getDatabase, ref, onValue, push, remove, update } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
         
         // --- Konfigurasi Firebase Anda (TIDAK DIUBAH) ---
         const firebaseConfig = {
@@ -31,6 +33,7 @@
 
         let shortcutsData = {};
         let activeIframeUrl = null;
+        let editingKey = null; // State untuk melacak item yang sedang diedit
 
         function startRealtimeListener() {
             onValue(shortcutRef, (snapshot) => {
@@ -57,8 +60,6 @@
             });
 
             if (sortedKeys.length === 0) {
-                // Di mode ciut permanen, tampilkan pesan di area konten utama, bukan di sidebar
-                // grid.innerHTML = '<p class="text-info">Belum ada shortcut.</p>'; 
                 adminGrid.innerHTML = '<p class="text-info">Belum ada shortcut.</p>';
                 return;
             }
@@ -66,6 +67,23 @@
             sortedKeys.forEach(key => {
                 const item = shortcutsData[key];
                 const initial = item.name.charAt(0).toUpperCase(); 
+                
+                // Tentukan konten ikon: gunakan item.icon jika tersedia, jika tidak, gunakan inisial
+                let iconContent = '';
+                let isFontAwesome = false;
+
+                if (item.icon && item.icon.startsWith('fa-')) {
+                    // Font Awesome class (e.g., fa-solid fa-globe)
+                    iconContent = `<i class="${item.icon}"></i>`;
+                    isFontAwesome = true;
+                } else if (item.icon) {
+                    // Emoji atau karakter lain
+                    iconContent = item.icon;
+                } else {
+                    // Fallback ke inisial
+                    iconContent = initial;
+                }
+
 
                 // 1. Render item di Sidebar (Menu Utama)
                 const appItem = document.createElement('a');
@@ -85,9 +103,8 @@
                     }
                 };
                 
-                // Pastikan seluruh area 'a' adalah tombol dengan ikon di dalamnya
                 appItem.innerHTML = `
-                    <div class="app-icon-initial">${initial}</div>
+                    <div class="app-icon-initial ${isFontAwesome ? 'fa-icon-style' : ''}">${iconContent}</div>
                     <span>${item.name}</span>
                 `;
                 grid.appendChild(appItem);
@@ -96,18 +113,29 @@
                 const adminItem = document.createElement('div');
                 adminItem.className = 'admin-list-item';
                 adminItem.innerHTML = `
-                    <span class="admin-item-name">${item.name}</span>
-                    <span class="admin-item-url">${item.url}</span>
-                    <button class="delete-button" data-key="${key}">Hapus</button>
+                    <div class="admin-item-details">
+                        <span class="admin-item-name">${item.name}</span>
+                        <span class="admin-item-url">${item.url}</span>
+                    </div>
+                    <div class="admin-item-actions">
+                        <button class="edit-button" data-key="${key}">Edit</button>
+                        <button class="delete-button" data-key="${key}">Hapus</button>
+                    </div>
                 `;
                 adminGrid.appendChild(adminItem);
             });
 
-            // Tambahkan event listener untuk tombol hapus
+            // Tambahkan event listener untuk tombol hapus dan edit
             document.querySelectorAll('.delete-button').forEach(button => {
                 button.addEventListener('click', (e) => {
                     const key = e.target.getAttribute('data-key');
                     deleteShortcut(key);
+                });
+            });
+            document.querySelectorAll('.edit-button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const key = e.target.getAttribute('data-key');
+                    editShortcut(key);
                 });
             });
         }
@@ -116,8 +144,11 @@
         window.addShortcut = () => {
             const nameInput = document.getElementById('shortcut-name');
             const urlInput = document.getElementById('shortcut-url');
+            const iconInput = document.getElementById('shortcut-icon');
+
             const name = nameInput.value.trim();
             let url = urlInput.value.trim();
+            const icon = iconInput.value.trim() || null;
 
             if (!name || !url) {
                 alert('Nama dan URL tidak boleh kosong!');
@@ -128,23 +159,76 @@
                 url = 'http://' + url;
             }
 
-            const newShortcut = { name, url, created: Date.now() };
-            
-            push(shortcutRef, newShortcut)
-                .then(() => {
-                    nameInput.value = '';
-                    urlInput.value = '';
-                })
-                .catch(error => {
-                    console.error("Gagal menambahkan shortcut:", error);
-                    alert('Gagal menambahkan shortcut. (Kemungkinan error rules database)');
-                });
+            const shortcutData = { name, url, icon, updated: Date.now() };
+
+            if (editingKey) {
+                // MODE EDIT: UPDATE DATA
+                const itemRef = ref(db, 'artifacts/' + SAFE_APP_ID + '/shortcuts/list/' + editingKey);
+                
+                update(itemRef, shortcutData)
+                    .then(() => {
+                        resetForm();
+                    })
+                    .catch(error => {
+                        console.error("Gagal mengupdate shortcut:", error);
+                        alert('Gagal mengupdate shortcut. (Kemungkinan error rules database)');
+                    });
+
+            } else {
+                // MODE TAMBAH BARU: PUSH DATA
+                shortcutData.created = Date.now();
+                
+                push(shortcutRef, shortcutData)
+                    .then(() => {
+                        resetForm();
+                    })
+                    .catch(error => {
+                        console.error("Gagal menambahkan shortcut:", error);
+                        alert('Gagal menambahkan shortcut. (Kemungkinan error rules database)');
+                    });
+            }
         };
+
+        window.editShortcut = (key) => {
+            const item = shortcutsData[key];
+            if (!item) return;
+
+            // Isi form dengan data yang akan diedit
+            document.getElementById('shortcut-name').value = item.name;
+            document.getElementById('shortcut-url').value = item.url;
+            document.getElementById('shortcut-icon').value = item.icon || '';
+            
+            // Ubah tampilan tombol dan simpan state
+            document.querySelector('.add-button').textContent = 'Simpan Perubahan';
+            document.querySelector('.cancel-button').style.display = 'inline-block';
+            document.querySelector('.admin-form-container h2').textContent = 'Edit Shortcut';
+            editingKey = key;
+            
+            // Pastikan halaman pengaturan terbuka
+            showSettingsPage(); 
+        };
+
+        window.resetForm = () => {
+            document.getElementById('shortcut-name').value = '';
+            document.getElementById('shortcut-url').value = '';
+            document.getElementById('shortcut-icon').value = '';
+            
+            document.querySelector('.add-button').textContent = 'Tambahkan Shortcut';
+            document.querySelector('.cancel-button').style.display = 'none';
+            document.querySelector('.admin-form-container h2').textContent = 'Kelola Shortcut';
+            editingKey = null;
+        };
+
 
         function deleteShortcut(key) {
             if (confirm(`Apakah Anda yakin ingin menghapus shortcut "${shortcutsData[key]?.name}"?`)) { 
                 const itemRef = ref(db, 'artifacts/' + SAFE_APP_ID + '/shortcuts/list/' + key);
                 remove(itemRef)
+                    .then(() => {
+                        if (key === editingKey) {
+                            resetForm();
+                        }
+                    })
                     .catch(error => {
                         console.error("Gagal menghapus shortcut:", error);
                         alert('Gagal menghapus shortcut. (Kemungkinan error rules database)');
@@ -152,7 +236,7 @@
             }
         }
 
-        // --- Iframe / Content Navigation Logic ---
+        // --- Iframe / Content Navigation Logic (TIDAK DIUBAH) ---
 
         window.loadContent = (url) => {
             const iframeWrapper = document.getElementById('iframe-wrapper');
@@ -200,15 +284,12 @@
             renderShortcuts();
         };
 
-        // Logika toggle dihilangkan karena sidebar ciut permanen
-        // window.toggleSidebar = () => { ... }
-
         startRealtimeListener();
 
     </script>
     
     <style>
-        /* Variabel Warna Dark Theme: Sesuai beranda.html (Dark & Cyan) */
+        /* Variabel Warna */
         :root {
             --color-bg-primary: #0a0a0a;
             --color-bg-sidebar: #111111;
@@ -218,11 +299,12 @@
             --color-accent-dark: #00DEDE;
             --color-red: #ef4444; 
             --color-green: #10b981; 
+            --color-blue: #3b82f6; 
             
             --color-border-dark: #222222;
             --color-hover-bg: #1A1A1A;
 
-            --sidebar-width-closed: 80px; /* Lebar ciut permanen */
+            --sidebar-width-closed: 80px; 
         }
 
         /* Reset dan Main Layout */
@@ -237,81 +319,64 @@
             display: flex; 
         }
 
-        /* Container Utama */
+        /* Container Utama (Desktop Default) */
         #main-container {
-            display: flex;
+            display: flex; 
             height: 100vh;
             width: 100vw;
-            /* Flex direction default (row) akan menempatkan item sesuai urutan HTML.
-               Karena sidebar diletakkan terakhir di HTML, ia akan berada di kanan. */
         }
 
-        /* Sidebar Container (KANAN - CIUT PERMANEN) */
+        /* Sidebar Container (Desktop - KANAN, CIUT PERMANEN) */
         #shortcut-container {
-            /* MENGATUR LEBAR CIUT PERMANEN */
             width: var(--sidebar-width-closed); 
             min-width: var(--sidebar-width-closed);
-            padding: 20px 0; /* Padding untuk ciut */
-            align-items: center; /* Mengatur konten ke tengah */
-            
+            padding: 20px 0;
+            align-items: center; 
             background-color: var(--color-bg-sidebar);
             display: flex;
             flex-direction: column;
             box-sizing: border-box;
-            overflow-y: auto;
+            overflow-y: auto; 
             overflow-x: hidden; 
-            
-            /* Border di kiri sidebar */
             border-left: 1px solid var(--color-border-dark); 
-            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.5); /* Shadow ke kiri */
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.5); 
         }
         
         /* Daftar Menu di Sidebar */
         .app-grid {
             display: flex;
-            flex-direction: column;
+            flex-direction: column; 
             gap: 5px;
-            /* Lebar item disesuaikan agar bisa di tengah di ruang 80px */
             width: 60px; 
-            margin: 0 auto 20px auto; /* Di tengah dan beri margin bawah */
+            margin: 0 auto 20px auto;
             flex-grow: 1; 
         }
 
+        /* Item Shortcut */
         .app-item {
             display: flex;
             flex-direction: row;
             align-items: center;
             text-decoration: none;
             color: var(--color-text-primary);
-            transition: all 0.3s;
-            padding: 10px; /* Padding ciut: Area klik yang besar */
+            transition: all 0.2s;
+            padding: 10px; 
             border-radius: 8px;
             background-color: transparent;
-            width: 100%; /* Mengisi lebar 60px yang telah di set di .app-grid */
+            width: 100%; 
             box-sizing: border-box;
             overflow: hidden;
-            justify-content: center; /* Pusatkan ikon */
+            justify-content: center; 
         }
         
         .app-item span {
-            display: none; /* Sembunyikan teks nama shortcut */
+            display: none; 
         }
 
-        /* Perubahan Hover Background */
-        .app-item:hover {
-            background-color: var(--color-hover-bg); 
-        }
-        
-        /* Status Aktif Item */
-        .app-item.active {
-            background-color: var(--color-accent-dark); 
-            color: white;
-            font-weight: 600;
-        }
-        .app-item.active .app-icon-initial {
-            background-color: white !important;
-            color: var(--color-bg-sidebar) !important; 
-        }
+        /* Perubahan Hover/Active */
+        .app-item:hover { background-color: var(--color-hover-bg); }
+        .app-item.active { background-color: var(--color-accent-dark); color: white; font-weight: 600; }
+        .app-item.active .app-icon-initial { background-color: white !important; color: var(--color-bg-sidebar) !important; }
 
         /* Ikon / Inisial */
         .app-icon-initial {
@@ -324,147 +389,227 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 1.1em; 
+            font-size: 1.1em; /* Untuk Inisial/Emoji */
             font-weight: bold;
-            margin-right: 0; /* Hapus margin agar ikon di tengah */
+            margin-right: 0; 
             flex-shrink: 0;
-            transition: margin 0.3s;
+            transition: background-color 0.2s;
         }
         
-        /* Warna Ikon Random */
+        /* Penyesuaian Ikon Font Awesome agar lebih kecil */
+        .app-icon-initial.fa-icon-style i {
+            font-size: 0.8em; /* Font Awesome lebih kecil */
+        }
+        
+        /* Warna Ikon Random (Hanya untuk fallback inisial) */
         .app-item:nth-child(2n) .app-icon-initial { background-color: #8b5cf6; } 
         .app-item:nth-child(3n) .app-icon-initial { background-color: #f97316; } 
         .app-item:nth-child(4n) .app-icon-initial { background-color: #ec4899; } 
         .app-item:nth-child(5n) .app-icon-initial { background-color: #3b82f6; } 
         
-        .text-info {
-            color: var(--color-text-secondary);
-            font-size: 0.9em;
-            padding: 15px 0;
-            text-align: center;
-        }
-
-        /* --- Tombol Pengaturan (Gerigi - Tampilan Ciut) --- */
+        /* Tombol Pengaturan (Gerigi - Tampilan Ciut) */
         #settings-button {
-            width: 50px; /* Ukuran tombol kecil */
-            height: 50px;
-            padding: 0;
-            margin: 20px auto; /* Di tengah */
-            border-radius: 50%;
-            background-color: var(--color-bg-primary); 
-            color: var(--color-accent-cyan);
-            border: 1px solid var(--color-border-dark);
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-            font-weight: 600;
-            transition: all 0.3s;
-            align-self: center; /* Pastikan di tengah */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1em;
-            overflow: hidden;
+            width: 50px; height: 50px; padding: 0; margin: 20px auto; border-radius: 50%;
+            background-color: var(--color-bg-primary); color: var(--color-accent-cyan);
+            border: 1px solid var(--color-border-dark); cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); font-weight: 600;
+            display: flex; align-items: center; justify-content: center; font-size: 1em;
+            flex-shrink: 0;
         }
-        #settings-button:hover {
-            background-color: #00FFFF40; 
-            color: var(--color-accent-cyan);
-            transform: none;
-        }
-        #settings-button::before {
-            content: "\2699"; /* Ikon Gerigi Unicode */
-            font-size: 1.2em;
-            margin-right: 0;
-        }
-        #settings-button span {
-            display: none; /* Sembunyikan teks "Pengaturan" */
-        }
+        #settings-button:hover { background-color: #00FFFF40; color: var(--color-accent-cyan); }
+        #settings-button::before { content: "\2699"; font-size: 1.2em; margin-right: 0; }
+        #settings-button span { display: none; }
         
-        /* --- Konten KIRI (Content Area) --- */
+        /* --- Konten KIRI --- */
+        #iframe-wrapper { flex-grow: 1; height: 100vh; display: none; }
+        #content-frame { width: 100%; height: 100%; border: none; display: block; background-color: white; }
+        #empty-content { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 1.5em; color: var(--color-text-secondary); background-color: var(--color-bg-primary); text-align: center; }
         
-        #iframe-wrapper {
-            flex-grow: 1; 
-            height: 100vh;
-            display: none; 
-        }
-
-        #content-frame {
-            width: 100%;
-            height: 100%;
-            border: none;
-            display: block;
-            background-color: white; 
-        }
-
-        /* Halaman Kosong/Default */
-        #empty-content {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.5em;
-            color: var(--color-text-secondary);
-            background-color: var(--color-bg-primary); 
-            text-align: center;
-        }
-        
-        /* Halaman Pengaturan */
+        /* --- Halaman Pengaturan (Penyempurnaan Visual) --- */
         #admin-page-content {
-            flex-grow: 1;
-            display: none; 
-            flex-direction: column;
-            padding: 40px;
+            flex-grow: 1; display: none; flex-direction: column; padding: 40px; box-sizing: border-box; 
+            background-color: var(--color-bg-primary); overflow-y: auto;
+        }
+        
+        /* Form Input */
+        .admin-form-container input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            border: 1px solid var(--color-border-dark);
+            background-color: var(--color-bg-sidebar);
+            color: var(--color-text-primary);
             box-sizing: border-box;
-            background-color: var(--color-bg-primary);
-            overflow-y: auto;
+            font-size: 1em;
+            transition: border-color 0.2s;
         }
+        .admin-form-container input:focus {
+            border-color: var(--color-accent-cyan);
+            outline: none;
+        }
+        
         .admin-form-container h2 {
-            color: var(--color-accent-cyan);
-            margin-top: 0;
-            border-bottom: 2px solid var(--color-border-dark); 
-            padding-bottom: 10px;
-            margin-bottom: 20px;
+            color: var(--color-accent-cyan); margin-top: 0;
+            border-bottom: 2px solid var(--color-border-dark); padding-bottom: 10px; margin-bottom: 20px;
         }
-        /* Styling admin content lainnya tetap dipertahankan */
+        
+        /* Tombol Form */
+        .add-button, .cancel-button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.2s;
+            margin-right: 10px;
+        }
+        .add-button {
+            background-color: var(--color-green); 
+            color: white;
+        }
+        .add-button:hover { background-color: #0d995c; }
+        
+        .cancel-button {
+            background-color: var(--color-text-secondary); 
+            color: white;
+            display: none; /* Default hidden */
+        }
+        .cancel-button:hover { background-color: #888888; }
+
+
+        /* Daftar Shortcut */
         .admin-list-container {
-            max-height: 400px; 
-            overflow-y: auto;
-            border-top: 1px solid #333333;
-            margin-top: 10px;
-            padding-top: 10px;
+            max-height: 400px; overflow-y: auto; border-top: 1px solid #333333; margin-top: 10px; padding-top: 10px;
         }
         .admin-list-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #1A1A1A;
+            display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #1A1A1A;
+        }
+        .admin-item-details {
+            display: flex; flex-direction: column; flex-grow: 1; min-width: 0;
         }
         .admin-item-name {
-            font-weight: 500;
-            flex: 1;
-            color: var(--color-accent-cyan);
+            font-weight: 500; color: var(--color-accent-cyan);
         }
         .admin-item-url {
-            flex: 2;
-            color: var(--color-text-secondary);
-            font-size: 0.9em;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            padding-right: 10px;
+            color: var(--color-text-secondary); font-size: 0.9em;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
+        .admin-item-actions {
+            flex-shrink: 0;
+            margin-left: 10px;
+        }
+        
+        /* Tombol Aksi */
+        .delete-button, .edit-button {
+            padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85em;
+            margin-left: 8px; /* Jarak antar tombol aksi */
+            transition: background-color 0.2s;
+        }
+        .edit-button {
+            background-color: var(--color-blue); 
+            color: white;
+        }
+        .edit-button:hover { background-color: #3168c7; }
+        
         .delete-button {
-            width: auto !important;
-            padding: 6px 12px !important;
             background-color: var(--color-red); 
             color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.85em;
-            margin-left: 10px;
-            flex-shrink: 0;
+        }
+        .delete-button:hover { background-color: #c52929; }
+
+
+        /* ========================================================== */
+        /* --- MEDIA QUERY: MOBILE (Max 768px) --- */
+        /* ========================================================== */
+        @media screen and (max-width: 768px) {
+            /* 1. Ubah Layout Utama */
+            #main-container {
+                flex-direction: column; 
+            }
+
+            /* 2. Sidebar: Pindah ke Atas, Horizontal, dan Scrollable */
+            #shortcut-container {
+                order: -1; 
+                width: 100vw; 
+                min-width: 100vw;
+                height: var(--sidebar-width-closed); 
+                min-height: var(--sidebar-width-closed);
+                
+                flex-direction: row; 
+                padding: 0 10px; 
+                align-items: center; 
+                
+                border-left: none; 
+                border-bottom: 1px solid var(--color-border-dark); 
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); 
+                
+                overflow-y: hidden;
+                overflow-x: scroll; 
+                white-space: nowrap; 
+            }
+            
+            /* 3. Sembunyikan Scrollbar */
+            #shortcut-container::-webkit-scrollbar { display: none; }
+            #shortcut-container { -ms-overflow-style: none; scrollbar-width: none; }
+            
+            /* 4. Atur Item di dalam Sidebar */
+            .app-grid {
+                flex-direction: row; 
+                height: 100%;
+                margin: 0;
+                gap: 10px; 
+                align-items: center;
+                flex-grow: 0; 
+                width: auto; 
+            }
+
+            .app-item {
+                flex-shrink: 0; 
+                height: 60px; 
+                width: 60px; 
+                padding: 0;
+                margin: 0;
+            }
+            
+            /* Pusatkan Ikon */
+            .app-icon-initial { margin: auto; }
+
+            /* 5. Atur Tombol Pengaturan */
+            #settings-button {
+                flex-shrink: 0; 
+                margin: auto 10px auto 0; 
+            }
+            
+            /* 6. Konten Utama mengambil sisa tinggi */
+            #admin-page-content, #empty-content, #iframe-wrapper {
+                height: calc(100vh - var(--sidebar-width-closed)); 
+            }
+            
+            /* Penyesuaian Halaman Admin di Mobile */
+            #admin-page-content {
+                padding: 20px;
+            }
+            .admin-list-item {
+                flex-direction: column;
+                align-items: flex-start;
+                padding-bottom: 15px;
+            }
+            .admin-item-details {
+                margin-bottom: 5px;
+            }
+            .admin-item-url {
+                white-space: normal; /* Biarkan URL wrap di mobile */
+                word-break: break-all;
+            }
+            .admin-item-actions {
+                margin-left: 0;
+                margin-top: 5px;
+            }
+            .delete-button, .edit-button {
+                margin-left: 0;
+                margin-right: 8px;
+            }
         }
     </style>
 </head>
@@ -475,9 +620,13 @@
         <div id="admin-page-content">
             <div class="admin-form-container">
                 <h2>Kelola Shortcut</h2>
+                
                 <input type="text" id="shortcut-name" placeholder="Nama Aplikasi (Contoh: Google)" />
                 <input type="text" id="shortcut-url" placeholder="URL Lengkap (Contoh: https://www.google.com)" />
-                <button class="add-button" onclick="addShortcut()">Tambahkan Shortcut</button>
+                <input type="text" id="shortcut-icon" placeholder="Ikon (Contoh: 🌐 atau fa-solid fa-globe)" /> <div>
+                    <button class="add-button" onclick="addShortcut()">Tambahkan Shortcut</button>
+                    <button class="cancel-button" onclick="resetForm()">Batal Edit</button>
+                </div>
 
                 <h3>Daftar Shortcut Aktif</h3>
                 <div id="admin-list-container" class="admin-list-container">
@@ -498,6 +647,7 @@
         </div>
 
         <div id="shortcut-container">
+            
             <div class="app-grid" id="app-grid">
                 </div>
             
