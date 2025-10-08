@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplikasi Shortcut URL Realtime</title>
+    <title>Aplikasi Shortcut URL Realtime (Header)</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     
@@ -42,7 +42,7 @@
                 renderShortcuts();
             }, (error) => {
                 console.error("Error membaca data RTDB:", error);
-                document.getElementById('shortcut-container').innerHTML = 
+                document.getElementById('app-grid').innerHTML = 
                     '<p style="color:red; font-weight:bold; padding: 20px;">Gagal terhubung ke Firebase. Periksa konsol dan rules database.</p>';
             });
         }
@@ -103,9 +103,9 @@
                     }
                 };
                 
+                // Hapus `<span>${item.name}</span>` di desktop/header untuk menghemat ruang
                 appItem.innerHTML = `
                     <div class="app-icon-initial ${isFontAwesome ? 'fa-icon-style' : ''}">${iconContent}</div>
-                    <span>${item.name}</span>
                 `;
                 grid.appendChild(appItem);
 
@@ -292,7 +292,7 @@
         /* Variabel Warna */
         :root {
             --color-bg-primary: #0a0a0a;
-            --color-bg-sidebar: #111111;
+            --color-bg-sidebar: #111111; /* Sekarang menjadi warna Header */
             --color-text-primary: #FFFFFF;
             --color-text-secondary: #AAAAAA;
             --color-accent-cyan: #00FFFF;
@@ -304,7 +304,7 @@
             --color-border-dark: #222222;
             --color-hover-bg: #1A1A1A;
 
-            --sidebar-width-closed: 80px; 
+            --header-height: 50px; /* Tinggi header baru */
         }
 
         /* Reset dan Main Layout */
@@ -316,61 +316,64 @@
             font-family: 'Inter', sans-serif;
             background-color: var(--color-bg-primary);
             color: var(--color-text-primary);
-            display: flex; 
+            display: flex; /* Untuk menempatkan header dan konten di bawahnya */
+            flex-direction: column; /* Konten di bawah header */
         }
 
-        /* Container Utama (Desktop Default) */
-        #main-container {
-            display: flex; 
-            height: 100vh;
-            width: 100vw;
-        }
-
-        /* Sidebar Container (Desktop - KANAN, CIUT PERMANEN) */
-        #shortcut-container {
-            width: var(--sidebar-width-closed); 
-            min-width: var(--sidebar-width-closed);
-            padding: 20px 0;
-            align-items: center; 
+        /* --- HEADER CONTAINER BARU (Pengganti Sidebar) --- */
+        #main-header {
+            width: 100%;
+            height: var(--header-height);
+            min-height: var(--header-height);
             background-color: var(--color-bg-sidebar);
-            display: flex;
-            flex-direction: column;
+            border-bottom: 1px solid var(--color-border-dark);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); 
+            display: flex; 
+            flex-direction: row; 
+            align-items: center; 
+            padding: 0 10px; 
             box-sizing: border-box;
-            overflow-y: auto; 
-            overflow-x: hidden; 
-            border-left: 1px solid var(--color-border-dark); 
-            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.5); 
+            overflow-x: auto; /* Agar bisa digeser jika shortcut banyak */
+            overflow-y: hidden;
+            flex-shrink: 0; /* Pastikan tidak menyusut */
+            white-space: nowrap; /* Mencegah item wrap */
+            -ms-overflow-style: none; /* IE and Edge */
+            scrollbar-width: none; /* Firefox */
         }
-        
-        /* Daftar Menu di Sidebar */
+        #main-header::-webkit-scrollbar { display: none; } /* Chrome, Safari, Opera */
+
+        /* Daftar Menu di Header */
         .app-grid {
             display: flex;
-            flex-direction: column; 
-            gap: 5px;
-            width: 60px; 
-            margin: 0 auto 20px auto;
+            flex-direction: row; /* Horizontal */
+            gap: 10px;
+            margin: 0 auto; /* Tengah */
             flex-grow: 1; 
+            height: 100%;
+            align-items: center;
+            justify-content: flex-start; /* Taruh di kiri */
         }
 
-        /* Item Shortcut */
+        /* Item Shortcut (Lebih Kecil) */
         .app-item {
             display: flex;
             flex-direction: row;
             align-items: center;
+            justify-content: center; /* Pusatkan ikon */
             text-decoration: none;
             color: var(--color-text-primary);
             transition: all 0.2s;
-            padding: 10px; 
-            border-radius: 8px;
+            padding: 5px; /* Padding kecil */
+            border-radius: 6px;
             background-color: transparent;
-            width: 100%; 
+            height: 80%; /* Memanfaatkan tinggi header */
             box-sizing: border-box;
             overflow: hidden;
-            justify-content: center; 
+            flex-shrink: 0; /* Penting agar tidak menyusut saat scroll */
         }
         
         .app-item span {
-            display: none; 
+            display: none; /* Tidak menampilkan nama di header */
         }
 
         /* Perubahan Hover/Active */
@@ -378,10 +381,10 @@
         .app-item.active { background-color: var(--color-accent-dark); color: white; font-weight: 600; }
         .app-item.active .app-icon-initial { background-color: white !important; color: var(--color-bg-sidebar) !important; }
 
-        /* Ikon / Inisial */
+        /* Ikon / Inisial (Lebih Kecil) */
         .app-icon-initial {
-            width: 30px;
-            height: 30px;
+            width: 30px; /* Lebih kecil */
+            height: 30px; /* Lebih kecil */
             min-width: 30px; 
             background-color: var(--color-accent-cyan); 
             color: var(--color-bg-primary);
@@ -389,7 +392,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 1.1em; /* Untuk Inisial/Emoji */
+            font-size: 0.9em; /* Untuk Inisial/Emoji */
             font-weight: bold;
             margin-right: 0; 
             flex-shrink: 0;
@@ -398,7 +401,7 @@
         
         /* Penyesuaian Ikon Font Awesome agar lebih kecil */
         .app-icon-initial.fa-icon-style i {
-            font-size: 0.8em; /* Font Awesome lebih kecil */
+            font-size: 0.8em; 
         }
         
         /* Warna Ikon Random (Hanya untuk fallback inisial) */
@@ -407,31 +410,38 @@
         .app-item:nth-child(4n) .app-icon-initial { background-color: #ec4899; } 
         .app-item:nth-child(5n) .app-icon-initial { background-color: #3b82f6; } 
         
-        /* Tombol Pengaturan (Gerigi - Tampilan Ciut) */
+        /* Tombol Pengaturan (Gerigi - Di header) */
         #settings-button {
-            width: 50px; height: 50px; padding: 0; margin: 20px auto; border-radius: 50%;
+            width: 35px; height: 35px; padding: 0; margin-left: 15px; border-radius: 50%;
             background-color: var(--color-bg-primary); color: var(--color-accent-cyan);
             border: 1px solid var(--color-border-dark); cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); font-weight: 600;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); font-weight: 600;
             display: flex; align-items: center; justify-content: center; font-size: 1em;
-            flex-shrink: 0;
+            flex-shrink: 0; /* Pastikan tidak menyusut */
         }
         #settings-button:hover { background-color: #00FFFF40; color: var(--color-accent-cyan); }
-        #settings-button::before { content: "\2699"; font-size: 1.2em; margin-right: 0; }
+        #settings-button::before { content: "\2699"; font-size: 1em; margin-right: 0; }
         #settings-button span { display: none; }
         
-        /* --- Konten KIRI --- */
-        #iframe-wrapper { flex-grow: 1; height: 100vh; display: none; }
+        /* --- Konten DI BAWAH HEADER --- */
+        #content-wrapper {
+            display: flex;
+            flex-grow: 1; /* Mengisi sisa ruang vertikal */
+            width: 100vw;
+            overflow: hidden;
+        }
+
+        #iframe-wrapper { flex-grow: 1; height: 100%; display: none; }
         #content-frame { width: 100%; height: 100%; border: none; display: block; background-color: white; }
-        #empty-content { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 1.5em; color: var(--color-text-secondary); background-color: var(--color-bg-primary); text-align: center; }
+        #empty-content { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 1.5em; color: var(--color-text-secondary); background-color: var(--color-bg-primary); text-align: center; height: 100%; }
         
-        /* --- Halaman Pengaturan (Penyempurnaan Visual) --- */
+        /* --- Halaman Pengaturan --- */
         #admin-page-content {
             flex-grow: 1; display: none; flex-direction: column; padding: 40px; box-sizing: border-box; 
-            background-color: var(--color-bg-primary); overflow-y: auto;
+            background-color: var(--color-bg-primary); overflow-y: auto; height: 100%;
         }
         
-        /* Form Input */
+        /* Form Input (TIDAK BERUBAH) */
         .admin-form-container input {
             width: 100%;
             padding: 12px;
@@ -503,7 +513,7 @@
         /* Tombol Aksi */
         .delete-button, .edit-button {
             padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85em;
-            margin-left: 8px; /* Jarak antar tombol aksi */
+            margin-left: 8px; 
             transition: background-color 0.2s;
         }
         .edit-button {
@@ -523,70 +533,34 @@
         /* --- MEDIA QUERY: MOBILE (Max 768px) --- */
         /* ========================================================== */
         @media screen and (max-width: 768px) {
-            /* 1. Ubah Layout Utama */
-            #main-container {
-                flex-direction: column; 
+            /* Perubahan di sini sebagian besar sama karena header sebelumnya sudah horizontal di mobile. */
+
+            :root {
+                --header-height: 60px; /* Sedikit lebih tinggi di mobile */
             }
 
-            /* 2. Sidebar: Pindah ke Atas, Horizontal, dan Scrollable */
-            #shortcut-container {
-                order: -1; 
-                width: 100vw; 
-                min-width: 100vw;
-                height: var(--sidebar-width-closed); 
-                min-height: var(--sidebar-width-closed);
-                
-                flex-direction: row; 
-                padding: 0 10px; 
-                align-items: center; 
-                
-                border-left: none; 
-                border-bottom: 1px solid var(--color-border-dark); 
-                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); 
-                
-                overflow-y: hidden;
-                overflow-x: scroll; 
-                white-space: nowrap; 
+            #main-header {
+                height: var(--header-height);
+                min-height: var(--header-height);
             }
             
-            /* 3. Sembunyikan Scrollbar */
-            #shortcut-container::-webkit-scrollbar { display: none; }
-            #shortcut-container { -ms-overflow-style: none; scrollbar-width: none; }
-            
-            /* 4. Atur Item di dalam Sidebar */
             .app-grid {
-                flex-direction: row; 
-                height: 100%;
-                margin: 0;
-                gap: 10px; 
-                align-items: center;
-                flex-grow: 0; 
-                width: auto; 
+                gap: 15px; 
             }
 
             .app-item {
-                flex-shrink: 0; 
-                height: 60px; 
-                width: 60px; 
-                padding: 0;
-                margin: 0;
+                height: 100%;
+                padding: 10px 5px;
             }
             
-            /* Pusatkan Ikon */
-            .app-icon-initial { margin: auto; }
+            .app-icon-initial { 
+                width: 35px; /* Sedikit lebih besar dari desktop */
+                height: 35px;
+                min-width: 35px;
+                font-size: 1.1em;
+            }
 
-            /* 5. Atur Tombol Pengaturan */
-            #settings-button {
-                flex-shrink: 0; 
-                margin: auto 10px auto 0; 
-            }
-            
-            /* 6. Konten Utama mengambil sisa tinggi */
-            #admin-page-content, #empty-content, #iframe-wrapper {
-                height: calc(100vh - var(--sidebar-width-closed)); 
-            }
-            
-            /* Penyesuaian Halaman Admin di Mobile */
+            /* Penyesuaian Halaman Admin di Mobile (TIDAK BERUBAH) */
             #admin-page-content {
                 padding: 20px;
             }
@@ -599,7 +573,7 @@
                 margin-bottom: 5px;
             }
             .admin-item-url {
-                white-space: normal; /* Biarkan URL wrap di mobile */
+                white-space: normal; 
                 word-break: break-all;
             }
             .admin-item-actions {
@@ -615,7 +589,16 @@
 </head>
 <body>
 
-    <div id="main-container">
+    <header id="main-header">
+        <div class="app-grid" id="app-grid">
+            </div>
+        
+        <button id="settings-button" onclick="showSettingsPage()">
+            <span>Pengaturan</span>
+        </button>
+    </header>
+
+    <div id="content-wrapper">
         
         <div id="admin-page-content">
             <div class="admin-form-container">
@@ -623,20 +606,21 @@
                 
                 <input type="text" id="shortcut-name" placeholder="Nama Aplikasi (Contoh: Google)" />
                 <input type="text" id="shortcut-url" placeholder="URL Lengkap (Contoh: https://www.google.com)" />
-                <input type="text" id="shortcut-icon" placeholder="Ikon (Contoh: 🌐 atau fa-solid fa-globe)" /> <div>
+                <input type="text" id="shortcut-icon" placeholder="Ikon (Contoh: 🌐 atau fa-solid fa-globe)" /> 
+                <div>
                     <button class="add-button" onclick="addShortcut()">Tambahkan Shortcut</button>
                     <button class="cancel-button" onclick="resetForm()">Batal Edit</button>
                 </div>
 
                 <h3>Daftar Shortcut Aktif</h3>
                 <div id="admin-list-container" class="admin-list-container">
-                    </div>
+                </div>
             </div>
         </div>
 
         <div id="empty-content">
             <h1>Selamat Datang</h1>
-            <p>Pilih salah satu shortcut dari sidebar untuk memuatnya di sini.</p>
+            <p>Pilih salah satu shortcut dari header untuk memuatnya di sini.</p>
             <p class="text-info" style="margin-top: 15px;">Klik shortcut yang sedang aktif lagi untuk menutupnya.</p>
         </div>
 
@@ -644,16 +628,6 @@
             <iframe id="content-frame" title="Area Konten">
                 Browser Anda tidak mendukung iframe.
             </iframe>
-        </div>
-
-        <div id="shortcut-container">
-            
-            <div class="app-grid" id="app-grid">
-                </div>
-            
-            <button id="settings-button" onclick="showSettingsPage()">
-                <span>Pengaturan</span>
-            </button>
         </div>
 
     </div>
