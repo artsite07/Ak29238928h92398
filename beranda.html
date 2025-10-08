@@ -4,13 +4,15 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Portal Adlan M.R</title>
+  <title>Portal Adlan M.R - Navigasi Ikon Modern</title>
   <link rel="icon" href="1.png" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome Modern Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  
   <style>
     :root {
       --bg: #f0f2f5;
-      /* Dark Theme Variables for Header */
       --header-bg: #1e293b;
       --text-color: #f8fafc;
       --primary-color: #00f0ff;
@@ -33,7 +35,6 @@
       overflow: hidden;
     }
 
-    /* 1. Header Styling (Desktop Base) */
     header {
       background-color: var(--header-bg);
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
@@ -43,7 +44,7 @@
       align-items: center;
       height: 60px;
       flex-shrink: 0;
-      position: relative; /* Penting untuk positioning dropdown */
+      position: relative;
     }
 
     .header-left {
@@ -64,19 +65,29 @@
       color: var(--text-color);
     }
 
-    /* 2. Navigation Styling (Desktop Base) */
+    /* Navigasi Desktop */
     #desktopNav {
-      display: block; /* Default: Tampil di desktop */
+      display: flex;
+      align-items: center;
     }
 
     #desktopNav a {
       text-decoration: none;
       color: var(--text-color);
-      padding: 10px 15px;
-      margin-left: 5px;
+      padding: 10px 12px;
+      margin-left: 2px;
       border-radius: 4px;
-      transition: background-color 0.2s, color 0.2s;
-      display: inline-block;
+      transition: background-color 0.2s, border-bottom 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 40px;
+    }
+
+    #desktopNav a span.icon {
+      font-size: 1.5rem;
+      line-height: 1;
+      transition: color 0.2s;
     }
 
     #desktopNav a:hover {
@@ -84,70 +95,79 @@
     }
 
     #desktopNav a.active {
-      color: var(--primary-color);
-      font-weight: 600;
       border-bottom: 2px solid var(--primary-color);
     }
-    
-    /* Tombol Hamburger (Default Sembunyi) */
-    #mobileMenuToggle {
-        display: none;
-        background: none;
-        border: none;
-        font-size: 1.8rem;
-        color: var(--text-color);
-        cursor: pointer;
-        padding: 0 10px;
+
+    #desktopNav a.active span.icon {
+      color: var(--primary-color);
     }
 
-    /* Dropdown Menu Mobile (Default Sembunyi) */
+    /* Tombol Hamburger */
+    #mobileMenuToggle {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 1.8rem;
+      color: var(--text-color);
+      cursor: pointer;
+      padding: 0 10px;
+    }
+
+    /* Dropdown Mobile */
     #mobileDropdownMenu {
-        position: absolute;
-        top: 60px; /* Di bawah header */
-        right: 0;
-        width: 100%; /* Ambil lebar penuh */
-        background-color: var(--header-bg);
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-        border-top: 1px solid var(--hover-bg);
-        z-index: 1000;
-        display: none; /* Sembunyi secara default */
+      position: absolute;
+      top: 60px;
+      right: 0;
+      width: 100%;
+      background-color: var(--header-bg);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+      border-top: 1px solid var(--hover-bg);
+      z-index: 1000;
+      display: none;
     }
 
     #mobileDropdownMenu.show {
-        display: block; /* Tampil saat ada class 'show' */
+      display: block;
     }
 
     #mobileDropdownMenu a {
-        display: block;
-        padding: 12px 20px;
-        text-decoration: none;
-        color: var(--text-color);
-        border-bottom: 1px solid var(--hover-bg);
-        transition: background-color 0.2s;
+      display: block;
+      padding: 12px 20px;
+      text-decoration: none;
+      color: var(--text-color);
+      border-bottom: 1px solid var(--hover-bg);
+      transition: background-color 0.2s;
+      text-align: center;
+    }
+
+    #mobileDropdownMenu a span.icon {
+      font-size: 1.4rem;
+      transition: color 0.2s;
     }
 
     #mobileDropdownMenu a:last-child {
-        border-bottom: none;
+      border-bottom: none;
     }
 
-    #mobileDropdownMenu a:hover,
-    #mobileDropdownMenu a.active {
-        background-color: var(--hover-bg);
-        color: var(--primary-color);
+    #mobileDropdownMenu a:hover {
+      background-color: var(--hover-bg);
     }
 
-    /* 3. Content Area Styling (Iframe Container - Fullscreen) */
+    #mobileDropdownMenu a.active span.icon {
+      color: var(--primary-color);
+    }
+
+    /* Area Konten (Iframe) */
     .content-area {
       flex: 1;
       overflow: hidden;
-      padding: 0; 
+      padding: 0;
     }
 
     .content-area iframe {
       width: 100%;
       height: 100%;
       border: none;
-      border-radius: 0;
       display: none;
     }
 
@@ -155,18 +175,18 @@
       display: block;
     }
 
-    /* ===================================== */
-    /* RESPONSIVE CSS (Mobile View - Max 600px) */
-    /* ===================================== */
     @media (max-width: 600px) {
-      /* Sembunyikan Navigasi Tautan di Mobile */
       #desktopNav {
         display: none;
       }
 
-      /* Tampilkan Tombol Hamburger */
       #mobileMenuToggle {
         display: block;
+      }
+
+      #mobileDropdownMenu a {
+        text-align: center;
+        padding: 15px;
       }
     }
   </style>
@@ -176,25 +196,25 @@
   <header>
     <div class="header-left">
       <img src="1.png" onerror="this.onerror=null;this.src='https://placehold.co/40x40/00f0ff/1e293b';" alt="Logo">
-      <span>Adlan M.R</span> 
+      <span>Adlan M.R</span>
     </div>
-    
+
     <nav id="desktopNav">
-      <a href="home.html" data-target="home-frame">Home</a>
-      <a href="document.html" data-target="document-frame">Document</a>
-      <a href="code.html" data-target="code-frame">Code</a>
-      <a href="codingin.html" data-target="codingin-frame">Codingin</a>
-      <a href="aplikasi.html" data-target="aplikasi-frame">Aplikasi</a>
+      <a href="home.html" data-target="home-frame" title="Home"><span class="icon"><i class="fa-solid fa-house"></i></span></a>
+      <a href="document.html" data-target="document-frame" title="Dokumen"><span class="icon"><i class="fa-solid fa-file-lines"></i></span></a>
+      <a href="code.html" data-target="code-frame" title="Kode"><span class="icon"><i class="fa-solid fa-code"></i></span></a>
+      <a href="codingin.html" data-target="codingin-frame" title="Codingin"><span class="icon"><i class="fa-solid fa-terminal"></i></span></a>
+      <a href="aplikasi.html" data-target="aplikasi-frame" title="Aplikasi"><span class="icon"><i class="fa-solid fa-cubes"></i></span></a>
     </nav>
-    
-    <button id="mobileMenuToggle" aria-label="Toggle navigation">&#9776;</button>
-    
+
+    <button id="mobileMenuToggle" aria-label="Toggle navigation"><i class="fa-solid fa-bars"></i></button>
+
     <nav id="mobileDropdownMenu">
-      <a href="home.html" data-target="home-frame">Home</a>
-      <a href="document.html" data-target="document-frame">Document</a>
-      <a href="code.html" data-target="code-frame">Code</a>
-      <a href="codingin.html" data-target="codingin-frame">Codingin</a>
-      <a href="aplikasi.html" data-target="aplikasi-frame">Aplikasi</a>
+      <a href="home.html" data-target="home-frame" title="Home"><span class="icon"><i class="fa-solid fa-house"></i></span></a>
+      <a href="document.html" data-target="document-frame" title="Dokumen"><span class="icon"><i class="fa-solid fa-file-lines"></i></span></a>
+      <a href="code.html" data-target="code-frame" title="Kode"><span class="icon"><i class="fa-solid fa-code"></i></span></a>
+      <a href="codingin.html" data-target="codingin-frame" title="Codingin"><span class="icon"><i class="fa-solid fa-terminal"></i></span></a>
+      <a href="aplikasi.html" data-target="aplikasi-frame" title="Aplikasi"><span class="icon"><i class="fa-solid fa-cubes"></i></span></a>
     </nav>
   </header>
 
@@ -216,68 +236,44 @@
     const ACTIVE_URL_KEY = 'simpleActivePage';
     const DEFAULT_TARGET = 'home-frame';
 
-    /**
-     * Mengatur iframe mana yang aktif dan link mana yang diberi highlight/selected.
-     * @param {string} targetId - ID dari iframe yang harus ditampilkan (misal: 'home-frame').
-     */
     function setActivePage(targetId) {
-      // 1. Nonaktifkan semua link navigasi
       allNavLinks.forEach(link => link.classList.remove('active'));
-
-      // 2. Nonaktifkan semua iframe
       iframes.forEach(iframe => iframe.classList.remove('active'));
 
-      // 3. Aktifkan link desktop & dropdown yang sesuai
       allNavLinks.filter(link => link.getAttribute('data-target') === targetId)
-                 .forEach(link => link.classList.add('active'));
+        .forEach(link => link.classList.add('active'));
 
-      // 4. Aktifkan iframe yang sesuai
       const activeIframe = document.getElementById(targetId);
-      if (activeIframe) {
-        activeIframe.classList.add('active');
-      }
-      
-      // 5. Tutup dropdown mobile setelah pemilihan (jika aktif)
-      mobileDropdownMenu.classList.remove('show');
+      if (activeIframe) activeIframe.classList.add('active');
 
-      // 6. Simpan status ke sessionStorage
+      mobileDropdownMenu.classList.remove('show');
       sessionStorage.setItem(ACTIVE_URL_KEY, targetId);
     }
 
-    // --- Event Listeners ---
-
-    // Listener untuk Toggle Hamburger
     mobileMenuToggle.addEventListener('click', () => {
-        mobileDropdownMenu.classList.toggle('show');
+      mobileDropdownMenu.classList.toggle('show');
     });
 
-    // Listener untuk semua link navigasi (desktop dan mobile)
     allNavLinks.forEach(link => {
-      link.addEventListener('click', (e) => {
+      link.addEventListener('click', e => {
         e.preventDefault();
         const targetId = e.currentTarget.getAttribute('data-target');
         setActivePage(targetId);
       });
     });
 
-    // Listener untuk menutup menu jika mengklik di luar menu (opsional, tapi disarankan)
-    document.addEventListener('click', (e) => {
-        if (!mobileDropdownMenu.contains(e.target) && e.target !== mobileMenuToggle) {
-            mobileDropdownMenu.classList.remove('show');
-        }
+    document.addEventListener('click', e => {
+      if (!mobileDropdownMenu.contains(e.target) && e.target !== mobileMenuToggle) {
+        mobileDropdownMenu.classList.remove('show');
+      }
     });
 
-    // Inisialisasi: Muat halaman terakhir yang dilihat atau default
     document.addEventListener('DOMContentLoaded', () => {
       const storedTarget = sessionStorage.getItem(ACTIVE_URL_KEY);
-      
       let initialTarget = DEFAULT_TARGET;
-
-      // Cek apakah target yang tersimpan valid
       if (storedTarget && document.getElementById(storedTarget)) {
         initialTarget = storedTarget;
-      } 
-      
+      }
       setActivePage(initialTarget);
     });
   </script>
