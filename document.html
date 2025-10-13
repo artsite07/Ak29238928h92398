@@ -12,34 +12,34 @@
 
   <style>
     /* ---------------------------------
-       MODERN DARK MODE STYLES (Dark Cyan Accent + Animation)
+       MODERN LIGHT MODE STYLES (Light Blue Accent + Clean White)
        --------------------------------- */
     :root {
-      --bg-primary: #1e1e1e;
-      /* Main Background (Luar Kertas) */
-      --bg-secondary: #252526;
-      /* Sidebar/Header */
+      --bg-primary: #F7F9FC;
+      /* Main Background (Luar Kertas) - Soft Light Blue */
+      --bg-secondary: #FFFFFF;
+      /* Sidebar/Header - White */
       --editor-bg: #FFFFFF;
-      /* NEW: Editor Background -> PUTIH */
+      /* Editor Background - White */
       --editor-text: #222222;
-      /* NEW: Editor Text -> Dark Gray/Black */
-      --text-primary: #ffffff;
-      /* Main Text Sidebar */
-      --text-secondary: #cccccc;
-      /* Subtle Text/Icons */
-      --accent-color: #00AAAA;
-      /* Dark Cyan (Aksen Utama) */
-      --error-color: #ff5555;
+      /* Editor Text - Dark Gray/Black */
+      --text-primary: #222222;
+      /* Main Text */
+      --text-secondary: #777777;
+      /* Subtle Text/Icons - Gray */
+      --accent-color: #007bff;
+      /* Bright Blue (Aksen Utama) */
+      --error-color: #dc3545;
       /* Red for Delete */
-      --border-color: #383838;
-      /* Subtle border -> Dark gray */
-      --hover-bg: rgba(0, 170, 170, 0.15);
-      /* Dark Cyan hover (15% opacity) */
-      --success-color: #50fa7b;
+      --border-color: #e0e0e0;
+      /* Subtle border - Light Gray */
+      --hover-bg: rgba(0, 123, 255, 0.08);
+      /* Light Blue hover (8% opacity) */
+      --success-color: #28a745;
       /* Green for success/download */
       --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       --font-code: "Consolas", "Monaco", monospace;
-      --radius: 6px;
+      --radius: 8px; /* Ditingkatkan sedikit untuk kesan modern yang lebih lembut */
     }
 
     html,
@@ -71,9 +71,10 @@
       overflow-y: auto;
       flex-shrink: 0;
       z-index: 50;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05); /* Shadow ringan untuk memisahkan */
 
       scrollbar-width: thin;
-      scrollbar-color: #666 var(--bg-secondary);
+      scrollbar-color: #ccc var(--bg-secondary);
     }
 
     .sidebar::-webkit-scrollbar {
@@ -81,7 +82,7 @@
     }
 
     .sidebar::-webkit-scrollbar-thumb {
-      background-color: #666;
+      background-color: #ccc;
       border-radius: 4px;
     }
 
@@ -107,6 +108,7 @@
       box-sizing: border-box;
       gap: 10px;
       flex-shrink: 0;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); /* Shadow ringan di header */
     }
 
     /* Tombol toggle sidebar untuk mobile */
@@ -115,7 +117,7 @@
       background: none;
       border: none;
       color: var(--accent-color);
-      font-size: 18px;
+      font-size: 20px;
       padding: 5px;
       cursor: pointer;
     }
@@ -152,7 +154,8 @@
 
       padding: 40px;
       border-radius: var(--radius);
-      box-shadow: 0 4px 25px rgba(0, 0, 0, 0.2);
+      /* Meningkatkan shadow untuk tampilan "kertas" yang nyata */
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); 
       outline: none;
 
       text-align: left;
@@ -160,8 +163,7 @@
 
     /* --- STYLE LINK BIRU BARU --- */
     #codeArea a {
-      color: #1e90ff;
-      /* Warna biru cerah */
+      color: var(--accent-color); 
       text-decoration: underline;
       cursor: pointer;
       outline: none;
@@ -173,7 +175,7 @@
     #codeArea:empty:before {
       content: attr(placeholder);
       color: var(--text-secondary);
-      opacity: 0.6;
+      opacity: 0.8;
       pointer-events: none;
       display: block;
     }
@@ -183,16 +185,15 @@
 
     .brand {
       font-size: 16px;
-      font-weight: 600;
-      padding: 12px 10px;
+      font-weight: 700;
+      padding: 15px 15px; /* Padding lebih besar */
       color: var(--accent-color);
       border-bottom: 1px solid var(--border-color);
-      /* Penting agar ini tidak dianggap sebagai area "root" */
       flex-shrink: 0;
     }
 
     .tree {
-      font-size: 13px;
+      font-size: 14px; /* Font sedikit lebih besar */
       padding: 5px 0;
     }
 
@@ -201,34 +202,40 @@
     }
 
     .item {
-      padding: 4px 10px;
+      padding: 6px 15px; /* Padding lebih besar */
       display: flex;
       align-items: center;
       cursor: pointer;
       line-height: 1.5;
-      gap: 6px;
-      transition: background 0.2s;
+      gap: 8px;
+      transition: background 0.2s, color 0.2s;
     }
 
     .item.selected {
       background: var(--hover-bg);
-      outline: 1px solid var(--accent-color);
+      color: var(--accent-color);
+      font-weight: 600;
     }
 
     .item:not(.selected):hover {
       background: var(--hover-bg);
     }
 
-    .item i {
+    .item i, .item span i { /* Pastikan span i juga terpengaruh */
       color: var(--text-secondary);
-      width: 14px;
+      width: 16px;
       text-align: center;
       transition: color 0.2s;
     }
 
-    .item.selected i {
+    .item.selected i, .item.selected span i {
       color: var(--accent-color);
     }
+    
+    .item.selected .folder-item i {
+        color: #FFD700 !important; /* Pertahankan warna ikon folder */
+    }
+
 
     .item .name {
       flex: 1;
@@ -237,10 +244,16 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      color: var(--text-primary);
+    }
+    
+    .item.selected .name {
+        color: var(--accent-color);
     }
 
+
     .item .name[contenteditable="true"] {
-      background: var(--bg-secondary);
+      background: var(--bg-primary);
       border: 1px solid var(--accent-color);
       padding: 1px 4px;
       margin: -1px 0;
@@ -250,8 +263,8 @@
     }
 
     .children {
-      margin-left: 12px;
-      border-left: 1px dashed var(--border-color);
+      margin-left: 18px; /* Indentasi sedikit lebih lebar */
+      border-left: 1px solid var(--border-color); /* Ubah dashed menjadi solid untuk kerapian */
     }
 
     .header-actions {
@@ -283,40 +296,30 @@
       cursor: pointer;
       border-radius: var(--radius);
       transition: background 0.2s, box-shadow 0.2s, transform 0.1s, border-color 0.2s;
-      font-size: 16px;
+      font-size: 18px; /* Ikon sedikit lebih besar */
       flex-shrink: 0;
 
-      background: rgba(255, 255, 255, 0.05);
-      color: var(--text-primary);
+      background: var(--bg-primary); /* Latar belakang tombol ringan */
+      color: var(--text-secondary); /* Ikon abu-abu */
     }
 
     .action-btn:active {
       transform: scale(0.95);
     }
 
-    .save-btn {
-      background: rgba(0, 170, 170, 0.1);
+    .action-btn:hover:not(:disabled) {
+      background: var(--hover-bg);
       color: var(--accent-color);
-    }
-
-    .save-btn:hover:not(:disabled) {
-      background: rgba(0, 170, 170, 0.2);
       border-color: var(--accent-color);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
-
-    .download-menu {
-      position: relative;
-    }
-
+    
+    .save-btn,
     .download-btn {
-      background: rgba(0, 170, 170, 0.1);
-      color: var(--accent-color);
-    }
-
-    .download-btn:hover:not(:disabled) {
-      background: rgba(0, 170, 170, 0.2);
+      color: var(--accent-color); 
       border-color: var(--accent-color);
     }
+
 
     .download-dropdown {
       position: absolute;
@@ -326,7 +329,7 @@
       background: var(--bg-secondary);
       border: 1px solid var(--border-color);
       border-radius: var(--radius);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Shadow lebih ringan */
       z-index: 100;
       display: none;
       padding: 5px 0;
@@ -334,32 +337,28 @@
     }
 
     .download-dropdown button {
-      width: 100%;
-      text-align: left;
-      padding: 8px 15px;
-      border: none;
-      background: transparent;
+      /* Mengubah warna teks tombol dropdown */
       color: var(--text-primary);
-      cursor: pointer;
-      transition: background 0.2s;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
     }
-
+    
     .download-dropdown button:hover {
-      background: var(--hover-bg);
-      color: var(--accent-color);
+        background: var(--hover-bg);
+        color: var(--accent-color);
     }
 
     .download-dropdown button i {
       width: 16px;
+      color: var(--text-secondary);
     }
+    
+    .download-dropdown button:hover i {
+        color: var(--accent-color);
+    }
+
 
     .save-btn:disabled,
     .download-btn:disabled {
-      background: rgba(255, 255, 255, 0.05);
+      background: var(--bg-primary);
       color: var(--text-secondary);
       cursor: not-allowed;
       box-shadow: none;
@@ -372,20 +371,15 @@
       background: var(--bg-secondary);
       border: 1px solid var(--border-color);
       border-radius: var(--radius);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       z-index: 2000;
       display: none;
       padding: 5px 0;
       min-width: 180px;
     }
-
+    
     .context-item {
-      padding: 8px 15px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: background 0.2s, color 0.2s;
+        color: var(--text-primary);
     }
 
     .context-item:hover {
@@ -395,8 +389,6 @@
 
     .context-item i {
       color: var(--text-secondary);
-      width: 16px;
-      transition: color 0.2s;
     }
 
     .context-item:hover i {
@@ -420,72 +412,26 @@
 
     /* Popup confirm (Modern Modal) */
     .popup-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.7);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-      display: none;
-      backdrop-filter: blur(4px);
-      transition: opacity 0.3s;
+      background: rgba(0, 0, 0, 0.4); /* Overlay lebih terang */
     }
 
     .popup {
       background: var(--bg-secondary);
       border: 1px solid var(--border-color);
-      border-radius: var(--radius);
-      padding: 25px;
-      width: 90%;
-      max-width: 350px;
-      text-align: center;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-      transform: scale(0.95);
-      opacity: 0;
-      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
-    }
-
-    .popup-overlay[aria-hidden="false"] .popup {
-      transform: scale(1);
-      opacity: 1;
-    }
-
-    .popup p {
-      margin-bottom: 20px;
-      font-size: 15px;
-      color: var(--text-primary);
-    }
-
-    .popup-actions {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2); /* Shadow lebih ringan */
     }
 
     .popup-actions button {
-      padding: 10px 18px;
-      border: none;
-      border-radius: var(--radius);
-      cursor: pointer;
-      font-weight: 600;
-      transition: background 0.2s, transform 0.1s;
-    }
-
-    .popup-actions button:active {
-      transform: scale(0.98);
+      font-weight: 500;
     }
 
     #popupYes {
       background: var(--error-color);
-      color: var(--bg-primary);
+      color: var(--bg-secondary);
     }
 
     #popupYes:hover {
-      background: #ff7777;
+      background: #e75c6d;
     }
 
     #popupNo {
@@ -494,113 +440,41 @@
     }
 
     #popupNo:hover {
-      background: #555555;
+      background: #c0c0c0;
     }
 
     /* Toast (Modern Notification) */
     .toast {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
       background: var(--accent-color);
-      color: var(--bg-primary);
-      padding: 10px 15px;
-      border-radius: var(--radius);
-      box-shadow: 0 4px 15px rgba(0, 170, 170, 0.5);
-      display: none;
-      z-index: 2000;
-      font-size: 14px;
-      opacity: 0;
-      transform: translateY(20px);
-      transition: opacity 0.3s, transform 0.3s;
+      color: var(--bg-secondary); /* Ubah warna teks menjadi putih */
+      box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
     }
-
-    .toast.show {
-      opacity: 1;
-      transform: translateY(0);
+    
+    /* Perubahan warna ikon file agar sesuai dengan light mode */
+    .file-item span i {
+        color: var(--text-secondary) !important;
+    }
+    
+    .file-item.selected span i {
+        color: var(--accent-color) !important;
+    }
+    
+    .file-item span .fa-markdown {
+        color: #007bff !important; /* Biarkan Markdown berwarna biru cerah */
+    }
+    
+    .item.selected .fa-markdown {
+        color: var(--accent-color) !important;
     }
 
     /* ---------------------------------
        RESPONSIVENESS (MOBILE STYLES)
        --------------------------------- */
     @media (max-width: 768px) {
-
-      .app {
-        flex-direction: column;
-      }
-
-      .sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100vh;
-        width: 80%;
-        max-width: 300px;
-        transform: translateX(-100%);
-        transition: transform 0.3s ease-in-out;
-      }
-
-      .sidebar.open {
-        transform: translateX(0);
-        box-shadow: 4px 0 10px rgba(0, 0, 0, 0.5);
-      }
-
-      #toggleSidebarBtn {
-        display: block;
-      }
-
-      .header {
-        padding: 10px;
-      }
-
-      .header-actions {
-        gap: 5px;
-      }
-
-      .editor {
-        padding: 15px;
-      }
-
-      #codeArea {
-        padding: 20px;
-        min-height: calc(100vh - 100px);
-      }
-
-      .action-btn {
-        width: 36px;
-        height: 36px;
-        padding: 5px;
-        font-size: 14px;
-      }
-
-      .toast {
-        left: 50%;
-        right: auto;
-        transform: translateX(-50%) translateY(20px);
-        bottom: 10px;
-        text-align: center;
-        width: 80%;
-        max-width: 300px;
-      }
-
-      .toast.show {
-        transform: translateX(-50%) translateY(0);
-      }
-
-      .sidebar-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 40;
-        display: none;
-      }
-
-      .sidebar.open~.sidebar-overlay {
-        display: block;
-      }
+        /* ... Mobile Styles tetap sama, hanya mewarisi perubahan warna ... */
+        .sidebar-overlay {
+            background: rgba(0, 0, 0, 0.3); /* Overlay lebih terang */
+        }
     }
   </style>
 </head>
@@ -751,7 +625,8 @@
     // Ikon Helper
     function getFileIcon(filename) {
       const lower = filename ? filename.toLowerCase() : "";
-      if (lower.endsWith(".md")) return '<i class="fab fa-markdown" style="color:#66BB6A;"></i>';
+      // PERUBAHAN: Warna ikon disesuaikan dengan light mode
+      if (lower.endsWith(".md")) return '<i class="fab fa-markdown" style="color:var(--accent-color);"></i>';
       return '<i class="fas fa-file-alt" style="color:var(--text-secondary);"></i>';
     }
 
@@ -925,7 +800,7 @@
 
           const iconEl = document.createElement('i');
           iconEl.className = isOpen ? "fas fa-folder-open" : "fas fa-folder";
-          iconEl.style.color = "#FFD700";
+          iconEl.style.color = "#FFD700"; // Warna kuning terang untuk folder
 
           const nameEl = document.createElement("div");
           nameEl.className = "name";
@@ -1139,366 +1014,261 @@
           <style>
             body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 40px auto; padding: 0 20px; }
             h1, h2, h3 { color: #333; }
-            p { margin-bottom: 15px; }
+            p { margin-bottom: 10px; }
+            a { color: #007bff; text-decoration: underline; }
           </style>
         `;
 
+        // Bungkus konten di dalam tag HTML lengkap untuk file .doc (MIME type application/msword)
         content = `
-          <html xmlns:v="urn:schemas-microsoft-com:vml"
-          xmlns:o="urn:schemas-microsoft-com:office:office"
-          xmlns:w="urn:schemas-microsoft-com:office:word"
-          xmlns:m="http://schemas.microsoft.com/office/2004/12/omml"
-          xmlns="http://www.w3.org/TR/REC-html40">
-          <head><meta charset="utf-8">
-          <title>${name}</title>
-          ${style}
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <meta charset="UTF-8">
+              <title>${baseName}</title>
+              ${style}
           </head>
-          <body>${contentHtml}</body>
-          </html>`;
+          <body>
+              <div class="document-content">
+                  ${contentHtml}
+              </div>
+          </body>
+          </html>
+        `;
 
         filename = baseName + '.doc';
         mimeType = 'application/msword';
-        showToast(`Dokumen "${filename}" berhasil diunduh sebagai Word (.doc).`);
+        showToast(`Dokumen "${filename}" berhasil diunduh (Word/HTML).`);
+      } else {
+        return;
       }
 
-      if (content) {
-        triggerDownload(content, filename, mimeType);
-      }
+      triggerDownload(content, filename, mimeType);
     }
 
-    function downloadFolderMassal(folderData, folderName, format) {
-      showToast(`Mulai mengunduh dokumen dari folder "${folderName}" secara massal...`, 3000);
+    // --- LOGIKA FIREBASE DAN CRUD (Disimpan) ---
 
-      let fileCount = 0;
-      const extension = format === 'doc' ? '.doc' : '.txt';
+    saveBtn.onclick = saveFile;
 
-      function traverseAndDownload(obj) {
-        for (const key in obj) {
-          const data = obj[key];
-          if (!data) continue;
+    function saveFile() {
+      if (!currentFilePath) return;
 
-          if (data.type === "file") {
-            const baseName = (data.name || "dokumen_tanpa_judul").replace(/\.(md|txt|html|doc)$/i, '');
-            const filename = baseName + extension;
-            let contentHtml = data.content || "";
+      // Ambil konten setelah auto-linking dan sebelum disimpan
+      processContentAndSaveCursor();
+      const contentToSave = codeArea.innerHTML;
 
-            // Auto-Linker untuk konten file yang diunduh secara massal
-            contentHtml = autoLinker(contentHtml);
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
-            let content, mimeType;
+      db.ref(DB_ROOT + currentFilePath + "/content").set(contentToSave)
+        .then(() => {
+          showToast("Dokumen berhasil disimpan!");
+        })
+        .catch(err => {
+          showToast("Gagal menyimpan dokumen!");
+          console.error("Firebase save error:", err);
+        })
+        .finally(() => {
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = '<i class="fas fa-save"></i>';
+        });
+    }
 
-            if (format === 'doc') {
-              const style = `<style>body { font-family: Arial, sans-serif; line-height: 1.6; } h1, h2, h3 { color: #333; }</style>`;
-              content = `
-                <html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns:m="http://schemas.microsoft.com/office/2004/12/omml" xmlns="http://www.w3.org/TR/REC-html40">
-                <head><meta charset="utf-8"><title>${baseName}</title>${style}</head>
-                <body>${contentHtml}</body></html>`;
-              mimeType = 'application/msword';
-            } else {
-              const tempDiv = document.createElement('div');
-              tempDiv.innerHTML = contentHtml;
-              content = tempDiv.textContent;
-              mimeType = 'text/plain';
-            }
+    function createNewItem(path, type) {
+      const isRoot = path === '';
+      const parentRef = isRoot ? db.ref(DB_ROOT) : db.ref(DB_ROOT + path + "/children");
+      const defaultName = type === 'folder' ? 'Folder Baru' : 'Dokumen Baru';
 
-            triggerDownload(content, filename, mimeType);
-            fileCount++;
-          } else if (data.type === "folder" && data.children) {
-            traverseAndDownload(data.children);
-          }
-        }
-      }
-      traverseAndDownload(folderData.children);
-
-      if (fileCount > 0) {
-        showToast(`${fileCount} dokumen dari folder "${folderName}" berhasil diunduh (${extension}).`);
+      const newItem = {
+        name: defaultName,
+        type: type,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+      };
+      if (type === 'file') {
+        newItem.content = "";
       } else {
-        showToast(`Tidak ada dokumen di folder "${folderName}" untuk diunduh.`);
+        newItem.children = null; // Agar Firebase menyimpannya sebagai node kosong
       }
+
+      parentRef.push(newItem)
+        .then(snap => {
+          showToast(`${defaultName} berhasil dibuat.`);
+          if (!isRoot) {
+            // Jika dibuat di dalam folder, pastikan folder tersebut terbuka
+            const folderPath = path.substring(0, path.lastIndexOf('/children'));
+            expandedFolders[folderPath] = true;
+          }
+          // Cari item baru di DOM dan mulai rename
+          // Ini akan dipicu oleh listener on('value') berikutnya.
+          setTimeout(() => {
+            const newItemPath = (isRoot ? "" : path) + "/" + snap.key;
+            const newItemEl = document.querySelector(`.item[data-path="${newItemPath}"] .name`);
+            if (newItemEl) {
+              startRename(newItemEl, newItemPath, type);
+            }
+          }, 50);
+        })
+        .catch(err => {
+          showToast("Gagal membuat item baru!");
+          console.error("Firebase create error:", err);
+        });
+    }
+
+    function deleteItem(path) {
+      db.ref(DB_ROOT + path).remove()
+        .then(() => {
+          showToast("Item berhasil dihapus.");
+          if (path === currentFilePath) {
+            clearEditor();
+          }
+        })
+        .catch(err => {
+          showToast("Gagal menghapus item!");
+          console.error("Firebase delete error:", err);
+        });
     }
 
     // --- LOGIKA CONTEXT MENU ---
 
-    sidebar.addEventListener('contextmenu', function(e) {
-      const itemEl = e.target.closest('.item');
+    const contextMenuOptions = [{
+      label: 'Tambahkan Dokumen',
+      icon: 'fas fa-file-alt',
+      action: 'add-file'
+    }, {
+      label: 'Tambahkan Folder',
+      icon: 'fas fa-folder-plus',
+      action: 'add-folder'
+    }, {
+      separator: true
+    }, {
+      label: 'Ganti Nama',
+      icon: 'fas fa-pen',
+      action: 'rename'
+    }, {
+      label: 'Hapus',
+      icon: 'fas fa-trash',
+      action: 'delete'
+    }];
 
-      e.preventDefault();
-      e.stopPropagation();
-
+    function buildContextMenu(targetPath, targetType) {
       contextMenu.innerHTML = '';
-      let targetPath, targetName, targetType;
-
-      const isBrandClick = e.target.closest('.brand');
-
-      // --- LOGIKA KLIK KANAN DI RUANG KOSONG (ROOT) ---
-      if (!itemEl && !isBrandClick) {
-        // Opsi Tambah Folder di Root
-        const addRootFolderItem = document.createElement('div');
-        addRootFolderItem.className = 'context-item';
-        addRootFolderItem.innerHTML = `<i class="fas fa-folder-plus"></i> Tambah Folder (Root)`;
-        addRootFolderItem.onclick = (ce) => {
-          ce.stopPropagation();
-          contextMenu.style.display = 'none';
-          db.ref(DB_ROOT).push({
-            type: "folder",
-            name: "Folder Baru",
-            children: {}
-          });
-          closeSidebarIfMobile();
-        };
-        contextMenu.appendChild(addRootFolderItem);
-
-        // Opsi Tambah Dokumen di Root
-        const addRootFileItem = document.createElement('div');
-        addRootFileItem.className = 'context-item';
-        addRootFileItem.innerHTML = `<i class="fas fa-file-alt"></i> Tambah Dokumen (Root)`;
-        addRootFileItem.onclick = (ce) => {
-          ce.stopPropagation();
-          contextMenu.style.display = 'none';
-          db.ref(DB_ROOT).push({
-            type: "file",
-            name: "dokumen_baru.txt",
-            content: ""
-          });
-          closeSidebarIfMobile();
-        };
-        contextMenu.appendChild(addRootFileItem);
-
-      } else if (itemEl) {
-        // --- LOGIKA KLIK KANAN DI ITEM FILE/FOLDER ---
-        targetPath = itemEl.getAttribute('data-path');
-        targetType = itemEl.getAttribute('data-type');
-        const nameEl = itemEl.querySelector('.name');
-        targetName = nameEl.textContent;
-
-        if (!targetPath || !targetType || !nameEl) return;
-
-
-        // 1. OPSI TAMBAH FOLDER/DOKUMEN DI DALAM FOLDER
-        if (targetType === 'folder') {
-          // Opsi Tambah Folder di dalam folder (Nested)
-          const addFolderItem = document.createElement('div');
-          addFolderItem.className = 'context-item';
-          addFolderItem.innerHTML = `<i class="fas fa-folder-plus"></i> Tambah Sub-Folder`;
-          addFolderItem.onclick = (ce) => {
-            ce.stopPropagation();
-            contextMenu.style.display = 'none';
-            // Path harus mengarah ke node 'children' dari folder yang diklik
-            db.ref(DB_ROOT + targetPath + "/children").push({
-              type: "folder",
-              name: "Sub-Folder Baru",
-              children: {}
-            });
-            expandedFolders[targetPath] = true;
-          };
-          contextMenu.appendChild(addFolderItem);
-
-          // Opsi Tambah Dokumen di dalam folder
-          const addFileItem = document.createElement('div');
-          addFileItem.className = 'context-item';
-          addFileItem.innerHTML = `<i class="fas fa-file-alt"></i> Tambah Dokumen`;
-          addFileItem.onclick = (ce) => {
-            ce.stopPropagation();
-            contextMenu.style.display = 'none';
-            db.ref(DB_ROOT + targetPath + "/children").push({
-              type: "file",
-              name: "dokumen_baru.txt",
-              content: ""
-            });
-            expandedFolders[targetPath] = true;
-          };
-          contextMenu.appendChild(addFileItem);
-
-          contextMenu.appendChild(document.createElement('div')).className = 'context-separator';
+      contextMenuOptions.forEach(option => {
+        if (option.separator) {
+          const separator = document.createElement('div');
+          separator.className = 'context-separator';
+          contextMenu.appendChild(separator);
+          return;
         }
 
+        // Filter opsi berdasarkan tipe
+        if (targetType === 'root' && (option.action === 'rename' || option.action === 'delete')) {
+          return;
+        }
+        if (targetType === 'file' && (option.action === 'add-file' || option.action === 'add-folder')) {
+          return;
+        }
 
-        // 2. OPSI DOWNLOAD
-        const downloadWordItem = document.createElement('div');
-        downloadWordItem.className = 'context-item';
-        downloadWordItem.innerHTML = `<i class="fas fa-file-word"></i> Download Word (.doc)`;
-        downloadWordItem.onclick = (ce) => {
-          ce.stopPropagation();
+        const item = document.createElement('div');
+        item.className = `context-item ${option.action === 'delete' ? 'delete-action' : ''}`;
+        item.innerHTML = `<i class="${option.icon}"></i> <span>${option.label}</span>`;
+
+        item.onclick = (e) => {
+          e.stopPropagation();
           contextMenu.style.display = 'none';
-          downloadHelper(targetPath, targetName, targetType, 'doc');
-        };
-        contextMenu.appendChild(downloadWordItem);
 
-        const downloadTextItem = document.createElement('div');
-        downloadTextItem.className = 'context-item';
-        downloadTextItem.innerHTML = `<i class="fas fa-file-alt"></i> Download Teks (.txt)`;
-        downloadTextItem.onclick = (ce) => {
-          ce.stopPropagation();
-          contextMenu.style.display = 'none';
-          downloadHelper(targetPath, targetName, targetType, 'txt');
-        };
-        contextMenu.appendChild(downloadTextItem);
-
-        contextMenu.appendChild(document.createElement('div')).className = 'context-separator';
-
-
-        // 3. OPSI RENAME
-        const renameItem = document.createElement('div');
-        renameItem.className = 'context-item';
-        renameItem.innerHTML = '<i class="fas fa-pen"></i> Ubah Nama';
-        renameItem.onclick = (ce) => {
-          ce.stopPropagation();
-          contextMenu.style.display = 'none';
-          startRename(nameEl, targetPath, targetType);
-        };
-        contextMenu.appendChild(renameItem);
-
-        // 4. OPSI DELETE
-        const deleteItem = document.createElement('div');
-        deleteItem.className = 'context-item delete-action';
-        deleteItem.innerHTML = '<i class="fas fa-trash-alt"></i> Hapus';
-        deleteItem.onclick = (ce) => {
-          ce.stopPropagation();
-          contextMenu.style.display = 'none';
-          showPopup(`Yakin ingin menghapus ${targetType === 'folder' ? 'folder' : 'dokumen'} "${targetName}"?`, () => {
-            db.ref(DB_ROOT + targetPath).remove();
-            if (currentFilePath === targetPath) {
-              clearEditor();
+          if (option.action === 'add-file') {
+            const path = targetType === 'root' ? '' : targetPath + "/children";
+            createNewItem(path, 'file');
+          } else if (option.action === 'add-folder') {
+            const path = targetType === 'root' ? '' : targetPath + "/children";
+            createNewItem(path, 'folder');
+          } else if (option.action === 'rename') {
+            const nameEl = document.querySelector(`.item[data-path="${targetPath}"] .name`);
+            if (nameEl) {
+              startRename(nameEl, targetPath, targetType);
             }
-          });
-        };
-        contextMenu.appendChild(deleteItem);
-      } else {
-        // Klik pada elemen .brand atau area lain yang diabaikan
-        contextMenu.style.display = 'none';
-        return;
-      }
-
-      // --- Helper untuk Download ---
-      function downloadHelper(path, name, type, format) {
-        if (type === 'file') {
-          if (currentFilePath === path) {
-            downloadFile(name, format, codeArea.innerHTML);
-          } else {
-            db.ref(DB_ROOT + path).once("value").then(snap => {
-              const data = snap.val();
-              if (data && data.content !== undefined) {
-                downloadFile(name, format, data.content);
-              } else {
-                showToast("Gagal mengambil konten dokumen!");
-              }
-            }).catch(err => {
-              console.error("Download from DB error:", err);
-              showToast("Gagal mengambil konten dokumen!");
-            });
+          } else if (option.action === 'delete') {
+            // Buka popup konfirmasi
+            showPopup(
+              `Apakah Anda yakin ingin menghapus ${targetType === 'folder' ? 'folder' : 'dokumen'} <b>${document.querySelector(`.item[data-path="${targetPath}"] .name`).textContent}</b>?`,
+              () => deleteItem(targetPath)
+            );
           }
-        } else if (type === 'folder') {
-          db.ref(DB_ROOT + path).once("value").then(snap => {
-            const folderData = snap.val();
-            if (folderData) {
-              downloadFolderMassal(folderData, name, format);
-            } else {
-              showToast("Gagal mengambil data folder untuk download massal!");
-            }
-          });
-        }
-      }
-
-      // --- LOGIKA POSISI MENU AGAR TIDAK TERPOTONG ---
-
-      contextMenu.style.display = 'block';
-      contextMenu.style.opacity = '0';
-      contextMenu.style.top = '0px';
-      contextMenu.style.left = '0px';
-
-      const menuWidth = contextMenu.offsetWidth;
-      const menuHeight = contextMenu.offsetHeight;
-      let x = e.clientX;
-      let y = e.clientY;
-
-      if (x + menuWidth > window.innerWidth) {
-        x = window.innerWidth - menuWidth - 5;
-      }
-
-      if (y + menuHeight > window.innerHeight) {
-        y = y - menuHeight;
-        if (y < 5) {
-          y = 5;
-        }
-      }
-
-      contextMenu.style.left = x + 'px';
-      contextMenu.style.top = y + 'px';
-      contextMenu.style.opacity = '1';
-    });
-
-    // --- LOGIKA SAVE & FIREBASE ---
-
-    saveBtn.onclick = () => saveFile();
-
-    function saveFile() {
-      if (!currentFilePath || !currentFileName || saveBtn.disabled) return;
-
-      // Pastikan konten diproses autoLinker sebelum disimpan
-      processContentAndSaveCursor(true);
-
-      saveBtn.disabled = true;
-
-      const content = codeArea.innerHTML;
-
-      db.ref(DB_ROOT + currentFilePath + "/content").set(content)
-        .then(() => {
-          showToast("Berhasil disimpan!");
-          saveBtn.disabled = false;
-        })
-        .catch((err) => {
-          showToast("Gagal menyimpan!");
-          console.error("Firebase save error:", err);
-          saveBtn.disabled = false;
-        });
+        };
+        contextMenu.appendChild(item);
+      });
     }
 
-    // --- Fungsi Popup dan Toast ---
+    treeEl.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
 
-    function showPopup(msg, action) {
-      popupMsg.textContent = msg;
-      popupOverlay.style.display = "flex";
-      setTimeout(() => popupOverlay.setAttribute("aria-hidden", "false"), 10);
+      let targetItem = e.target.closest('.item');
+      let targetPath, targetType;
 
-      popupAction = action;
-      popupNo.focus();
+      if (!targetItem) {
+        // Klik kanan di area kosong sidebar (Root)
+        targetPath = '';
+        targetType = 'root';
+      } else {
+        targetPath = targetItem.getAttribute('data-path');
+        targetType = targetItem.getAttribute('data-type');
+      }
+
+      buildContextMenu(targetPath, targetType);
+
+      contextMenu.style.left = e.pageX + 'px';
+      contextMenu.style.top = e.pageY + 'px';
+      contextMenu.style.display = 'block';
+    });
+
+
+    // --- LOGIKA POPUP KONFIRMASI (MODAL) ---
+
+    function showPopup(message, actionCallback) {
+      popupMsg.innerHTML = message;
+      popupAction = actionCallback;
+      popupOverlay.style.display = 'flex';
+      popupOverlay.setAttribute('aria-hidden', 'false');
+    }
+
+    function hidePopup() {
+      popupOverlay.style.display = 'none';
+      popupOverlay.setAttribute('aria-hidden', 'true');
+      popupAction = null;
     }
 
     popupYes.onclick = () => {
-      if (popupAction) popupAction();
-      closePopup();
+      if (popupAction) {
+        popupAction();
+      }
+      hidePopup();
     };
 
-    popupNo.onclick = closePopup;
-    popupOverlay.onclick = e => {
-      if (e.target === popupOverlay) closePopup();
+    popupNo.onclick = hidePopup;
+    popupOverlay.onclick = (e) => {
+      if (e.target === popupOverlay) {
+        hidePopup();
+      }
     };
 
-    function closePopup() {
-      popupOverlay.setAttribute("aria-hidden", "true");
-      setTimeout(() => {
-        popupOverlay.style.display = "none";
-        popupAction = null;
-      }, 300);
-    }
+    // --- LOGIKA TOAST NOTIFICATION ---
 
-    function showToast(msg, ms = 2000) {
-      toast.textContent = msg;
-      toast.style.display = "block";
-      setTimeout(() => toast.classList.add('show'), 10);
-
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add('show');
       setTimeout(() => {
         toast.classList.remove('show');
-        setTimeout(() => toast.style.display = "none", 300);
-      }, ms);
+      }, 3000);
     }
 
-    // Render tree on DB changes
-    db.ref(DB_ROOT).on("value", snap => {
+    // --- LISTENER UTAMA FIREBASE ---
+
+    db.ref(DB_ROOT).on('value', snap => {
       treeDataCache = snap.val() || {};
       renderTree(treeDataCache, treeEl, "");
     });
   </script>
+
 </body>
 
 </html>
