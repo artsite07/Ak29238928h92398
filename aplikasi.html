@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplikasi Shortcut URL Realtime (Urutan Manual)</title>
+    <title>Aplikasi Shortcut URL Realtime (Light Mode)</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap">
     
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
@@ -58,19 +59,15 @@
             const adminGrid = document.getElementById('admin-list-container');
             adminGrid.innerHTML = ''; 
 
-            // --- PERUBAHAN UTAMA UNTUK SORTING ---
             // 1. Ambil keys
             const keys = Object.keys(shortcutsData);
             
-            // 2. Urutkan berdasarkan properti 'order' (angka). Jika tidak ada, gunakan Date.now()
+            // 2. Urutkan berdasarkan properti 'order' (angka). Jika tidak ada, gunakan Infinity
             const sortedKeys = keys.sort((a, b) => {
-                // Beri nilai order tinggi jika belum ada, agar item baru muncul di akhir
                 const orderA = shortcutsData[a].order === undefined ? Infinity : shortcutsData[a].order;
                 const orderB = shortcutsData[b].order === undefined ? Infinity : shortcutsData[b].order;
                 return orderA - orderB;
             });
-            // ----------------------------------------
-
 
             if (sortedKeys.length === 0) {
                 adminGrid.innerHTML = '<p class="text-info">Belum ada shortcut.</p>';
@@ -362,22 +359,23 @@
     </script>
     
     <style>
-        /* Variabel Warna */
+        /* Variabel Warna Light Mode */
         :root {
-            --color-bg-primary: #0a0a0a;
-            --color-bg-sidebar: #111111; /* Sekarang menjadi warna Header */
-            --color-text-primary: #FFFFFF;
-            --color-text-secondary: #AAAAAA;
-            --color-accent-cyan: #00FFFF;
-            --color-accent-dark: #00DEDE;
-            --color-red: #ef4444; 
-            --color-green: #10b981; 
-            --color-blue: #3b82f6; 
+            --color-bg-primary: #F0F2F5; /* Latar Belakang Utama Sangat Terang */
+            --color-bg-sidebar: #FFFFFF; /* Header Putih Bersih */
+            --color-text-primary: #1F2937; /* Teks Utama Gelap */
+            --color-text-secondary: #6B7280; /* Teks Sekunder Abu-abu */
+            --color-accent-blue: #0A74DA; /* Warna Aksen Biru Modern */
+            --color-accent-dark: #0056B3; /* Biru Lebih Gelap (Hover/Active) */
+            --color-red: #EF4444; 
+            --color-green: #10B981; 
+            --color-blue: #3B82F6; 
             
-            --color-border-dark: #222222;
-            --color-hover-bg: #1A1A1A;
+            --color-border-light: #D1D5DB; /* Garis Batas Ringan */
+            --color-hover-bg: #E5E7EB; /* Latar Belakang Hover Ringan */
 
-            --header-height: 50px; /* Tinggi header baru */
+            --header-height: 55px; /* Sedikit lebih tinggi untuk sentuhan modern */
+            --shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
         }
 
         /* Reset dan Main Layout */
@@ -389,186 +387,228 @@
             font-family: 'Inter', sans-serif;
             background-color: var(--color-bg-primary);
             color: var(--color-text-primary);
-            display: flex; /* Untuk menempatkan header dan konten di bawahnya */
-            flex-direction: column; /* Konten di bawah header */
+            display: flex;
+            flex-direction: column;
+            line-height: 1.5;
         }
 
-        /* --- HEADER CONTAINER BARU (Pengganti Sidebar) --- */
+        /* --- HEADER CONTAINER --- */
         #main-header {
             width: 100%;
             height: var(--header-height);
             min-height: var(--header-height);
             background-color: var(--color-bg-sidebar);
-            border-bottom: 1px solid var(--color-border-dark);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); 
+            border-bottom: 1px solid var(--color-border-light);
+            box-shadow: var(--shadow-light); 
             display: flex; 
             flex-direction: row; 
             align-items: center; 
-            padding: 0 10px; 
+            padding: 0 15px; 
             box-sizing: border-box;
-            overflow-x: auto; /* Agar bisa digeser jika shortcut banyak */
+            overflow-x: auto; 
             overflow-y: hidden;
-            flex-shrink: 0; /* Pastikan tidak menyusut */
-            white-space: nowrap; /* Mencegah item wrap */
-            -ms-overflow-style: none; /* IE and Edge */
-            scrollbar-width: none; /* Firefox */
+            flex-shrink: 0;
+            white-space: nowrap;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
-        #main-header::-webkit-scrollbar { display: none; } /* Chrome, Safari, Opera */
+        #main-header::-webkit-scrollbar { display: none; } 
 
         /* Daftar Menu di Header */
         .app-grid {
             display: flex;
-            flex-direction: row; /* Horizontal */
-            gap: 10px;
-            margin: 0 auto; /* Tengah */
+            flex-direction: row;
+            gap: 12px; /* Jarak sedikit lebih besar */
+            margin: 0 auto; 
             flex-grow: 1; 
             height: 100%;
             align-items: center;
-            justify-content: flex-start; /* Taruh di kiri */
+            justify-content: flex-start;
         }
 
-        /* Item Shortcut (Lebih Kecil) */
+        /* Item Shortcut */
         .app-item {
             display: flex;
             flex-direction: row;
             align-items: center;
-            justify-content: center; /* Pusatkan ikon */
+            justify-content: center;
             text-decoration: none;
             color: var(--color-text-primary);
             transition: all 0.2s;
-            padding: 5px; /* Padding kecil */
-            border-radius: 6px;
+            padding: 4px;
+            border-radius: 8px; /* Lebih lembut */
             background-color: transparent;
-            height: 80%; /* Memanfaatkan tinggi header */
+            height: 80%; 
             box-sizing: border-box;
             overflow: hidden;
-            flex-shrink: 0; /* Penting agar tidak menyusut saat scroll */
-        }
-        
-        .app-item span {
-            display: none; /* Tidak menampilkan nama di header */
+            flex-shrink: 0;
         }
 
         /* Perubahan Hover/Active */
         .app-item:hover { background-color: var(--color-hover-bg); }
-        .app-item.active { background-color: var(--color-accent-dark); color: white; font-weight: 600; }
-        .app-item.active .app-icon-initial { background-color: white !important; color: var(--color-bg-sidebar) !important; }
+        .app-item.active { 
+            background-color: var(--color-accent-blue); 
+            color: white; 
+            font-weight: 600; 
+            box-shadow: 0 2px 5px rgba(10, 116, 218, 0.3); /* Shadow untuk Active */
+        }
+        /* Ikon saat aktif menjadi putih dengan latar belakang biru */
+        .app-item.active .app-icon-initial { 
+            background-color: white !important; 
+            color: var(--color-accent-blue) !important; 
+        }
 
-        /* Ikon / Inisial (Lebih Kecil) */
+        /* Ikon / Inisial (DIUBAH UNTUK KONSISTENSI WARNA) */
         .app-icon-initial {
-            width: 30px; /* Lebih kecil */
-            height: 30px; /* Lebih kecil */
-            min-width: 30px; 
-            background-color: var(--color-accent-cyan); 
-            color: var(--color-bg-primary);
-            border-radius: 6px; 
+            width: 35px;
+            height: 35px;
+            min-width: 35px;
+            /* Latar belakang yang sangat terang */
+            background-color: var(--color-hover-bg); 
+            /* Warna ikon/inisial default: Biru Aksen */
+            color: var(--color-accent-blue); 
+            border-radius: 6px;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 0.9em; /* Untuk Inisial/Emoji */
+            font-size: 1em;
             font-weight: bold;
-            margin-right: 0; 
             flex-shrink: 0;
             transition: background-color 0.2s;
         }
-        
-        /* Penyesuaian Ikon Font Awesome agar lebih kecil */
+
+        /* Penyesuaian Ikon Font Awesome */
         .app-icon-initial.fa-icon-style i {
-            font-size: 0.8em; 
+            font-size: 0.9em; 
+            color: inherit; /* Warisi warna dari parent (accent blue) */
         }
         
-        /* Warna Ikon Random (Hanya untuk fallback inisial) */
-        .app-item:nth-child(2n) .app-icon-initial { background-color: #8b5cf6; } 
-        .app-item:nth-child(3n) .app-icon-initial { background-color: #f97316; } 
-        .app-item:nth-child(4n) .app-icon-initial { background-color: #ec4899; } 
-        .app-item:nth-child(5n) .app-icon-initial { background-color: #3b82f6; } 
-        
+        /* HAPUS: Hapus variasi warna acak (nth-child) */
         /* Tombol Pengaturan (Gerigi - Di header) */
         #settings-button {
-            width: 35px; height: 35px; padding: 0; margin-left: 15px; border-radius: 50%;
-            background-color: var(--color-bg-primary); color: var(--color-accent-cyan);
-            border: 1px solid var(--color-border-dark); cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); font-weight: 600;
-            display: flex; align-items: center; justify-content: center; font-size: 1em;
-            flex-shrink: 0; /* Pastikan tidak menyusut */
+            width: 38px; height: 38px; padding: 0; margin-left: 20px; border-radius: 50%;
+            background-color: var(--color-bg-primary); 
+            color: var(--color-accent-blue);
+            border: 1px solid var(--color-border-light); 
+            cursor: pointer;
+            box-shadow: var(--shadow-light); 
+            display: flex; align-items: center; justify-content: center; font-size: 1.1em;
+            flex-shrink: 0;
+            transition: background-color 0.2s, color 0.2s;
         }
-        #settings-button:hover { background-color: #00FFFF40; color: var(--color-accent-cyan); }
+        #settings-button:hover { 
+            background-color: var(--color-accent-blue); 
+            color: white; 
+            border-color: var(--color-accent-dark);
+        }
         #settings-button::before { content: "\2699"; font-size: 1em; margin-right: 0; }
         #settings-button span { display: none; }
         
         /* --- Konten DI BAWAH HEADER --- */
         #content-wrapper {
             display: flex;
-            flex-grow: 1; /* Mengisi sisa ruang vertikal */
+            flex-grow: 1;
             width: 100vw;
             overflow: hidden;
         }
 
         #iframe-wrapper { flex-grow: 1; height: 100%; display: none; }
         #content-frame { width: 100%; height: 100%; border: none; display: block; background-color: white; }
-        #empty-content { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 1.5em; color: var(--color-text-secondary); background-color: var(--color-bg-primary); text-align: center; height: 100%; }
+        
+        /* Konten Kosong */
+        #empty-content { 
+            flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; 
+            font-size: 1.1em; color: var(--color-text-secondary); background-color: var(--color-bg-primary); 
+            text-align: center; height: 100%;
+            padding: 20px;
+        }
+        #empty-content h1 {
+            font-size: 2em;
+            color: var(--color-accent-blue);
+            margin-bottom: 10px;
+        }
         
         /* --- Halaman Pengaturan --- */
         #admin-page-content {
-            flex-grow: 1; display: none; flex-direction: column; padding: 40px; box-sizing: border-box; 
+            flex-grow: 1; display: none; flex-direction: column; padding: 30px; box-sizing: border-box; 
             background-color: var(--color-bg-primary); overflow-y: auto; height: 100%;
         }
         
         /* Form Input */
+        .admin-form-container {
+            background-color: var(--color-bg-sidebar);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-light);
+            margin-bottom: 25px;
+        }
+
         .admin-form-container input {
             width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
+            padding: 10px;
+            margin-bottom: 12px;
             border-radius: 6px;
-            border: 1px solid var(--color-border-dark);
-            background-color: var(--color-bg-sidebar);
+            border: 1px solid var(--color-border-light);
+            background-color: white;
             color: var(--color-text-primary);
             box-sizing: border-box;
-            font-size: 1em;
-            transition: border-color 0.2s;
+            font-size: 0.95em;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
         .admin-form-container input:focus {
-            border-color: var(--color-accent-cyan);
+            border-color: var(--color-accent-blue);
+            box-shadow: 0 0 0 3px rgba(10, 116, 218, 0.2);
             outline: none;
         }
         
         .admin-form-container h2 {
-            color: var(--color-accent-cyan); margin-top: 0;
-            border-bottom: 2px solid var(--color-border-dark); padding-bottom: 10px; margin-bottom: 20px;
+            color: var(--color-accent-blue); 
+            margin-top: 0;
+            border-bottom: 1px solid var(--color-border-light); 
+            padding-bottom: 10px; 
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            font-weight: 600;
+        }
+        .admin-form-container h3 {
+            color: var(--color-text-primary); 
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-top: 25px;
+            margin-bottom: 10px;
         }
         
         /* Tombol Form */
         .add-button, .cancel-button {
-            padding: 12px 20px;
+            padding: 10px 18px;
             border: none;
             border-radius: 6px;
             cursor: pointer;
             font-weight: 600;
-            transition: background-color 0.2s;
+            transition: background-color 0.2s, box-shadow 0.2s;
             margin-right: 10px;
+            font-size: 0.95em;
         }
         .add-button {
             background-color: var(--color-green); 
             color: white;
         }
-        .add-button:hover { background-color: #0d995c; }
+        .add-button:hover { background-color: #0d995c; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3); }
         
         .cancel-button {
             background-color: var(--color-text-secondary); 
             color: white;
-            display: none; /* Default hidden */
+            display: none; 
         }
-        .cancel-button:hover { background-color: #888888; }
+        .cancel-button:hover { background-color: #555555; }
 
 
-        /* Daftar Shortcut (UPDATED for Drag & Drop) */
+        /* Daftar Shortcut (Drag & Drop) */
         .admin-list-container {
-            max-height: 400px; 
+            max-height: 500px; 
             overflow-y: auto; 
-            border-top: 1px solid #333333; 
-            margin-top: 10px; 
-            padding-top: 10px;
-            cursor: move; /* Indikasi bahwa daftar bisa dipindahkan */
+            border-top: 1px solid var(--color-border-light); 
+            padding-top: 15px;
         }
 
         /* Item yang bisa diseret */
@@ -576,19 +616,22 @@
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
-            padding: 10px 0; 
-            border-bottom: 1px solid #1A1A1A;
-            background-color: var(--color-bg-primary); /* Penting untuk visual drag */
-            transition: background-color 0.2s, transform 0.2s;
-            cursor: grab; /* Kursor seret */
+            padding: 12px; 
+            margin-bottom: 8px;
+            border: 1px solid var(--color-border-light);
+            border-radius: 8px;
+            background-color: white; 
+            transition: all 0.2s;
+            cursor: grab;
         }
         
         /* Style saat item sedang diseret (dari SortableJS) */
         .admin-list-item.sortable-chosen {
-            background-color: #1A1A1A; /* Warna latar belakang saat memilih item */
-            box-shadow: 0 4px 15px rgba(0, 255, 255, 0.2);
-            opacity: 0.9;
-            transform: scale(1.02);
+            background-color: var(--color-hover-bg); 
+            box-shadow: 0 6px 15px rgba(10, 116, 218, 0.15);
+            opacity: 0.95;
+            transform: scale(1.01);
+            border-color: var(--color-accent-blue);
         }
         
         /* Indikator seret (drag handle) */
@@ -596,17 +639,17 @@
             cursor: grab;
             margin-right: 15px;
             color: var(--color-text-secondary);
-            font-size: 1.1em;
+            font-size: 1.2em;
         }
 
         .admin-item-details {
             display: flex; flex-direction: column; flex-grow: 1; min-width: 0;
         }
         .admin-item-name {
-            font-weight: 500; color: var(--color-accent-cyan);
+            font-weight: 600; color: var(--color-text-primary);
         }
         .admin-item-url {
-            color: var(--color-text-secondary); font-size: 0.9em;
+            color: var(--color-text-secondary); font-size: 0.85em;
             overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
         .admin-item-actions {
@@ -616,9 +659,10 @@
         
         /* Tombol Aksi */
         .delete-button, .edit-button {
-            padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85em;
+            padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.8em;
             margin-left: 8px; 
-            transition: background-color 0.2s;
+            font-weight: 500;
+            transition: background-color 0.2s, box-shadow 0.2s;
         }
         .edit-button {
             background-color: var(--color-blue); 
@@ -647,69 +691,106 @@
                 min-height: var(--header-height);
             }
             
-            .app-grid {
-                gap: 15px; 
-            }
-
-            .app-item {
-                height: 100%;
-                padding: 10px 5px;
+            #admin-page-content {
+                padding: 15px;
             }
             
-            .app-icon-initial { 
-                width: 35px; 
-                height: 35px;
-                min-width: 35px;
-                font-size: 1.1em;
+            .admin-form-container {
+                padding: 15px;
             }
-
-            /* Penyesuaian Halaman Admin di Mobile */
-            #admin-page-content {
-                padding: 20px;
-            }
+            
             .admin-list-item {
-                flex-direction: column;
-                align-items: flex-start;
-                padding-bottom: 15px;
+                flex-wrap: wrap; /* Izinkan wrap */
+                padding: 15px;
+                position: relative;
             }
+            
             /* Pindahkan drag handle agar lebih mudah disentuh di mobile */
             .drag-handle {
                 position: absolute;
-                right: 20px;
+                left: 10px; /* Pindahkan ke kiri agar tidak bentrok dengan tombol */
+                top: 50%;
+                transform: translateY(-50%);
                 margin-right: 0;
-                top: 10px;
+                font-size: 1.5em;
             }
             
-            .admin-list-item {
-                position: relative; /* Untuk menempatkan drag handle absolut */
-            }
-
             .admin-item-details {
-                margin-bottom: 5px;
+                margin-left: 40px; /* Beri ruang untuk drag handle */
+                width: calc(100% - 10px);
+                margin-bottom: 10px;
             }
             .admin-item-url {
                 white-space: normal; 
                 word-break: break-all;
             }
             .admin-item-actions {
-                margin-left: 0;
-                margin-top: 5px;
+                margin-left: auto; /* Dorong tombol ke kanan */
+                margin-top: 0;
             }
             .delete-button, .edit-button {
-                margin-left: 0;
-                margin-right: 8px;
+                margin-left: 5px;
+                margin-right: 0;
             }
+            
+            /* Ganti Tombol Settings di Mobile ke Tombol Back/Home */
+            #main-header {
+                position: relative;
+            }
+            /* Tombol Gear di Header Mobile (Diganti dengan tombol Settings Mobile) */
+            .app-grid::after {
+                content: "\2699"; 
+                font-family: 'Font Awesome 6 Free', 'Inter', sans-serif;
+                font-weight: 900;
+                color: var(--color-text-secondary);
+                font-size: 1.3em;
+                padding: 5px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                margin-left: 10px;
+                border: 1px solid var(--color-border-light);
+                border-radius: 6px;
+                height: 35px;
+                width: 35px;
+                justify-content: center;
+                transition: all 0.2s;
+            }
+            .app-grid:hover::after {
+                background-color: var(--color-hover-bg);
+            }
+            .app-grid {
+                padding-right: 50px; /* Beri ruang untuk tombol setting */
+            }
+            #settings-button {
+                position: absolute;
+                right: 15px;
+                top: 50%;
+                transform: translateY(-50%);
+                display: flex; 
+                width: 40px;
+                height: 40px;
+                font-size: 1.2em;
+            }
+            
+            .app-item {
+                padding: 4px;
+            }
+            
         }
     </style>
 </head>
 <body>
 
     <header id="main-header">
+        <button id="back-button" onclick="goBackToShortcuts()" style="display:none; width: 40px; height: 40px; border-radius: 50%; background-color: var(--color-accent-blue); color: white; border: none; cursor: pointer; font-size: 1.2em; margin-right: 15px; box-shadow: var(--shadow-light); flex-shrink: 0; transition: background-color 0.2s;">
+            <i class="fa-solid fa-arrow-left"></i>
+        </button>
+
         <div class="app-grid" id="app-grid">
             </div>
         
-        <button id="settings-button" onclick="showSettingsPage()">
-            <span>Pengaturan</span>
+        <button id="settings-button" onclick="showSettingsPage()" title="Pengaturan">
         </button>
     </header>
 
@@ -721,7 +802,7 @@
                 
                 <input type="text" id="shortcut-name" placeholder="Nama Aplikasi (Contoh: Google)" />
                 <input type="text" id="shortcut-url" placeholder="URL Lengkap (Contoh: https://www.google.com)" />
-                <input type="text" id="shortcut-icon" placeholder="Ikon (Contoh: 🌐 atau fa-solid fa-globe)" /> 
+                <input type="text" id="shortcut-icon" placeholder="Ikon (Contoh: 🚀 atau fa-solid fa-rocket)" /> 
                 <div>
                     <button class="add-button" onclick="addShortcut()">Tambahkan Shortcut</button>
                     <button class="cancel-button" onclick="resetForm()">Batal Edit</button>
@@ -734,9 +815,8 @@
         </div>
 
         <div id="empty-content">
-            <h1>Selamat Datang</h1>
-            <p>Pilih salah satu shortcut dari header untuk memuatnya di sini.</p>
-            <p class="text-info" style="margin-top: 15px;">Klik shortcut yang sedang aktif lagi untuk menutupnya.</p>
+            <h1>Aplikasi Shortcut Saya</h1>
+            <p>Pilih ikon shortcut dari header di atas untuk memuatnya, atau klik tombol pengaturan (<i class="fa-solid fa-gear"></i>) untuk mengelola daftar.</p>
         </div>
 
         <div id="iframe-wrapper">
@@ -747,5 +827,42 @@
 
     </div>
 
+    <script>
+        const originalShowSettingsPage = window.showSettingsPage;
+        window.showSettingsPage = () => {
+            originalShowSettingsPage();
+            document.getElementById('settings-button').style.display = 'none';
+            document.getElementById('back-button').style.display = 'flex';
+        };
+
+        const originalGoBackToShortcuts = window.goBackToShortcuts;
+        window.goBackToShortcuts = () => {
+            originalGoBackToShortcuts();
+            // Perlu cek apakah di mobile
+            if (window.innerWidth <= 768) {
+                // Di mobile, tombol gear/settings berada di posisi 'settings-button' yang di-toggle
+                document.getElementById('settings-button').style.display = 'flex';
+            } else {
+                // Di desktop, tombol settings selalu ada
+                document.getElementById('settings-button').style.display = 'flex';
+            }
+            document.getElementById('back-button').style.display = 'none';
+        };
+        
+        // Atur initial state tombol saat load
+        window.onload = () => {
+            // Memastikan tombol back disembunyikan saat aplikasi pertama dimuat
+            document.getElementById('back-button').style.display = 'none'; 
+
+            // Cek jika tombol pengaturan perlu diubah di mobile
+            if (window.innerWidth <= 768) {
+                // Sembunyikan tombol 'settings-button' (gerigi di kanan) saat halaman dimuat di mobile
+                // Logic ini di override oleh CSS, jadi pastikan tombol tsb ada di HTML.
+                // Logika show/hide akan mengontrol tampilan tombol 'back-button' dan 'settings-button'.
+                // Biarkan CSS mengatur tampilan awal tombol Settings.
+            }
+        };
+
+    </script>
 </body>
 </html>
