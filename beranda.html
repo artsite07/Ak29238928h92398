@@ -3,228 +3,183 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Adlan M.R - Portofolio</title>
+  <title>Adlan M.R - Portofolio (Modern Minimalis)</title>
   <link rel="icon" href="1.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    /* Variabel Warna dan Font */
+    /* Variabel Warna dan Font (Palet Modern & Kalem) */
     :root {
-      --cyan-accent: #00bcd4; /* Cyan terang dan modern */
-      --cyan-hover-bg: #e0f7fa; /* Latar belakang hover cyan yang sangat muda */
-      
-      --secondary-color: #f1f5f9; /* Latar belakang sangat terang */
-      --text-color: #1f2937; /* Teks gelap */
-      --header-bg: #ffffff; /* Header putih */
-      --border-color: #e5e7eb; /* Border abu-abu muda */
-      --inactive-icon-color: #6b7280; /* Warna ikon standar abu-abu */
-      --font-family: 'Poppins', sans-serif;
+      --primary-bg: #1f2937;          /* Dark Slate (Sidebar) */
+      --secondary-bg: #ffffff;        /* Background Konten Putih */
+      --text-color-light: #9ca3af;    /* Ikon Inactive Abu-abu Lembut */
+      --text-color-active: #2563eb;   /* Biru Accent Modern */
+      --hover-color: #374151;         /* Darker Hover Background */
+      --font-family: 'Inter', sans-serif;
     }
 
-    /* Mengubah layout utama */
+    /* Layout utama */
     body {
       margin: 0;
       font-family: var(--font-family);
-      background: var(--secondary-color);
-      color: var(--text-color);
+      background: var(--secondary-bg);
       display: flex;
-      flex-direction: column;
       height: 100vh;
       overflow: hidden;
     }
 
-    /* Header atas (Sidebar di konteks layout ini) */
-    #header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 64px;
-      background-color: var(--header-bg);
-      border-bottom: 1px solid var(--border-color);
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); 
+    /* Sidebar Kiri - Sangat Kecil (40px) */
+    #sidebar {
+      width: 40px; 
+      min-width: 40px;
+      background-color: var(--primary-bg);
+      color: var(--text-color-light);
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: space-between; 
-      padding: 0 30px;
-      box-sizing: border-box;
+      padding: 20px 0; /* Padding vertikal ditingkatkan */
+      box-shadow: 1px 0 5px rgba(0, 0, 0, 0.1);
       z-index: 1000;
+      box-sizing: border-box;
     }
     
-    /* Container untuk foto profil dan navigasi */
-    .header-left, .header-right {
+    /* Navigasi Ikon */
+    #sidebar nav {
         display: flex;
-        align-items: center;
-        height: 100%;
-    }
-
-    /* Foto profil di kiri */
-    #header img {
-      width: 44px; 
-      height: 44px;
-      border-radius: 50%;
-      /* === Perubahan: Border warna Cyan === */
-      border: 3px solid var(--cyan-accent);
-      object-fit: cover;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    #header img:hover {
-      transform: scale(1.05);
-      /* === Perubahan: Efek cincin hover warna Cyan === */
-      box-shadow: 0 0 0 5px rgba(0, 188, 212, 0.2); 
-    }
-    
-    .profile-name {
-        margin-left: 15px;
-        font-weight: 600;
-        font-size: 1.1rem;
-        color: var(--text-color);
-    }
-
-    /* Navigasi ikon/link di kanan */
-    #header nav {
-        display: flex;
-        gap: 5px; 
+        flex-direction: column;
+        gap: 15px; /* Jarak antar ikon yang lega */
+        width: 100%;
     }
 
     /* Link Navigasi */
-    #header a {
-      color: var(--inactive-icon-color);
+    #sidebar a {
+      color: var(--text-color-light);
       text-decoration: none;
-      font-size: 1.1rem;
-      font-weight: 500;
-      padding: 10px 18px; 
-      border-radius: 8px; 
-      display: inline-flex;
+      font-size: 1.25rem;
+      padding: 8px 0; 
+      display: flex;
+      justify-content: center;
       align-items: center;
-      transition: color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+      transition: color 0.2s ease, background-color 0.2s ease, border-bottom 0.2s ease;
+      width: 100%;
+      box-sizing: border-box;
     }
 
-    /* Tambahkan nama di samping ikon (opsional, untuk tampilan desktop) */
-    #header a span {
-        margin-left: 8px;
-        display: none; 
+    /* Efek Hover Modern & Halus: Hanya warna ikon */
+    #sidebar a:hover,
+    #sidebar a:focus { 
+      color: var(--text-color-active); /* Ikon berubah ke warna accent */
+      background-color: var(--hover-color); /* Latar belakang hover yang sangat gelap */
+      outline: none;
     }
 
-    #header a:hover {
-      /* === Perubahan: Hover warna Cyan === */
-      color: var(--cyan-accent);
-      background-color: var(--cyan-hover-bg);
-      transform: translateY(-1px); 
-    }
-
-    #header a.active {
-      /* === Perubahan: Active warna Cyan === */
-      color: var(--cyan-accent);
-      background-color: var(--cyan-hover-bg);
-      font-weight: 600;
+    /* Status Aktif Minimalis: Border bottom halus */
+    #sidebar a.active {
+      color: var(--text-color-active);
+      /* Memberi underline tebal yang modern */
+      border-bottom: 2px solid var(--text-color-active); 
+      background-color: var(--hover-color); /* Mempertahankan latar belakang hover */
     }
     
     /* Area konten utama */
     #mainContent {
-      flex: 1;
-      margin-top: 64px;
-      width: 100%;
-      height: calc(100vh - 64px);
+      flex: 1; 
+      width: calc(100% - 40px); /* Disesuaikan dengan lebar sidebar baru */
+      height: 100%;
       overflow: hidden;
+      padding: 0; /* Hapus padding untuk konten full-width */
+      position: relative; 
+      box-sizing: border-box;
+      background-color: #f1f5f9; /* Latar belakang abu-abu sangat muda */
     }
 
+    /* Gaya Iframe - Memenuhi Konten Penuh */
     iframe {
-      width: 100%;
-      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%; 
+      height: 100%; 
       border: none;
-      background-color: var(--header-bg); 
-      display: none;
+      background-color: var(--secondary-bg); 
+      box-shadow: none; /* Hapus bayangan pada iframe */
+      border-radius: 0; 
+      opacity: 0; 
+      transition: opacity 0.3s ease-in-out; 
+      pointer-events: none;
     }
 
     iframe.active {
-      display: block;
+      opacity: 1; 
+      z-index: 10;
+      pointer-events: auto;
     }
 
     /* === Responsif untuk HP === */
-    @media (min-width: 768px) {
-        /* Tampilkan teks di desktop/tablet untuk kejelasan */
-        #header a span {
-            display: inline;
-        }
-    }
-
     @media (max-width: 767px) {
-      #header {
-        height: 56px;
-        padding: 0 15px;
-      }
-      
-      .profile-name {
-          display: none;
-      }
+        /* Sidebar di bagian bawah untuk tampilan mobile modern */
+        body {
+            flex-direction: column-reverse; /* Sidebar ke bawah */
+        }
+        
+        #sidebar {
+            width: 100%;
+            height: 50px;
+            min-width: unset;
+            padding: 0;
+            flex-direction: row; /* Ikon horizontal */
+            justify-content: space-around;
+            box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.1);
+        }
 
-      #header img {
-        width: 36px;
-        height: 36px;
-      }
-      
-      .header-right {
-        flex: 1;
-        justify-content: flex-end; 
-      }
-      
-      #header nav {
-        justify-content: space-around;
-        gap: 0;
-        width: auto;
-      }
+        #sidebar nav {
+            flex-direction: row;
+            gap: 0;
+            width: 90%;
+            margin-top: 0;
+            justify-content: space-around;
+        }
 
-      #header a {
-        font-size: 1.2rem;
-        padding: 10px 8px;
-      }
-      
-      #header a span {
-        display: none;
-      }
+        #sidebar a {
+            padding: 15px 5px;
+            font-size: 1.2rem;
+        }
+        
+        #sidebar a.active {
+            border-bottom: none;
+            /* Border top untuk tampilan aktif di bawah */
+            border-top: 2px solid var(--text-color-active); 
+        }
 
-      #mainContent {
-        margin-top: 56px;
-        height: calc(100vh - 56px);
-      }
+        #mainContent {
+            flex: 1;
+            width: 100%;
+            height: calc(100vh - 50px);
+        }
     }
   </style>
 </head>
 <body>
-  <header id="header">
+  <div id="sidebar">
     
-    <div class="header-left">
-        <img src="1.png" alt="Profil">
-        <span class="profile-name">Adlan M.R</span>
-    </div>
-
-    <div class="header-right">
-        <nav>
-            <a href="home.html" data-target="home-frame" title="Home">
-                <i class="fa-solid fa-house"></i>
-                <span>Home</span>
-            </a>
-            <a href="document.html" data-target="document-frame" title="Dokumen">
-                <i class="fa-solid fa-file-lines"></i>
-                <span>Dokumen</span>
-            </a>
-            <a href="code.html" data-target="code-frame" title="Kode">
-                <i class="fa-solid fa-code"></i>
-                <span>Kode</span>
-            </a>
-            <a href="codingin.html" data-target="codingin-frame" title="Codingin">
-                <i class="fa-solid fa-terminal"></i>
-                <span>Terminal</span>
-            </a>
-            <a href="aplikasi.html" data-target="aplikasi-frame" title="Aplikasi">
-                <i class="fa-solid fa-cubes"></i>
-                <span>Aplikasi</span>
-            </a>
-        </nav>
-    </div>
-  </header>
+    <nav>
+        <a href="home.html" data-target="home-frame" title="Home">
+            <i class="fa-solid fa-house"></i>
+        </a>
+        <a href="document.html" data-target="document-frame" title="Dokumen">
+            <i class="fa-solid fa-file-lines"></i>
+        </a>
+        <a href="code.html" data-target="code-frame" title="Kode">
+            <i class="fa-solid fa-code"></i>
+        </a>
+        <a href="codingin.html" data-target="codingin-frame" title="Terminal">
+            <i class="fa-solid fa-terminal"></i>
+        </a>
+        <a href="aplikasi.html" data-target="aplikasi-frame" title="Aplikasi">
+            <i class="fa-solid fa-cubes"></i>
+        </a>
+    </nav>
+  </div>
 
   <div id="mainContent">
     <iframe id="home-frame" src="home.html" class="active"></iframe>
@@ -235,7 +190,7 @@
   </div>
 
   <script>
-    const links = document.querySelectorAll('#header a');
+    const links = document.querySelectorAll('#sidebar a');
     const iframes = document.querySelectorAll('iframe');
     const ACTIVE_KEY = 'activePage';
     const DEFAULT_PAGE = 'home-frame';
@@ -245,13 +200,15 @@
         e.preventDefault();
         const target = link.dataset.target;
 
-        iframes.forEach(f => f.classList.remove('active'));
-        document.getElementById(target).classList.add('active');
-
+        // Kelola kelas 'active' pada ikon sidebar
         links.forEach(l => l.classList.remove('active'));
         link.classList.add('active');
-
-        // Gunakan history.replaceState untuk memperbarui URL tanpa memuat ulang
+        
+        // Kelola visibilitas iframe dengan transisi opacity
+        iframes.forEach(f => f.classList.remove('active'));
+        document.getElementById(target).classList.add('active');
+        
+        // Memperbarui URL di browser
         const newUrl = link.getAttribute('href');
         history.replaceState(null, '', newUrl);
 
