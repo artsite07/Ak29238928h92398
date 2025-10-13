@@ -3,35 +3,50 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Adlan M.R</title>
+  <title>Adlan M.R - Portofolio</title>
   <link rel="icon" href="1.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
+    /* Variabel Warna dan Font */
+    :root {
+      --cyan-accent: #00bcd4; /* Cyan terang dan modern */
+      --cyan-hover-bg: #e0f7fa; /* Latar belakang hover cyan yang sangat muda */
+      
+      --secondary-color: #f1f5f9; /* Latar belakang sangat terang */
+      --text-color: #1f2937; /* Teks gelap */
+      --header-bg: #ffffff; /* Header putih */
+      --border-color: #e5e7eb; /* Border abu-abu muda */
+      --inactive-icon-color: #6b7280; /* Warna ikon standar abu-abu */
+      --font-family: 'Poppins', sans-serif;
+    }
+
     /* Mengubah layout utama */
     body {
       margin: 0;
-      font-family: 'Inter', sans-serif;
-      background: #0a0a0a;
-      color: #fff;
+      font-family: var(--font-family);
+      background: var(--secondary-color);
+      color: var(--text-color);
       display: flex;
       flex-direction: column;
       height: 100vh;
       overflow: hidden;
     }
 
-    /* Header atas */
+    /* Header atas (Sidebar di konteks layout ini) */
     #header {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
-      height: 60px;
-      background-color: #111;
-      border-bottom: 1px solid #222;
+      height: 64px;
+      background-color: var(--header-bg);
+      border-bottom: 1px solid var(--border-color);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); 
       display: flex;
       align-items: center;
       justify-content: space-between; 
-      padding: 0 20px;
+      padding: 0 30px;
       box-sizing: border-box;
       z-index: 1000;
     }
@@ -45,57 +60,73 @@
 
     /* Foto profil di kiri */
     #header img {
-      width: 40px;
-      height: 40px;
+      width: 44px; 
+      height: 44px;
       border-radius: 50%;
-      border: 2px solid cyan;
-      transition: transform 0.3s ease, border-color 0.3s ease;
+      /* === Perubahan: Border warna Cyan === */
+      border: 3px solid var(--cyan-accent);
+      object-fit: cover;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
     #header img:hover {
-      transform: scale(1.1);
-      border-color: #00ffffaa;
+      transform: scale(1.05);
+      /* === Perubahan: Efek cincin hover warna Cyan === */
+      box-shadow: 0 0 0 5px rgba(0, 188, 212, 0.2); 
+    }
+    
+    .profile-name {
+        margin-left: 15px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: var(--text-color);
     }
 
     /* Navigasi ikon/link di kanan */
     #header nav {
         display: flex;
+        gap: 5px; 
     }
 
-    /* === Perubahan Kunci: Membuat area klik lebih besar === */
+    /* Link Navigasi */
     #header a {
-      color: #aaa;
+      color: var(--inactive-icon-color);
       text-decoration: none;
-      font-size: 1.2rem;
-      margin: 0 5px; /* Kurangi margin antar elemen, biarkan padding yang bekerja */
-      
-      /* PENTING: Tambahkan padding besar untuk memperluas area klik/sentuh */
-      padding: 10px 15px; 
-      
-      border-radius: 4px;
-      /* Pastikan elemen a berperilaku seperti blok untuk padding bekerja */
-      display: inline-block; 
-      transition: color 0.2s ease, transform 0.2s ease, background-color 0.2s ease;
+      font-size: 1.1rem;
+      font-weight: 500;
+      padding: 10px 18px; 
+      border-radius: 8px; 
+      display: inline-flex;
+      align-items: center;
+      transition: color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+    }
+
+    /* Tambahkan nama di samping ikon (opsional, untuk tampilan desktop) */
+    #header a span {
+        margin-left: 8px;
+        display: none; 
     }
 
     #header a:hover {
-      color: cyan;
-      background-color: #1a1a1a;
-      transform: translateY(-2px);
+      /* === Perubahan: Hover warna Cyan === */
+      color: var(--cyan-accent);
+      background-color: var(--cyan-hover-bg);
+      transform: translateY(-1px); 
     }
 
     #header a.active {
-      color: cyan;
-      background-color: #1a1a1a;
+      /* === Perubahan: Active warna Cyan === */
+      color: var(--cyan-accent);
+      background-color: var(--cyan-hover-bg);
+      font-weight: 600;
     }
-    /* ======================================================= */
-
+    
     /* Area konten utama */
     #mainContent {
       flex: 1;
-      margin-top: 61px;
+      margin-top: 64px;
       width: 100%;
-      height: calc(100vh - 61px);
+      height: calc(100vh - 64px);
       overflow: hidden;
     }
 
@@ -103,6 +134,7 @@
       width: 100%;
       height: 100%;
       border: none;
+      background-color: var(--header-bg); 
       display: none;
     }
 
@@ -111,37 +143,51 @@
     }
 
     /* === Responsif untuk HP === */
-    @media (max-width: 600px) {
+    @media (min-width: 768px) {
+        /* Tampilkan teks di desktop/tablet untuk kejelasan */
+        #header a span {
+            display: inline;
+        }
+    }
+
+    @media (max-width: 767px) {
       #header {
-        height: 50px;
-        padding: 0 10px;
+        height: 56px;
+        padding: 0 15px;
+      }
+      
+      .profile-name {
+          display: none;
       }
 
       #header img {
-        width: 35px;
-        height: 35px;
+        width: 36px;
+        height: 36px;
       }
       
       .header-right {
         flex: 1;
-        justify-content: flex-end;
+        justify-content: flex-end; 
       }
-
+      
       #header nav {
-        display: flex;
         justify-content: space-around;
-        width: 100%;
+        gap: 0;
+        width: auto;
       }
 
       #header a {
-        font-size: 1.1rem;
-        margin: 0; /* Hilangkan margin di HP */
-        padding: 8px 5px; /* Padding yang cukup untuk HP */
+        font-size: 1.2rem;
+        padding: 10px 8px;
+      }
+      
+      #header a span {
+        display: none;
       }
 
       #mainContent {
-        margin-top: 51px;
-        height: calc(100vh - 51px);
+        margin-top: 56px;
+        height: calc(100vh - 56px);
       }
     }
   </style>
@@ -151,15 +197,31 @@
     
     <div class="header-left">
         <img src="1.png" alt="Profil">
+        <span class="profile-name">Adlan M.R</span>
     </div>
 
     <div class="header-right">
         <nav>
-            <a href="home.html" data-target="home-frame" title="Home"><i class="fa-solid fa-house"></i></a>
-            <a href="document.html" data-target="document-frame" title="Dokumen"><i class="fa-solid fa-file-lines"></i></a>
-            <a href="code.html" data-target="code-frame" title="Kode"><i class="fa-solid fa-code"></i></a>
-            <a href="codingin.html" data-target="codingin-frame" title="Codingin"><i class="fa-solid fa-terminal"></i></a>
-            <a href="aplikasi.html" data-target="aplikasi-frame" title="Aplikasi"><i class="fa-solid fa-cubes"></i></a>
+            <a href="home.html" data-target="home-frame" title="Home">
+                <i class="fa-solid fa-house"></i>
+                <span>Home</span>
+            </a>
+            <a href="document.html" data-target="document-frame" title="Dokumen">
+                <i class="fa-solid fa-file-lines"></i>
+                <span>Dokumen</span>
+            </a>
+            <a href="code.html" data-target="code-frame" title="Kode">
+                <i class="fa-solid fa-code"></i>
+                <span>Kode</span>
+            </a>
+            <a href="codingin.html" data-target="codingin-frame" title="Codingin">
+                <i class="fa-solid fa-terminal"></i>
+                <span>Terminal</span>
+            </a>
+            <a href="aplikasi.html" data-target="aplikasi-frame" title="Aplikasi">
+                <i class="fa-solid fa-cubes"></i>
+                <span>Aplikasi</span>
+            </a>
         </nav>
     </div>
   </header>
@@ -189,22 +251,45 @@
         links.forEach(l => l.classList.remove('active'));
         link.classList.add('active');
 
+        // Gunakan history.replaceState untuk memperbarui URL tanpa memuat ulang
+        const newUrl = link.getAttribute('href');
+        history.replaceState(null, '', newUrl);
+
         sessionStorage.setItem(ACTIVE_KEY, target);
       });
     });
 
     document.addEventListener('DOMContentLoaded', () => {
       const saved = sessionStorage.getItem(ACTIVE_KEY);
-      const target = saved && document.getElementById(saved) ? saved : DEFAULT_PAGE;
-
-      const activeFrame = document.getElementById(target);
+      
+      let initialTarget = DEFAULT_PAGE;
+      const currentPath = window.location.pathname.substring(1); 
+      
+      let pathTarget = null;
+      links.forEach(l => {
+          if (l.getAttribute('href') === currentPath) {
+              pathTarget = l.dataset.target;
+          }
+      });
+      
+      if (pathTarget && document.getElementById(pathTarget)) {
+          initialTarget = pathTarget;
+      } else if (saved && document.getElementById(saved)) {
+          initialTarget = saved;
+      }
+      
+      const activeFrame = document.getElementById(initialTarget);
       if (activeFrame) {
         activeFrame.classList.add('active');
+        
+        links.forEach(l => {
+            l.classList.remove('active');
+            if (l.dataset.target === initialTarget) {
+                l.classList.add('active');
+                history.replaceState(null, '', l.getAttribute('href'));
+            }
+        });
       }
-
-      links.forEach(l => {
-        if (l.dataset.target === target) l.classList.add('active');
-      });
     });
   </script>
 </body>
