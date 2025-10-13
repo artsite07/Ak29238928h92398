@@ -7,71 +7,96 @@
   <link rel="icon" href="1.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <style>
+    /* Mengubah layout utama */
     body {
       margin: 0;
       font-family: 'Inter', sans-serif;
       background: #0a0a0a;
       color: #fff;
       display: flex;
+      flex-direction: column;
       height: 100vh;
       overflow: hidden;
     }
 
-    /* Sidebar kiri */
-    #sidebar {
+    /* Header atas */
+    #header {
       position: fixed;
       top: 0;
       left: 0;
-      width: 80px;
-      height: 100vh;
+      width: 100%;
+      height: 60px;
       background-color: #111;
-      border-right: 1px solid #222;
+      border-bottom: 1px solid #222;
       display: flex;
-      flex-direction: column;
       align-items: center;
-      padding-top: 15px;
+      justify-content: space-between; 
+      padding: 0 20px;
+      box-sizing: border-box;
       z-index: 1000;
     }
+    
+    /* Container untuk foto profil dan navigasi */
+    .header-left, .header-right {
+        display: flex;
+        align-items: center;
+        height: 100%;
+    }
 
-    /* Foto profil */
-    #sidebar img {
-      width: 50px;
-      height: 50px;
+    /* Foto profil di kiri */
+    #header img {
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       border: 2px solid cyan;
-      margin-bottom: 25px;
       transition: transform 0.3s ease, border-color 0.3s ease;
     }
 
-    #sidebar img:hover {
+    #header img:hover {
       transform: scale(1.1);
       border-color: #00ffffaa;
     }
 
-    /* Navigasi ikon */
-    #sidebar a {
+    /* Navigasi ikon/link di kanan */
+    #header nav {
+        display: flex;
+    }
+
+    /* === Perubahan Kunci: Membuat area klik lebih besar === */
+    #header a {
       color: #aaa;
       text-decoration: none;
-      font-size: 1.6rem;
-      margin: 20px 0;
-      transition: color 0.2s ease, transform 0.2s ease;
+      font-size: 1.2rem;
+      margin: 0 5px; /* Kurangi margin antar elemen, biarkan padding yang bekerja */
+      
+      /* PENTING: Tambahkan padding besar untuk memperluas area klik/sentuh */
+      padding: 10px 15px; 
+      
+      border-radius: 4px;
+      /* Pastikan elemen a berperilaku seperti blok untuk padding bekerja */
+      display: inline-block; 
+      transition: color 0.2s ease, transform 0.2s ease, background-color 0.2s ease;
     }
 
-    #sidebar a:hover {
+    #header a:hover {
       color: cyan;
-      transform: scale(1.2);
+      background-color: #1a1a1a;
+      transform: translateY(-2px);
     }
 
-    #sidebar a.active {
+    #header a.active {
       color: cyan;
+      background-color: #1a1a1a;
     }
+    /* ======================================================= */
 
     /* Area konten utama */
     #mainContent {
       flex: 1;
-      margin-left: 80px;
-      width: calc(100% - 80px);
-      height: 100vh;
+      margin-top: 61px;
+      width: 100%;
+      height: calc(100vh - 61px);
+      overflow: hidden;
     }
 
     iframe {
@@ -87,53 +112,58 @@
 
     /* === Responsif untuk HP === */
     @media (max-width: 600px) {
-      body {
-        flex-direction: column;
+      #header {
+        height: 50px;
+        padding: 0 10px;
       }
 
-      #sidebar {
-        flex-direction: row;
+      #header img {
+        width: 35px;
+        height: 35px;
+      }
+      
+      .header-right {
+        flex: 1;
+        justify-content: flex-end;
+      }
+
+      #header nav {
+        display: flex;
         justify-content: space-around;
-        align-items: center;
         width: 100%;
-        height: 60px;
-        border-right: none;
-        border-top: 1px solid #222;
-        bottom: 0;
-        top: auto;
-        padding: 5px 0;
       }
 
-      #sidebar img {
-        display: none;
-      }
-
-      #sidebar a {
-        font-size: 1.4rem;
-        margin: 0 10px;
+      #header a {
+        font-size: 1.1rem;
+        margin: 0; /* Hilangkan margin di HP */
+        padding: 8px 5px; /* Padding yang cukup untuk HP */
       }
 
       #mainContent {
-        margin-left: 0;
-        margin-bottom: 60px;
-        width: 100%;
-        height: calc(100vh - 60px);
+        margin-top: 51px;
+        height: calc(100vh - 51px);
       }
     }
   </style>
 </head>
 <body>
-  <!-- Sidebar -->
-  <nav id="sidebar">
-    <img src="1.png" alt="Profil">
-    <a href="home.html" data-target="home-frame" title="Home"><i class="fa-solid fa-house"></i></a>
-    <a href="document.html" data-target="document-frame" title="Dokumen"><i class="fa-solid fa-file-lines"></i></a>
-    <a href="code.html" data-target="code-frame" title="Kode"><i class="fa-solid fa-code"></i></a>
-    <a href="codingin.html" data-target="codingin-frame" title="Codingin"><i class="fa-solid fa-terminal"></i></a>
-    <a href="aplikasi.html" data-target="aplikasi-frame" title="Aplikasi"><i class="fa-solid fa-cubes"></i></a>
-  </nav>
+  <header id="header">
+    
+    <div class="header-left">
+        <img src="1.png" alt="Profil">
+    </div>
 
-  <!-- Konten utama -->
+    <div class="header-right">
+        <nav>
+            <a href="home.html" data-target="home-frame" title="Home"><i class="fa-solid fa-house"></i></a>
+            <a href="document.html" data-target="document-frame" title="Dokumen"><i class="fa-solid fa-file-lines"></i></a>
+            <a href="code.html" data-target="code-frame" title="Kode"><i class="fa-solid fa-code"></i></a>
+            <a href="codingin.html" data-target="codingin-frame" title="Codingin"><i class="fa-solid fa-terminal"></i></a>
+            <a href="aplikasi.html" data-target="aplikasi-frame" title="Aplikasi"><i class="fa-solid fa-cubes"></i></a>
+        </nav>
+    </div>
+  </header>
+
   <div id="mainContent">
     <iframe id="home-frame" src="home.html" class="active"></iframe>
     <iframe id="document-frame" src="document.html"></iframe>
@@ -143,7 +173,7 @@
   </div>
 
   <script>
-    const links = document.querySelectorAll('#sidebar a');
+    const links = document.querySelectorAll('#header a');
     const iframes = document.querySelectorAll('iframe');
     const ACTIVE_KEY = 'activePage';
     const DEFAULT_PAGE = 'home-frame';
@@ -166,7 +196,12 @@
     document.addEventListener('DOMContentLoaded', () => {
       const saved = sessionStorage.getItem(ACTIVE_KEY);
       const target = saved && document.getElementById(saved) ? saved : DEFAULT_PAGE;
-      document.getElementById(target).classList.add('active');
+
+      const activeFrame = document.getElementById(target);
+      if (activeFrame) {
+        activeFrame.classList.add('active');
+      }
+
       links.forEach(l => {
         if (l.dataset.target === target) l.classList.add('active');
       });
