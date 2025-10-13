@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Adlan M.R - Portofolio (Modern Minimalis)</title>
+  <title>Adlan M.R - Portofolio (Gaya Work Page)</title>
   <link rel="icon" href="1.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     /* Variabel Warna dan Font (Palet Modern & Kalem) */
     :root {
-      --primary-bg: #1f2937;          /* Dark Slate (Sidebar) */
-      --secondary-bg: #ffffff;        /* Background Konten Putih */
+      --primary-bg: #2c3e50;          /* Dark Slate (Sidebar - Diubah agar lebih gelap) */
+      --secondary-bg: #ecf0f1;        /* Background Halaman (Mirip Work Page) */
       --text-color-light: #9ca3af;    /* Ikon Inactive Abu-abu Lembut */
-      --text-color-active: #2563eb;   /* Biru Accent Modern */
+      --text-color-active: #1abc9c;   /* Teal Accent (Mirip Work Page) */
       --hover-color: #374151;         /* Darker Hover Background */
       --font-family: 'Inter', sans-serif;
     }
@@ -60,50 +60,63 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      transition: color 0.2s ease, background-color 0.2s ease, border-bottom 0.2s ease;
+      transition: color 0.2s ease, background-color 0.2s ease, border-left 0.2s ease; /* Transisi diubah ke border-left */
       width: 100%;
       box-sizing: border-box;
+      border-left: 3px solid transparent; /* Tambahkan border-left transparan default */
     }
 
-    /* Efek Hover Modern & Halus: Hanya warna ikon */
+    /* Efek Hover Modern & Halus */
     #sidebar a:hover,
     #sidebar a:focus { 
-      color: var(--text-color-active); /* Ikon berubah ke warna accent */
-      background-color: var(--hover-color); /* Latar belakang hover yang sangat gelap */
+      color: var(--text-color-active);
+      background-color: var(--hover-color);
       outline: none;
+      /* Tambahkan efek transform seperti Work Page */
+      transform: translateY(-2px); 
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); 
     }
 
-    /* Status Aktif Minimalis: Border bottom halus */
+    /* Status Aktif Minimalis: Border KIRI & Hapus border-bottom */
     #sidebar a.active {
       color: var(--text-color-active);
-      /* Memberi underline tebal yang modern */
-      border-bottom: 2px solid var(--text-color-active); 
-      background-color: var(--hover-color); /* Mempertahankan latar belakang hover */
+      background-color: var(--primary-bg); /* Pertahankan latar belakang gelap */
+      border-left: 3px solid var(--text-color-active); /* Garis aktif di kiri */
+      border-bottom: none; /* Hapus border-bottom lama */
+      transform: none;
+      box-shadow: none;
     }
     
-    /* Area konten utama */
+    /* Area konten utama - DIMODIFIKASI untuk padding seperti Work Page */
     #mainContent {
       flex: 1; 
-      width: calc(100% - 40px); /* Disesuaikan dengan lebar sidebar baru */
+      width: calc(100% - 40px);
       height: 100%;
       overflow: hidden;
-      padding: 0; /* Hapus padding untuk konten full-width */
+      /* PENTING: Tambahkan padding untuk margin visual di sekitar iframe */
+      padding: 20px; 
       position: relative; 
       box-sizing: border-box;
-      background-color: #f1f5f9; /* Latar belakang abu-abu sangat muda */
+      background-color: var(--secondary-bg); /* Latar belakang abu-abu sangat muda */
     }
 
-    /* Gaya Iframe - Memenuhi Konten Penuh */
+    /* Gaya Iframe - DIMODIFIKASI untuk radius dan bayangan */
     iframe {
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%; 
-      height: 100%; 
+      /* Posisikan iframe sesuai padding mainContent */
+      top: 20px;
+      left: 20px;
+      /* Ukuran iframe disesuaikan dengan padding mainContent */
+      width: calc(100% - 40px); 
+      height: calc(100% - 40px); 
+      
       border: none;
-      background-color: var(--secondary-bg); 
-      box-shadow: none; /* Hapus bayangan pada iframe */
-      border-radius: 0; 
+      background-color: #ffffff; /* Pastikan konten iframe terlihat putih */
+      
+      /* PENTING: Tambahkan radius dan bayangan */
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1); 
+      border-radius: 8px; 
+      
       opacity: 0; 
       transition: opacity 0.3s ease-in-out; 
       pointer-events: none;
@@ -139,22 +152,40 @@
             margin-top: 0;
             justify-content: space-around;
         }
+        
+        /* Hapus efek transform hover di mobile agar lebih responsif */
+        #sidebar a:hover,
+        #sidebar a:focus { 
+            transform: none;
+            box-shadow: none;
+        }
 
         #sidebar a {
             padding: 15px 5px;
             font-size: 1.2rem;
+            border-left: none; /* Hapus border kiri di mobile */
         }
         
         #sidebar a.active {
-            border-bottom: none;
+            border-left: none;
             /* Border top untuk tampilan aktif di bawah */
             border-top: 2px solid var(--text-color-active); 
+            background-color: var(--hover-color); 
         }
 
+        /* Kurangi padding di mobile untuk memaksimalkan ruang iframe */
         #mainContent {
             flex: 1;
             width: 100%;
             height: calc(100vh - 50px);
+            padding: 10px; 
+        }
+
+        iframe {
+            top: 10px;
+            left: 10px;
+            width: calc(100% - 20px); 
+            height: calc(100% - 20px);
         }
     }
   </style>
@@ -162,7 +193,7 @@
 <body>
   <div id="sidebar">
     
-    <nav>
+    <nav role="navigation">
         <a href="home.html" data-target="home-frame" title="Home">
             <i class="fa-solid fa-house"></i>
         </a>
@@ -182,11 +213,11 @@
   </div>
 
   <div id="mainContent">
-    <iframe id="home-frame" src="home.html" class="active"></iframe>
-    <iframe id="document-frame" src="document.html"></iframe>
-    <iframe id="code-frame" src="code.html"></iframe>
-    <iframe id="codingin-frame" src="codingin.html"></iframe>
-    <iframe id="aplikasi-frame" src="aplikasi.html"></iframe>
+    <iframe id="home-frame" src="home.html" class="active" title="Halaman Utama"></iframe>
+    <iframe id="document-frame" src="document.html" title="Dokumen"></iframe>
+    <iframe id="code-frame" src="code.html" title="Kode Proyek"></iframe>
+    <iframe id="codingin-frame" src="codingin.html" title="Terminal Simulasi"></iframe>
+    <iframe id="aplikasi-frame" src="aplikasi.html" title="Daftar Aplikasi"></iframe>
   </div>
 
   <script>
@@ -195,24 +226,36 @@
     const ACTIVE_KEY = 'activePage';
     const DEFAULT_PAGE = 'home-frame';
 
+    // Fungsi untuk mengelola status aktif (membuat kode lebih rapi)
+    const setActiveState = (targetId) => {
+        // Kelola kelas 'active' pada ikon sidebar
+        links.forEach(l => {
+            l.classList.remove('active');
+            l.removeAttribute('aria-current');
+            if (l.dataset.target === targetId) {
+                l.classList.add('active');
+                l.setAttribute('aria-current', 'page');
+                const newUrl = l.getAttribute('href');
+                history.replaceState(null, '', newUrl);
+            }
+        });
+        
+        // Kelola visibilitas iframe
+        iframes.forEach(f => f.classList.remove('active'));
+        const activeFrame = document.getElementById(targetId);
+        if (activeFrame) {
+            activeFrame.classList.add('active');
+        }
+        
+        sessionStorage.setItem(ACTIVE_KEY, targetId);
+    };
+
+
     links.forEach(link => {
       link.addEventListener('click', e => {
         e.preventDefault();
         const target = link.dataset.target;
-
-        // Kelola kelas 'active' pada ikon sidebar
-        links.forEach(l => l.classList.remove('active'));
-        link.classList.add('active');
-        
-        // Kelola visibilitas iframe dengan transisi opacity
-        iframes.forEach(f => f.classList.remove('active'));
-        document.getElementById(target).classList.add('active');
-        
-        // Memperbarui URL di browser
-        const newUrl = link.getAttribute('href');
-        history.replaceState(null, '', newUrl);
-
-        sessionStorage.setItem(ACTIVE_KEY, target);
+        setActiveState(target);
       });
     });
 
@@ -235,18 +278,7 @@
           initialTarget = saved;
       }
       
-      const activeFrame = document.getElementById(initialTarget);
-      if (activeFrame) {
-        activeFrame.classList.add('active');
-        
-        links.forEach(l => {
-            l.classList.remove('active');
-            if (l.dataset.target === initialTarget) {
-                l.classList.add('active');
-                history.replaceState(null, '', l.getAttribute('href'));
-            }
-        });
-      }
+      setActiveState(initialTarget);
     });
   </script>
 </body>
