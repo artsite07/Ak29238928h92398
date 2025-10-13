@@ -13,14 +13,14 @@
     tailwind.config = {
       theme: {
         extend: {
-          // --- WARNA YANG SUDAH DISESUAIKAN DENGAN BERANDA.HTML (CYAN) ---
+          // --- PALET WARNA LIGHT MODE MODERN (AKSEN BIRU) ---
           colors: {
-            'dark-bg': '#0a0a0a', 
-            'card-bg': '#111111', 
-            'accent': '#00FFFF', 
-            'text-light': '#FFFFFF', 
-            'subtle-text': '#AAAAAA', 
-            'btn-hover': '#00DEDE', 
+            'light-bg': '#F4F7FB', // Latar belakang terang yang lembut
+            'card-bg': '#FFFFFF',  // Latar belakang kartu putih bersih
+            'accent': '#3B82F6',   // Biru cerah (misalnya blue-500)
+            'text-dark': '#1F2937', // Teks gelap untuk kontras tinggi
+            'subtle-text': '#6B7280', // Teks sekunder/abu-abu
+            'btn-hover': '#2563EB', // Biru yang sedikit lebih gelap
             'danger': '#EF4444', 
           },
           fontFamily: {
@@ -35,6 +35,7 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
   <style>
+    /* Gaya untuk menonaktifkan scrollbar tetap dipertahankan */
     html,
     body {
       margin: 0;
@@ -58,44 +59,53 @@
       scrollbar-width: none;
     }
     
-    /* Tambahkan gaya kursor untuk menunjukkan elemen bisa di klik */
+    /* Gaya kursor untuk menunjukkan elemen bisa di klik */
     #messageAreaContainer {
         cursor: pointer; 
     }
+    
+    /* GAYA KHUSUS UNTUK KARTU PENCATAT WAKTU */
+    .time-card {
+        transition: all 0.3s ease;
+        background-image: linear-gradient(135deg, #E0F2FE 0%, #FFFFFF 100%); /* Gradien ringan untuk kedalaman */
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
   </style>
 </head>
 
-<body class="bg-dark-bg text-text-light min-h-screen p-4 sm:p-8 flex flex-col items-center font-sans antialiased">
+<body class="bg-light-bg text-text-dark min-h-screen p-4 sm:p-8 flex flex-col items-center font-sans antialiased">
 
   <div class="w-full max-w-4xl space-y-8">
 
-    <div class="text-center p-6 bg-card-bg rounded-2xl shadow-lg border border-accent/30 transition duration-300">
+    <div class="time-card text-center p-6 rounded-2xl border border-accent/20">
       <div class="flex justify-center items-end">
-        <span id="time" class="text-6xl md:text-8xl font-extrabold text-accent leading-none tracking-tighter drop-shadow transition duration-300">00:00:00</span>
+        <span id="time" class="text-6xl md:text-8xl font-extrabold text-accent leading-none tracking-tighter drop-shadow-md transition duration-300">00:00:00</span>
         </div>
-      <div id="date" class="text-md md:text-xl text-accent/70 mt-3 font-medium">Loading date...</div>
+      <div id="date" class="text-md md:text-xl text-subtle-text mt-3 font-medium">Loading date...</div>
     </div>
 
-    <div id="messageAreaContainer" class="p-4 bg-accent/10 rounded-xl shadow-inner border border-accent/40 flex flex-col space-y-3">
-        <p id="motivationalMessage" class="text-center text-lg font-semibold text-accent/90 transition duration-1000 ease-in-out transform">
+    <div id="messageAreaContainer" class="p-4 bg-accent/5 rounded-xl border border-accent/30 flex flex-col space-y-3 shadow-sm hover:shadow-md transition duration-300">
+        <p id="motivationalMessage" class="text-center text-lg font-semibold text-accent transition duration-1000 ease-in-out transform">
             Loading message...
         </p>
         
-        <div id="wordsFormContainer" class="mt-4 pt-3 border-t border-accent/30 hidden">
-            <h3 class="text-lg font-bold text-accent mb-3">Kelola Kata-kata Motivasi:</h3>
+        <div id="wordsFormContainer" class="mt-4 pt-3 border-t border-accent/20 hidden">
+            <h3 class="text-lg font-bold text-text-dark mb-3">Kelola Kata-kata Motivasi:</h3>
             <ul id="currentWordsList" class="space-y-2 mb-4 max-h-40 overflow-y-auto pr-2">
                 </ul>
 
             <div class="space-y-3">
-                <input type="text" id="newWordInput" placeholder="Tambah kata-kata motivasi baru..." class="w-full p-2 bg-dark-bg border border-accent/40 rounded-lg text-text-light focus:outline-none focus:ring-1 focus:ring-accent placeholder:text-subtle-text text-base" onkeydown="if(event.key === 'Enter') document.getElementById('addWordBtn').click()">
-                <button id="addWordBtn" class="w-full py-2 font-bold bg-accent text-dark-bg rounded-lg transition duration-200 hover:bg-btn-hover">
+                <input type="text" id="newWordInput" placeholder="Tambah kata-kata motivasi baru..." class="w-full p-2 bg-white border border-subtle-text/30 rounded-lg text-text-dark focus:outline-none focus:ring-2 focus:ring-accent placeholder:text-subtle-text text-base" onkeydown="if(event.key === 'Enter') document.getElementById('addWordBtn').click()">
+                <button id="addWordBtn" class="w-full py-2 font-bold bg-accent text-white rounded-lg transition duration-200 hover:bg-btn-hover shadow-md">
                     Tambah Kata-kata
                 </button>
             </div>
-            <p id="wordErrorMsg" class="text-red-500 mt-2 ml-4 hidden text-sm"></p>
+            <p id="wordErrorMsg" class="text-danger mt-2 ml-4 hidden text-sm"></p>
         </div>
     </div>
-    <div class="p-6 bg-card-bg rounded-2xl shadow-lg border border-accent/30">
+
+    <div class="p-6 bg-card-bg rounded-2xl shadow-xl border border-subtle-text/10">
 
       <ul id="taskList" class="space-y-3 mb-6 pt-1">
       </ul>
@@ -107,14 +117,14 @@
       <div class="mt-4 pt-4 border-t border-subtle-text/30">
 
         <div class="flex items-center space-x-3 mt-3">
-          <input type="text" id="taskInput" placeholder="Ketik rencana baru Anda di sini..." class="flex-grow p-3 bg-dark-bg border border-accent/40 rounded-full text-text-light focus:outline-none focus:ring-2 focus:ring-accent placeholder:text-subtle-text text-base sm:text-lg" onkeydown="if(event.key === 'Enter') document.getElementById('addTaskBtn').click()">
-          <button id="addTaskBtn" class="p-3 font-bold bg-accent text-dark-bg rounded-full transition duration-200 shadow-lg flex items-center justify-center flex-shrink-0 w-12 h-12">
+          <input type="text" id="taskInput" placeholder="Ketik rencana baru Anda di sini..." class="flex-grow p-3 bg-light-bg border border-subtle-text/30 rounded-full text-text-dark focus:outline-none focus:ring-2 focus:ring-accent placeholder:text-subtle-text text-base sm:text-lg" onkeydown="if(event.key === 'Enter') document.getElementById('addTaskBtn').click()">
+          <button id="addTaskBtn" class="p-3 font-bold bg-accent text-white rounded-full transition duration-200 shadow-lg hover:bg-btn-hover flex items-center justify-center flex-shrink-0 w-12 h-12">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
             </svg>
           </button>
         </div>
-        <p id="errorMsg" class="text-red-500 mt-2 ml-4 hidden text-sm"></p>
+        <p id="errorMsg" class="text-danger mt-2 ml-4 hidden text-sm"></p>
       </div>
     </div>
 
@@ -150,15 +160,9 @@
         const m = now.getMinutes().toString().padStart(2, '0');
         const s = now.getSeconds().toString().padStart(2, '0');
         
-        // PERUBAHAN 1: Menghapus logika dan variabel AM/PM (hanya menampilkan format 24 jam)
-        // const period = h >= 12 ? 'PM' : 'AM'; 
-        // h = h % 12 || 12; // Konversi ke format 12 jam
-
         // Menggunakan format 24 jam (h.toString().padStart(2,'0'))
         document.getElementById('time').textContent = `${h.toString().padStart(2,'0')}:${m}:${s}`;
         
-        // document.getElementById('period').textContent = period; // DIHAPUS
-
         document.getElementById('date').textContent = now.toLocaleDateString('id-ID', {
           weekday: 'long',
           year: 'numeric',
@@ -249,10 +253,11 @@
 
         allMotivationalWords.forEach((word) => {
             const li = document.createElement('li');
-            li.className = 'flex justify-between items-center p-2 bg-card-bg rounded-lg border border-subtle-text/20';
+            // PERUBAHAN: Menggunakan warna light mode untuk daftar kata-kata
+            li.className = 'flex justify-between items-center p-2 bg-light-bg rounded-lg border border-subtle-text/20';
             li.innerHTML = `
-                <span class="text-sm text-text-light max-w-[80%] break-words">${word.text}</span>
-                <button data-id="${word.id}" class="remove-word-btn text-danger hover:text-red-400 p-1 rounded-full transition duration-150 flex-shrink-0">
+                <span class="text-sm text-text-dark max-w-[80%] break-words">${word.text}</span>
+                <button data-id="${word.id}" class="remove-word-btn text-danger hover:text-red-600 p-1 rounded-full transition duration-150 flex-shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 6h6v8a1 1 0 11-2 0V7a1 1 0 00-1-1H7z" clip-rule="evenodd" />
                     </svg>
@@ -425,10 +430,12 @@
 
         active.forEach((t, i) => {
           const li = document.createElement('li');
-          li.className = 'flex justify-between items-start p-3 sm:p-4 bg-card-bg/70 rounded-xl shadow-md border border-accent/20 transition duration-200';
+          // PERUBAHAN: Menggunakan warna light mode untuk task list
+          li.className = 'flex justify-between items-start p-3 sm:p-4 bg-light-bg rounded-xl shadow-md border border-subtle-text/10 transition duration-200 hover:shadow-lg';
 
           const button = document.createElement('button');
-          button.className = 'complete-btn w-8 h-8 p-1.5 border border-accent text-accent rounded-full transition duration-200 flex items-center justify-center flex-shrink-0 ml-2';
+          // PERUBAHAN: Tombol 'Complete' menggunakan warna aksen baru
+          button.className = 'complete-btn w-8 h-8 p-1.5 border border-accent text-accent rounded-full transition duration-200 hover:bg-accent hover:text-white flex items-center justify-center flex-shrink-0 ml-2';
 
           button.innerHTML = `
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
@@ -442,10 +449,10 @@
           const contentDiv = document.createElement('div');
           contentDiv.className = 'flex items-start flex-grow min-w-0';
           contentDiv.innerHTML = `
-                        <div class="task-count w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-xs sm:text-sm font-bold bg-accent text-dark-bg rounded-full mr-3 sm:mr-4 flex-shrink-0 shadow-sm">
+                        <div class="task-count w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-xs sm:text-sm font-bold bg-accent text-white rounded-full mr-3 sm:mr-4 flex-shrink-0 shadow-sm">
                             ${i + 1}
                         </div>
-                        <div class="task-text text-base sm:text-lg font-medium text-text-light break-words w-full pt-0.5">
+                        <div class="task-text text-base sm:text-lg font-medium text-text-dark break-words w-full pt-0.5">
                             ${t.text || 'Tidak ada deskripsi'}
                         </div>
                     `;
