@@ -3,24 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Codingin 13 Pro Max</title>
+<title>Codingin 13 Pro Max - Light Mode</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-    body { margin:0; font-family:'Inter', sans-serif; background:#1f2937; color:#f3f4f6; }
+    /* Perubahan untuk Light Mode */
+    body {
+        margin: 0;
+        font-family: 'Inter', sans-serif;
+        background: #ffffff; /* Putih terang */
+        color: #1f2937; /* Teks gelap */
+    }
     #editor { width:100%; height:100vh; }
-    /* Toast Notification Styles */
+    /* Toast Notification Styles - Disesuaikan untuk Light Mode */
     #toast-notification {
         position: fixed;
         bottom: 20px;
         right: 20px;
-        background-color: #374151; /* Gray-700 */
-        color: #f3f4f6; /* Gray-100 */
+        background-color: #e5e7eb; /* Abu-abu terang untuk default */
+        color: #1f2937; /* Teks gelap */
         padding: 10px 15px;
         border-radius: 8px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         opacity: 0;
         transition: opacity 0.3s ease-in-out;
-        pointer-events: none; /* Allows clicks to pass through when hidden */
+        pointer-events: none;
         z-index: 1000;
         font-size: 14px;
     }
@@ -28,10 +34,12 @@
         opacity: 1;
     }
     #toast-notification.success {
-        background-color: #10b981; /* Emerald-500 for success */
+        background-color: #10b981; /* Emerald-500 (sama, terlihat bagus) */
+        color: #ffffff; /* Teks putih untuk sukses */
     }
     #toast-notification.error {
-        background-color: #ef4444; /* Red-500 for error */
+        background-color: #ef4444; /* Red-500 (sama, terlihat bagus) */
+        color: #ffffff; /* Teks putih untuk error */
     }
 </style>
 </head>
@@ -67,8 +75,12 @@ const db = getDatabase(app);
 // --- Toast Notification Function ---
 function showToast(message, type = 'default') {
     const toast = document.getElementById('toast-notification');
+    // Reset classes
+    toast.className = 'show';
+    // Set message
     toast.textContent = message;
-    toast.className = 'show'; // Reset classes and show
+
+    // Apply specific type classes
     if (type === 'success') {
         toast.classList.add('success');
     } else if (type === 'error') {
@@ -91,7 +103,7 @@ window.addEventListener('load', () => {
         const editor = monaco.editor.create(document.getElementById('editor'), {
             value: '',
             language: 'html',
-            theme: 'vs-dark',
+            theme: 'vs', /* PERUBAHAN UTAMA: Menggunakan tema 'vs' untuk Light Mode */
             automaticLayout: true,
             minimap: { enabled: false },
             fontSize: 14,
