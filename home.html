@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <title>Dashboard Rencana Pribadi</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🚀%3C/text%3E%3C/svg%3E">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9A%80%3C/text%3E%3C/svg%3E">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 
   <script src="https://cdn.tailwindcss.com"></script>
@@ -16,12 +16,13 @@
           // --- PALET WARNA LIGHT MODE MODERN (AKSEN BIRU) ---
           colors: {
             'light-bg': '#F4F7FB', // Latar belakang terang yang lembut
-            'card-bg': '#FFFFFF',  // Latar belakang kartu putih bersih
-            'accent': '#3B82F6',   // Biru cerah (misalnya blue-500)
+            'card-bg': '#FFFFFF', // Latar belakang kartu putih bersih
+            'accent': '#3B82F6', // Biru cerah (misalnya blue-500)
             'text-dark': '#1F2937', // Teks gelap untuk kontras tinggi
             'subtle-text': '#6B7280', // Teks sekunder/abu-abu
             'btn-hover': '#2563EB', // Biru yang sedikit lebih gelap
-            'danger': '#EF4444', 
+            'danger': '#EF4444',
+            'success': '#10B981', // Hijau untuk notifikasi sukses
           },
           fontFamily: {
             sans: ['Inter', 'sans-serif'],
@@ -35,7 +36,7 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
   <style>
-    /* Gaya untuk menonaktifkan scrollbar tetap dipertahankan */
+    /* Gaya untuk menonaktifkan scrollbar */
     html,
     body {
       margin: 0;
@@ -53,72 +54,181 @@
 
     body {
       -ms-overflow-style: none;
-    }
-
-    body {
       scrollbar-width: none;
     }
-    
-    /* Gaya kursor untuk menunjukkan elemen bisa di klik */
-    #messageAreaContainer {
-        cursor: pointer; 
-    }
-    
+
     /* GAYA KHUSUS UNTUK KARTU PENCATAT WAKTU */
     .time-card {
-        transition: all 0.3s ease;
-        background-image: linear-gradient(135deg, #E0F2FE 0%, #FFFFFF 100%); /* Gradien ringan untuk kedalaman */
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+      background-image: linear-gradient(135deg, #E0F2FE 0%, #FFFFFF 100%);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     }
 
+    /* GAYA BARU UNTUK NOTIFIKASI DI BAWAH JAM (IN-FLOW) */
+    .toast-notification {
+      width: 100%;
+      min-height: 48px;
+      padding: 0.75rem 1rem;
+      background-color: #FFFFFF;
+      border-radius: 0.75rem;
+      box-shadow: 0 5px 10px -3px rgba(0, 0, 0, 0.05);
+      border-left: 4px solid #3B82F6;
+      margin-bottom: 0.75rem; /* Jarak antar notifikasi yang menumpuk */
+      transition: all 0.5s ease-in-out; /* Transisi untuk saat elemen di bawahnya bergerak */
+      
+      /* Animasi masuk */
+      animation: fadeInSlideUp 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+      opacity: 0;
+      transform: translateY(20px); 
+    }
+
+    /* Keyframes Masuk (Cepat dan Responsif) */
+    @keyframes fadeInSlideUp {
+      0% {
+        opacity: 0;
+        transform: translateY(20px); /* Masuk dari bawah */
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* Kelas untuk animasi menghilang (Gabungan Fade-out dan Collapse) */
+    .toast-fade-out {
+      animation: fadeOutCollapse 0.5s ease-in-out forwards;
+    }
+
+    /* Keyframes Keluar/Collapse Modern */
+    @keyframes fadeOutCollapse {
+      0% {
+        opacity: 1;
+        transform: translateY(0);
+        height: auto;
+        padding: 0.75rem 1rem;
+        margin-bottom: 0.75rem;
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-10px); /* Sedikit naik saat menghilang */
+        height: 0; /* Membuat elemen di bawahnya mengisi ruang */
+        padding: 0;
+        margin: 0;
+        border: none;
+      }
+    }
+
+
+    /* GAYA UNTUK MODAL (POP-UP) - Tetap */
+    .modal-overlay {
+      background-color: rgba(0, 0, 0, 0.5);
+      transition: opacity 0.3s ease;
+      z-index: 60;
+    }
+
+    .modal-content {
+      transition: transform 0.3s ease-out;
+      max-height: 90vh; 
+      overflow-y: auto;
+    }
+
+    .modal-hidden .modal-content {
+      transform: scale(0.95);
+      opacity: 0;
+    }
+
+    .modal-hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
   </style>
 </head>
 
-<body class="bg-light-bg text-text-dark min-h-screen p-4 sm:p-8 flex flex-col items-center font-sans antialiased">
+<body class="bg-light-bg text-text-dark min-h-screen relative font-sans antialiased flex flex-col">
 
-  <div class="w-full max-w-4xl space-y-8">
+  <main class="w-full max-w-4xl mx-auto p-4 sm:p-8 space-y-4 flex flex-col items-center flex-grow">
 
-    <div class="time-card text-center p-6 rounded-2xl border border-accent/20">
-      <div class="flex justify-center items-end">
-        <span id="time" class="text-6xl md:text-8xl font-extrabold text-accent leading-none tracking-tighter drop-shadow-md transition duration-300">00:00:00</span>
+    <div class="w-full max-w-lg mx-auto">
+      <div id="clockCard" class="time-card text-center p-6 rounded-2xl border border-accent/20 w-full mb-0">
+        <div class="flex justify-center items-end">
+          <span id="time" class="text-6xl md:text-8xl font-extrabold text-accent leading-none tracking-tighter drop-shadow-md transition duration-300">00:00:00</span>
         </div>
-      <div id="date" class="text-md md:text-xl text-subtle-text mt-3 font-medium">Loading date...</div>
+        <div id="date" class="text-md md:text-xl text-subtle-text mt-3 font-medium">Loading date...</div>
+      </div>
     </div>
 
-    <div id="messageAreaContainer" class="p-4 bg-accent/5 rounded-xl border border-accent/30 flex flex-col space-y-3 shadow-sm hover:shadow-md transition duration-300">
-        <p id="motivationalMessage" class="text-center text-lg font-semibold text-accent transition duration-1000 ease-in-out transform">
-            Loading message...
-        </p>
+    <div id="notificationContainer" class="w-full max-w-lg mx-auto p-2"> 
+        </div>
+
+    <div class="h-4"></div>
+
+    <div class="fixed bottom-8 right-4 z-40 flex flex-col items-end space-y-3">
         
-        <div id="wordsFormContainer" class="mt-4 pt-3 border-t border-accent/20 hidden">
-            <h3 class="text-lg font-bold text-text-dark mb-3">Kelola Kata-kata Motivasi:</h3>
-            <ul id="currentWordsList" class="space-y-2 mb-4 max-h-40 overflow-y-auto pr-2">
-                </ul>
+      <button id="openWordsModalBtn" class="p-3 bg-card-bg text-accent rounded-full shadow-lg hover:bg-light-bg transition duration-200">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.3-.875-2.88.84-2.12 2.766a1.532 1.532 0 01-.1.18c-1.89 1.164-1.59 3.702.73 4.298a1.532 1.532 0 01.1.18c-2.32 1.164-2.62 3.702-.3 4.298a1.532 1.532 0 01.1.18c-1.3.875-2.88-.84-2.12-2.766a1.532 1.532 0 01-.1-.18c-2.32-1.164-2.62-3.702-.3-4.298a1.532 1.532 0 01.1-.18z" clip-rule="evenodd" />
+        </svg>
+      </button>
 
-            <div class="space-y-3">
-                <input type="text" id="newWordInput" placeholder="Tambah kata-kata motivasi baru..." class="w-full p-2 bg-white border border-subtle-text/30 rounded-lg text-text-dark focus:outline-none focus:ring-2 focus:ring-accent placeholder:text-subtle-text text-base" onkeydown="if(event.key === 'Enter') document.getElementById('addWordBtn').click()">
-                <button id="addWordBtn" class="w-full py-2 font-bold bg-accent text-white rounded-lg transition duration-200 hover:bg-btn-hover shadow-md">
-                    Tambah Kata-kata
-                </button>
-            </div>
-            <p id="wordErrorMsg" class="text-danger mt-2 ml-4 hidden text-sm"></p>
-        </div>
+      <button id="openTasksModalBtn" class="p-3 bg-accent text-white rounded-full shadow-lg hover:bg-btn-hover transition duration-200">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+        </svg>
+      </button>
     </div>
 
-    <div class="p-6 bg-card-bg rounded-2xl shadow-xl border border-subtle-text/10">
+  </main>
 
-      <ul id="taskList" class="space-y-3 mb-6 pt-1">
-      </ul>
+
+  <div id="wordsModal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 modal-hidden">
+    <div class="modal-content bg-card-bg w-full max-w-lg rounded-2xl shadow-2xl p-6 relative">
+      <div class="flex justify-between items-center pb-4 mb-4 border-b border-subtle-text/20">
+        <h2 class="text-xl font-bold text-text-dark">⚙️ Kelola Kata-kata Motivasi</h2>
+        <button id="closeWordsModalBtn" class="p-2 text-text-dark rounded-full hover:bg-light-bg transition duration-200">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div id="wordsFormContainer" class="space-y-4">
+        <h3 class="text-lg font-semibold text-text-dark mb-2">Daftar Kata-kata Aktif:</h3>
+        <ul id="currentWordsList" class="space-y-2 mb-4 max-h-60 overflow-y-auto pr-2 border p-2 rounded-lg bg-light-bg/50">
+          </ul>
+
+        <div class="space-y-3 pt-2 border-t border-accent/20">
+          <input type="text" id="newWordInput" placeholder="Tambah kata-kata motivasi baru..." class="w-full p-2 bg-white border border-subtle-text/30 rounded-lg text-text-dark focus:outline-none focus:ring-2 focus:ring-accent placeholder:text-subtle-text text-base" onkeydown="if(event.key === 'Enter') document.getElementById('addWordBtn').click()">
+          <button id="addWordBtn" class="w-full py-2 font-bold bg-accent text-white rounded-lg transition duration-200 hover:bg-btn-hover shadow-md">
+            Tambah Kata-kata
+          </button>
+          <p id="wordErrorMsg" class="text-danger mt-2 ml-4 hidden text-sm"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="tasksModal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 modal-hidden">
+    <div class="modal-content bg-card-bg w-full max-w-lg sm:max-w-md rounded-2xl shadow-2xl p-6 relative">
+      <div class="flex justify-between items-center pb-4 mb-4 border-b border-subtle-text/20">
+        <h2 class="text-xl font-bold text-text-dark">📝 Rencana Hari Ini</h2>
+        <button id="closeTasksModalBtn" class="p-2 text-text-dark rounded-full hover:bg-light-bg transition duration-200">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <ul id="taskList" class="space-y-3 mb-6">
+        </ul>
 
       <div id="emptyMessage" class="text-center py-8 text-subtle-text italic text-lg" style="display:none;">
         🎉 Semua rencana sudah selesai! Saatnya membuat yang baru.
       </div>
 
       <div class="mt-4 pt-4 border-t border-subtle-text/30">
-
         <div class="flex items-center space-x-3 mt-3">
-          <input type="text" id="taskInput" placeholder="Ketik rencana baru Anda di sini..." class="flex-grow p-3 bg-light-bg border border-subtle-text/30 rounded-full text-text-dark focus:outline-none focus:ring-2 focus:ring-accent placeholder:text-subtle-text text-base sm:text-lg" onkeydown="if(event.key === 'Enter') document.getElementById('addTaskBtn').click()">
-          <button id="addTaskBtn" class="p-3 font-bold bg-accent text-white rounded-full transition duration-200 shadow-lg hover:bg-btn-hover flex items-center justify-center flex-shrink-0 w-12 h-12">
+          <input type="text" id="taskInput" placeholder="Ketik rencana baru Anda di sini..." class="flex-grow p-3 bg-light-bg border border-subtle-text/30 rounded-full text-text-dark focus:outline-none focus:ring-2 focus:ring-accent placeholder:text-subtle-text text-base" onkeydown="if(event.key === 'Enter') document.getElementById('addTaskBtnTasksModal').click()">
+          <button id="addTaskBtnTasksModal" class="p-3 font-bold bg-accent text-white rounded-full transition duration-200 shadow-lg hover:bg-btn-hover flex items-center justify-center flex-shrink-0 w-12 h-12">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
             </svg>
@@ -127,11 +237,12 @@
         <p id="errorMsg" class="text-danger mt-2 ml-4 hidden text-sm"></p>
       </div>
     </div>
-
   </div>
 
 
   <script>
+    // --- KONFIGURASI FIREBASE ---
+    // GANTI DENGAN KUNCI ANDA YANG SEBENARNYA!
     const firebaseConfig = {
       apiKey: "AIzaSyCba6M_spBXvuG91Zn-XWJ4bSTX6vNcST0",
       authDomain: "index-68220.firebaseapp.com",
@@ -159,10 +270,9 @@
         let h = now.getHours();
         const m = now.getMinutes().toString().padStart(2, '0');
         const s = now.getSeconds().toString().padStart(2, '0');
-        
-        // Menggunakan format 24 jam (h.toString().padStart(2,'0'))
+
         document.getElementById('time').textContent = `${h.toString().padStart(2,'0')}:${m}:${s}`;
-        
+
         document.getElementById('date').textContent = now.toLocaleDateString('id-ID', {
           weekday: 'long',
           year: 'numeric',
@@ -177,85 +287,106 @@
     requestAnimationFrame(updateClock);
 
 
-    // --- Logika Kata-kata Motivasi Dinamis (Terintegrasi Firebase) ---
+    // --- Logika Kata-kata Motivasi (Acak, Satu per Satu, In-Flow) ---
 
-    const wordsRef = db.ref('motivational_words'); 
-    let allMotivationalWords = []; 
-    let availableWords = []; 
+    const wordsRef = db.ref('motivational_words');
+    let allMotivationalWords = [];
+    let availableWords = [];
     let wordTimer = null;
-    const changeInterval = 20000; // Ganti setiap 20 detik
-
-    const messageAreaContainer = document.getElementById('messageAreaContainer');
-    const motivationalMessage = document.getElementById('motivationalMessage');
-    const wordsFormContainer = document.getElementById('wordsFormContainer');
-    const currentWordsList = document.getElementById('currentWordsList');
-    const newWordInput = document.getElementById('newWordInput');
-    const addWordBtn = document.getElementById('addWordBtn');
-    const wordErrorMsg = document.getElementById('wordErrorMsg');
     
+    // Menggunakan ID kontainer notifikasi di bawah jam
+    const notificationContainer = document.getElementById('notificationContainer'); 
+
     // Kata-kata default jika Firebase kosong
     const defaultWords = [
-        {id: 'default1', text: "Semua impian kita bisa menjadi kenyataan, jika kita punya keberanian untuk mengejarnya."}, 
-        {id: 'default2', text: "Kunci sukses adalah fokus pada tujuan, bukan hambatan."}, 
-        {id: 'default3', text: "Mulailah hari ini dengan energi positif dan pikiran yang jernih."}, 
-        {id: 'default4', text: "Jangan hitung apa yang hilang, tapi hitung apa yang kamu miliki."}, 
-        {id: 'default5', text: "Setiap hari adalah kesempatan baru untuk membuat perubahan."}
+      { id: 'default1', text: "Semua impian kita bisa menjadi kenyataan, jika kita punya keberanian untuk mengejarnya." },
+      { id: 'default2', text: "Kunci sukses adalah fokus pada tujuan, bukan hambatan." },
+      { id: 'default3', text: "Mulailah hari ini dengan energi positif dan pikiran yang jernih." },
+      { id: 'default4', text: "Jangan hitung apa yang hilang, tapi hitung apa yang kamu miliki." },
+      { id: 'default5', text: "Setiap hari adalah kesempatan baru untuk membuat perubahan." }
     ];
 
     // Fungsi untuk mengocok (shuffle) array
     function shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
     }
 
-    // Fungsi utama untuk menampilkan kata berikutnya (acak & unik)
-    function displayNextWord() {
-        if (wordTimer) clearInterval(wordTimer);
+    // FUNGSI UTAMA: Tampilkan SATU notifikasi
+    function showSingleMotivation() {
+        if (wordTimer) clearTimeout(wordTimer);
 
         if (allMotivationalWords.length === 0) {
-            motivationalMessage.textContent = "Tambahkan kata-kata motivasi Anda!";
-            wordTimer = setInterval(displayNextWord, changeInterval); 
+            // Jika data belum dimuat, coba lagi dalam 5 detik
+            wordTimer = setTimeout(showSingleMotivation, 5000); 
             return;
         }
 
-        // 1. Jika daftar kata yang tersedia kosong, isi ulang dengan semua kata dan kocok ulang
+        // 1. Ambil satu kata-kata
         if (availableWords.length === 0) {
             availableWords = [...allMotivationalWords];
             shuffleArray(availableWords);
         }
 
-        // 2. Ambil kata pertama (yang sudah diacak) dan hapus dari daftar yang tersedia
-        const nextWord = availableWords.shift(); 
-
-        // 3. Fungsi untuk mengganti teks dengan transisi
-        const changeTextWithTransition = () => {
-            motivationalMessage.style.opacity = '0';
-            setTimeout(() => {
-                motivationalMessage.textContent = nextWord.text;
-                motivationalMessage.style.opacity = '1';
-            }, 500); 
+        const nextWord = availableWords.shift();
+        if (!nextWord) {
+             wordTimer = setTimeout(showSingleMotivation, 5000); 
+             return;
         }
 
-        changeTextWithTransition();
-        // Mulai timer untuk kata berikutnya
-        wordTimer = setInterval(displayNextWord, changeInterval);
+        // 2. Buat elemen notifikasi (Toast)
+        const notificationDiv = document.createElement('div');
+        notificationDiv.className = 'toast-notification text-sm text-text-dark flex items-start';
+        notificationDiv.innerHTML = `
+            <span class="text-accent mr-2 flex-shrink-0 pt-0.5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 5.04M12 18V12" />
+                </svg>
+            </span>
+            <p class="font-medium flex-grow">${nextWord.text}</p>
+        `;
+
+        // 3. Tambahkan notifikasi ke container (menumpuk secara vertikal)
+        // InsertBefore agar notifikasi baru selalu di atas (seperti stack)
+        notificationContainer.insertBefore(notificationDiv, notificationContainer.firstChild); 
+        
+        // 4. Atur penghapusan notifikasi (5 detik total)
+        const displayTime = 30000; // Waktu tampilan (4.5 detik)
+        const fadeOutDuration = 500; // Durasi animasi keluar (0.5 detik)
+
+        setTimeout(() => {
+            // Memicu animasi fade-out CSS
+            notificationDiv.classList.add('toast-fade-out');
+        }, displayTime); 
+
+        setTimeout(() => {
+            // Hapus elemen setelah selesai animasi (Total 5 detik)
+            if (notificationContainer.contains(notificationDiv)) {
+                notificationDiv.remove();
+            }
+        }, displayTime + fadeOutDuration);
+
+
+        // 5. Set timer untuk notifikasi berikutnya (Waktu Acak 2s - 6s)
+        const randomDelay = Math.random() * (4000) + 2000; // 2000ms (2s) sampai 6000ms (6s)
+        wordTimer = setTimeout(showSingleMotivation, randomDelay);
     }
 
-    // Fungsi untuk menampilkan daftar kata-kata di form
-    function renderWordsList() {
-        currentWordsList.innerHTML = '';
-        if (allMotivationalWords.length === 0) {
-            currentWordsList.innerHTML = '<li class="text-sm italic text-subtle-text p-2">Belum ada kata-kata motivasi.</li>';
-            return;
-        }
 
-        allMotivationalWords.forEach((word) => {
-            const li = document.createElement('li');
-            // PERUBAHAN: Menggunakan warna light mode untuk daftar kata-kata
-            li.className = 'flex justify-between items-center p-2 bg-light-bg rounded-lg border border-subtle-text/20';
-            li.innerHTML = `
+    // Fungsi untuk menampilkan daftar kata-kata di form Modal (Tetap)
+    function renderWordsList() {
+      currentWordsList.innerHTML = '';
+      if (allMotivationalWords.length === 0) {
+        currentWordsList.innerHTML = '<li class="text-sm italic text-subtle-text p-2">Belum ada kata-kata motivasi.</li>';
+        return;
+      }
+
+      allMotivationalWords.forEach((word) => {
+        const li = document.createElement('li');
+        li.className = 'flex justify-between items-center p-2 bg-card-bg rounded-lg border border-subtle-text/20 hover:bg-light-bg transition duration-150';
+        li.innerHTML = `
                 <span class="text-sm text-text-dark max-w-[80%] break-words">${word.text}</span>
                 <button data-id="${word.id}" class="remove-word-btn text-danger hover:text-red-600 p-1 rounded-full transition duration-150 flex-shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -263,116 +394,159 @@
                     </svg>
                 </button>
             `;
-            currentWordsList.appendChild(li);
-        });
+        currentWordsList.appendChild(li);
+      });
 
-        document.querySelectorAll('.remove-word-btn').forEach(button => {
-            button.addEventListener('click', (e) => {
-                e.stopPropagation(); 
-                const idToRemove = e.currentTarget.getAttribute('data-id');
-                removeWord(idToRemove);
-            });
+      document.querySelectorAll('.remove-word-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const idToRemove = e.currentTarget.getAttribute('data-id');
+          removeWord(idToRemove);
         });
+      });
     }
 
     // Pemuatan data dari Firebase
     wordsRef.on('value', (snapshot) => {
-        const data = snapshot.val();
-        allMotivationalWords = [];
-        
-        if (data) {
-            for (let id in data) {
-                allMotivationalWords.push({ id: id, text: data[id].text });
-            }
-        } else {
-            // Inisialisasi dengan kata-kata default jika kosong
-            defaultWords.forEach(word => {
-                wordsRef.push({ text: word.text });
-            });
-            return; 
+      const data = snapshot.val();
+      allMotivationalWords = [];
+
+      if (data) {
+        for (let id in data) {
+          allMotivationalWords.push({
+            id: id,
+            text: data[id].text
+          });
         }
-        
-        // Mulai sesi pengacakan baru
-        availableWords = [];
-        displayNextWord();
-        
-        if (!wordsFormContainer.classList.contains('hidden')) {
-            renderWordsList();
-        }
+      } else {
+        // Inisialisasi dengan kata-kata default jika kosong
+        defaultWords.forEach(word => {
+          wordsRef.push({
+            text: word.text
+          });
+        });
+        return;
+      }
+
+      // Mulai sesi pengacakan baru
+      availableWords = [];
+      showSingleMotivation(); // Panggil fungsi notifikasi baru
+
+      // Update list di modal jika modal terbuka
+      if (!wordsModal.classList.contains('modal-hidden')) {
+        renderWordsList();
+      }
     });
 
 
-    // Toggle Form Kata-kata saat mengklik Kotak Pesan
-    messageAreaContainer.addEventListener('click', (e) => {
-        // Logika untuk mencegah klik tombol di dalam form menutup form
-        if (wordsFormContainer.classList.contains('hidden') || !e.target.closest('#wordsFormContainer') || e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') { 
-            wordsFormContainer.classList.toggle('hidden');
-            
-            if (!wordsFormContainer.classList.contains('hidden')) {
-                // FOKUSKAN KE INPUT
-                newWordInput.focus(); 
-                renderWordsList(); 
-            }
-        }
+    // --- Logika Modal Kata-kata (Pop-up) - Tetap ---
+
+    const wordsModal = document.getElementById('wordsModal');
+    const openWordsModalBtn = document.getElementById('openWordsModalBtn');
+    const closeWordsModalBtn = document.getElementById('closeWordsModalBtn');
+    const currentWordsList = document.getElementById('currentWordsList');
+    const newWordInput = document.getElementById('newWordInput');
+    const addWordBtn = document.getElementById('addWordBtn');
+    const wordErrorMsg = document.getElementById('wordErrorMsg');
+
+    function openWordsModal() {
+      wordsModal.classList.remove('modal-hidden');
+      document.body.classList.add('overflow-hidden');
+      renderWordsList();
+      setTimeout(() => newWordInput.focus(), 300);
+    }
+
+    function closeWordsModal() {
+      wordsModal.classList.add('modal-hidden');
+      if (tasksModal.classList.contains('modal-hidden')) {
+        document.body.classList.remove('overflow-hidden');
+      }
+    }
+
+    openWordsModalBtn.addEventListener('click', openWordsModal);
+    closeWordsModalBtn.addEventListener('click', closeWordsModal);
+
+    wordsModal.addEventListener('click', (e) => {
+      if (e.target === wordsModal) {
+        closeWordsModal();
+      }
     });
 
-    // Tambah Kata-kata
     addWordBtn.addEventListener('click', (e) => {
-        e.stopPropagation(); 
-        wordErrorMsg.classList.add('hidden');
-        const text = newWordInput.value.trim();
+      e.stopPropagation();
+      wordErrorMsg.classList.add('hidden');
+      const text = newWordInput.value.trim();
 
-        if (text === "") {
-            wordErrorMsg.textContent = "Kata-kata tidak boleh kosong!";
-            wordErrorMsg.classList.remove('hidden');
-            return;
-        }
+      if (text === "") {
+        wordErrorMsg.textContent = "Kata-kata tidak boleh kosong!";
+        wordErrorMsg.classList.remove('hidden');
+        return;
+      }
 
-        const isDuplicate = allMotivationalWords.some(word => word.text.toLowerCase() === text.toLowerCase());
-        if (isDuplicate) {
-             wordErrorMsg.textContent = "Kata-kata ini sudah ada di daftar.";
-            wordErrorMsg.classList.remove('hidden');
-            return;
-        }
+      const isDuplicate = allMotivationalWords.some(word => word.text.toLowerCase() === text.toLowerCase());
+      if (isDuplicate) {
+        wordErrorMsg.textContent = "Kata-kata ini sudah ada di daftar.";
+        wordErrorMsg.classList.remove('hidden');
+        return;
+      }
 
-        // Simpan ke Firebase
-        wordsRef.push({ text: text })
-            .then(() => {
-                newWordInput.value = '';
-                wordErrorMsg.classList.add('hidden');
-            })
-            .catch(err => {
-                wordErrorMsg.textContent = `Gagal menyimpan: ${err.message}`;
-                wordErrorMsg.classList.remove('hidden');
-                console.error('Gagal menyimpan kata-kata:', err);
-            });
+      wordsRef.push({ text: text })
+        .then(() => {
+          newWordInput.value = '';
+          wordErrorMsg.classList.add('hidden');
+        })
+        .catch(err => {
+          wordErrorMsg.textContent = `Gagal menyimpan: ${err.message}`;
+          wordErrorMsg.classList.remove('hidden');
+          console.error('Gagal menyimpan kata-kata:', err);
+        });
     });
 
-    // Hapus Kata-kata
     function removeWord(id) {
-        wordsRef.child(id).remove()
-            .then(() => {
-                console.log(`Kata-kata ${id} berhasil dihapus.`);
-            })
-            .catch(err => {
-                console.error('Gagal menghapus kata-kata:', err);
-            });
+      wordsRef.child(id).remove()
+        .catch(err => {
+          console.error('Gagal menghapus kata-kata:', err);
+        });
     }
 
 
-    // --- Logika Task List (Asli) ---
+    // --- Logika Modal Rencana Hari Ini (Tasks Modal) - Tetap ---
 
+    const tasksModal = document.getElementById('tasksModal');
+    const openTasksModalBtn = document.getElementById('openTasksModalBtn');
+    const closeTasksModalBtn = document.getElementById('closeTasksModalBtn');
     const taskList = document.getElementById('taskList');
     const emptyMessage = document.getElementById('emptyMessage');
     const taskInput = document.getElementById('taskInput');
-    const addTaskBtn = document.getElementById('addTaskBtn');
+    const addTaskBtn = document.getElementById('addTaskBtnTasksModal');
     const errorMsg = document.getElementById('errorMsg');
+
+    function openTasksModal() {
+      tasksModal.classList.remove('modal-hidden');
+      document.body.classList.add('overflow-hidden');
+      loadTasks(); 
+      setTimeout(() => taskInput.focus(), 300);
+    }
+
+    function closeTasksModal() {
+      tasksModal.classList.add('modal-hidden');
+      if (wordsModal.classList.contains('modal-hidden')) {
+        document.body.classList.remove('overflow-hidden');
+      }
+    }
+
+    openTasksModalBtn.addEventListener('click', openTasksModal);
+    closeTasksModalBtn.addEventListener('click', closeTasksModal);
+
+    tasksModal.addEventListener('click', (e) => {
+      if (e.target === tasksModal) {
+        closeTasksModal();
+      }
+    });
+
 
     function completeTask(id) {
       db.ref('plans/' + id).remove()
-        .then(() => {
-          console.log(`Task ${id} berhasil dihapus.`);
-        })
         .catch(err => {
           console.error('Gagal menghapus task:', err);
         });
@@ -430,16 +604,14 @@
 
         active.forEach((t, i) => {
           const li = document.createElement('li');
-          // PERUBAHAN: Menggunakan warna light mode untuk task list
-          li.className = 'flex justify-between items-start p-3 sm:p-4 bg-light-bg rounded-xl shadow-md border border-subtle-text/10 transition duration-200 hover:shadow-lg';
+          li.className = 'flex justify-between items-start p-3 bg-light-bg rounded-xl shadow-md border border-subtle-text/10 transition duration-200 hover:shadow-lg';
 
           const button = document.createElement('button');
-          // PERUBAHAN: Tombol 'Complete' menggunakan warna aksen baru
-          button.className = 'complete-btn w-8 h-8 p-1.5 border border-accent text-accent rounded-full transition duration-200 hover:bg-accent hover:text-white flex items-center justify-center flex-shrink-0 ml-2';
+          button.className = 'complete-btn w-8 h-8 p-1.5 border border-success text-success rounded-full transition duration-200 hover:bg-success hover:text-white flex items-center justify-center flex-shrink-0 ml-2';
 
           button.innerHTML = `
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.857a.75.75 0 00-1.214-.856l-3.214 4.5V11.25a.75.75 0 00-1.5 0v3a.75.75 0 00.75.75h3.75a.75.75 0 000-1.5h-1.443l3.214-4.5z" clip-rule="evenodd" />
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
                         </svg>
                     `;
 
@@ -449,10 +621,10 @@
           const contentDiv = document.createElement('div');
           contentDiv.className = 'flex items-start flex-grow min-w-0';
           contentDiv.innerHTML = `
-                        <div class="task-count w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-xs sm:text-sm font-bold bg-accent text-white rounded-full mr-3 sm:mr-4 flex-shrink-0 shadow-sm">
+                        <div class="task-count w-7 h-7 flex items-center justify-center text-xs font-bold bg-accent text-white rounded-full mr-3 flex-shrink-0 shadow-sm">
                             ${i + 1}
                         </div>
-                        <div class="task-text text-base sm:text-lg font-medium text-text-dark break-words w-full pt-0.5">
+                        <div class="task-text text-base font-medium text-text-dark break-words w-full pt-0.5">
                             ${t.text || 'Tidak ada deskripsi'}
                         </div>
                     `;
@@ -466,6 +638,8 @@
         taskList.appendChild(fragment);
       });
     }
+    
+    // Inisialisasi awal
     loadTasks();
   </script>
 
