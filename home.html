@@ -73,27 +73,39 @@
       border-radius: 0.75rem;
       box-shadow: 0 5px 10px -3px rgba(0, 0, 0, 0.05);
       border-left: 4px solid #3B82F6;
-      margin-bottom: 0.75rem; /* Jarak antar notifikasi yang menumpuk */
-      transition: all 0.5s ease-in-out; /* Transisi untuk saat elemen di bawahnya bergerak */
-      
+      margin-bottom: 0.75rem;
+      /* Jarak antar notifikasi yang menumpuk */
+      transition: all 0.5s ease-in-out;
+      /* Transisi untuk saat elemen di bawahnya bergerak */
+
       /* Animasi masuk */
       animation: fadeInSlideUp 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
       opacity: 0;
-      transform: translateY(20px); 
+      transform: translateY(20px);
     }
+
+    /* **PERUBAHAN DISINI: FONT MOTIVASI LEBIH BESAR** */
+    .notification-text {
+        font-size: 1.200rem; /* text-lg */
+        line-height: 1.75rem; /* leading-7 */
+    }
+    /* **AKHIR PERUBAHAN FONT** */
+
 
     /* Keyframes Masuk (Cepat dan Responsif) */
     @keyframes fadeInSlideUp {
       0% {
         opacity: 0;
-        transform: translateY(20px); /* Masuk dari bawah */
+        transform: translateY(20px);
+        /* Masuk dari bawah */
       }
+
       100% {
         opacity: 1;
         transform: translateY(0);
       }
     }
-    
+
     /* Kelas untuk animasi menghilang (Gabungan Fade-out dan Collapse) */
     .toast-fade-out {
       animation: fadeOutCollapse 0.5s ease-in-out forwards;
@@ -108,10 +120,13 @@
         padding: 0.75rem 1rem;
         margin-bottom: 0.75rem;
       }
+
       100% {
         opacity: 0;
-        transform: translateY(-10px); /* Sedikit naik saat menghilang */
-        height: 0; /* Membuat elemen di bawahnya mengisi ruang */
+        transform: translateY(-10px);
+        /* Sedikit naik saat menghilang */
+        height: 0;
+        /* Membuat elemen di bawahnya mengisi ruang */
         padding: 0;
         margin: 0;
         border: none;
@@ -128,7 +143,7 @@
 
     .modal-content {
       transition: transform 0.3s ease-out;
-      max-height: 90vh; 
+      max-height: 90vh;
       overflow-y: auto;
     }
 
@@ -146,9 +161,9 @@
 
 <body class="bg-light-bg text-text-dark min-h-screen relative font-sans antialiased flex flex-col">
 
-  <main class="w-full max-w-4xl mx-auto p-4 sm:p-8 space-y-4 flex flex-col items-center flex-grow">
+  <main class="w-full max-w-5xl mx-auto p-4 sm:p-8 space-y-4 flex flex-col items-center flex-grow">
 
-    <div class="w-full max-w-lg mx-auto">
+    <div class="w-full max-w-2xl mx-auto">
       <div id="clockCard" class="time-card text-center p-6 rounded-2xl border border-accent/20 w-full mb-0">
         <div class="flex justify-center items-end">
           <span id="time" class="text-6xl md:text-8xl font-extrabold text-accent leading-none tracking-tighter drop-shadow-md transition duration-300">00:00:00</span>
@@ -157,13 +172,13 @@
       </div>
     </div>
 
-    <div id="notificationContainer" class="w-full max-w-lg mx-auto p-2"> 
-        </div>
+    <div id="notificationContainer" class="w-full max-w-2xl mx-auto p-2">
+    </div>
 
     <div class="h-4"></div>
 
     <div class="fixed bottom-8 right-4 z-40 flex flex-col items-end space-y-3">
-        
+
       <button id="openWordsModalBtn" class="p-3 bg-card-bg text-accent rounded-full shadow-lg hover:bg-light-bg transition duration-200">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.3-.875-2.88.84-2.12 2.766a1.532 1.532 0 01-.1.18c-1.89 1.164-1.59 3.702.73 4.298a1.532 1.532 0 01.1.18c-2.32 1.164-2.62 3.702-.3 4.298a1.532 1.532 0 01.1.18c-1.3.875-2.88-.84-2.12-2.766a1.532 1.532 0 01-.1-.18c-2.32-1.164-2.62-3.702-.3-4.298a1.532 1.532 0 01.1-.18z" clip-rule="evenodd" />
@@ -194,7 +209,7 @@
       <div id="wordsFormContainer" class="space-y-4">
         <h3 class="text-lg font-semibold text-text-dark mb-2">Daftar Kata-kata Aktif:</h3>
         <ul id="currentWordsList" class="space-y-2 mb-4 max-h-60 overflow-y-auto pr-2 border p-2 rounded-lg bg-light-bg/50">
-          </ul>
+        </ul>
 
         <div class="space-y-3 pt-2 border-t border-accent/20">
           <input type="text" id="newWordInput" placeholder="Tambah kata-kata motivasi baru..." class="w-full p-2 bg-white border border-subtle-text/30 rounded-lg text-text-dark focus:outline-none focus:ring-2 focus:ring-accent placeholder:text-subtle-text text-base" onkeydown="if(event.key === 'Enter') document.getElementById('addWordBtn').click()">
@@ -219,7 +234,7 @@
       </div>
 
       <ul id="taskList" class="space-y-3 mb-6">
-        </ul>
+      </ul>
 
       <div id="emptyMessage" class="text-center py-8 text-subtle-text italic text-lg" style="display:none;">
         🎉 Semua rencana sudah selesai! Saatnya membuat yang baru.
@@ -293,9 +308,9 @@
     let allMotivationalWords = [];
     let availableWords = [];
     let wordTimer = null;
-    
+
     // Menggunakan ID kontainer notifikasi di bawah jam
-    const notificationContainer = document.getElementById('notificationContainer'); 
+    const notificationContainer = document.getElementById('notificationContainer');
 
     // Kata-kata default jika Firebase kosong
     const defaultWords = [
@@ -316,62 +331,62 @@
 
     // FUNGSI UTAMA: Tampilkan SATU notifikasi
     function showSingleMotivation() {
-        if (wordTimer) clearTimeout(wordTimer);
+      if (wordTimer) clearTimeout(wordTimer);
 
-        if (allMotivationalWords.length === 0) {
-            // Jika data belum dimuat, coba lagi dalam 5 detik
-            wordTimer = setTimeout(showSingleMotivation, 5000); 
-            return;
-        }
+      if (allMotivationalWords.length === 0) {
+        // Jika data belum dimuat, coba lagi dalam 5 detik
+        wordTimer = setTimeout(showSingleMotivation, 5000);
+        return;
+      }
 
-        // 1. Ambil satu kata-kata
-        if (availableWords.length === 0) {
-            availableWords = [...allMotivationalWords];
-            shuffleArray(availableWords);
-        }
+      // 1. Ambil satu kata-kata
+      if (availableWords.length === 0) {
+        availableWords = [...allMotivationalWords];
+        shuffleArray(availableWords);
+      }
 
-        const nextWord = availableWords.shift();
-        if (!nextWord) {
-             wordTimer = setTimeout(showSingleMotivation, 5000); 
-             return;
-        }
+      const nextWord = availableWords.shift();
+      if (!nextWord) {
+        wordTimer = setTimeout(showSingleMotivation, 5000);
+        return;
+      }
 
-        // 2. Buat elemen notifikasi (Toast)
-        const notificationDiv = document.createElement('div');
-        notificationDiv.className = 'toast-notification text-sm text-text-dark flex items-start';
-        notificationDiv.innerHTML = `
+      // 2. Buat elemen notifikasi (Toast)
+      const notificationDiv = document.createElement('div');
+      // Menghapus kelas 'text-sm' dari toast-notification dan memindahkan ukuran font ke elemen <p>
+      notificationDiv.className = 'toast-notification text-text-dark flex items-start';
+      notificationDiv.innerHTML = `
             <span class="text-accent mr-2 flex-shrink-0 pt-0.5">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 5.04M12 18V12" />
                 </svg>
             </span>
-            <p class="font-medium flex-grow">${nextWord.text}</p>
-        `;
+            <p class="font-medium flex-grow notification-text">${nextWord.text}</p> `;
 
-        // 3. Tambahkan notifikasi ke container (menumpuk secara vertikal)
-        // InsertBefore agar notifikasi baru selalu di atas (seperti stack)
-        notificationContainer.insertBefore(notificationDiv, notificationContainer.firstChild); 
-        
-        // 4. Atur penghapusan notifikasi (5 detik total)
-        const displayTime = 30000; // Waktu tampilan (4.5 detik)
-        const fadeOutDuration = 500; // Durasi animasi keluar (0.5 detik)
+      // 3. Tambahkan notifikasi ke container (menumpuk secara vertikal)
+      // InsertBefore agar notifikasi baru selalu di atas (seperti stack)
+      notificationContainer.insertBefore(notificationDiv, notificationContainer.firstChild);
 
-        setTimeout(() => {
-            // Memicu animasi fade-out CSS
-            notificationDiv.classList.add('toast-fade-out');
-        }, displayTime); 
+      // 4. Atur penghapusan notifikasi (5 detik total)
+      const displayTime = 10000; 
+      const fadeOutDuration = 500; // Durasi animasi keluar (0.5 detik)
 
-        setTimeout(() => {
-            // Hapus elemen setelah selesai animasi (Total 5 detik)
-            if (notificationContainer.contains(notificationDiv)) {
-                notificationDiv.remove();
-            }
-        }, displayTime + fadeOutDuration);
+      setTimeout(() => {
+        // Memicu animasi fade-out CSS
+        notificationDiv.classList.add('toast-fade-out');
+      }, displayTime);
+
+      setTimeout(() => {
+        // Hapus elemen setelah selesai animasi (Total 5 detik)
+        if (notificationContainer.contains(notificationDiv)) {
+          notificationDiv.remove();
+        }
+      }, displayTime + fadeOutDuration);
 
 
-        // 5. Set timer untuk notifikasi berikutnya (Waktu Acak 2s - 6s)
-        const randomDelay = Math.random() * (4000) + 2000; // 2000ms (2s) sampai 6000ms (6s)
-        wordTimer = setTimeout(showSingleMotivation, randomDelay);
+      // 5. Set timer untuk notifikasi berikutnya (Waktu Acak 2s - 6s)
+      const randomDelay = Math.random() * (4000) + 2000; // 2000ms (2s) sampai 6000ms (6s)
+      wordTimer = setTimeout(showSingleMotivation, randomDelay);
     }
 
 
@@ -490,7 +505,9 @@
         return;
       }
 
-      wordsRef.push({ text: text })
+      wordsRef.push({
+          text: text
+        })
         .then(() => {
           newWordInput.value = '';
           wordErrorMsg.classList.add('hidden');
@@ -524,7 +541,7 @@
     function openTasksModal() {
       tasksModal.classList.remove('modal-hidden');
       document.body.classList.add('overflow-hidden');
-      loadTasks(); 
+      loadTasks();
       setTimeout(() => taskInput.focus(), 300);
     }
 
@@ -638,7 +655,7 @@
         taskList.appendChild(fragment);
       });
     }
-    
+
     // Inisialisasi awal
     loadTasks();
   </script>
