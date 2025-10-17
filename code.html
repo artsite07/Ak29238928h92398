@@ -289,6 +289,19 @@
         .action-btn:active {
             transform: scale(0.95);
         }
+        
+        /* NEW: Gaya untuk Tombol Preview */
+        .preview-btn {
+            background: rgba(102, 16, 242, 0.1);
+            /* Indigo/Purple 10% */
+            color: #6f42c1;
+            /* Indigo/Purple Main */
+        }
+
+        .preview-btn:hover:not(:disabled) {
+            background: rgba(102, 16, 242, 0.2);
+            border-color: #6f42c1;
+        }
 
         .save-btn {
             background: rgba(0, 123, 255, 0.1);
@@ -311,7 +324,8 @@
         }
 
         .save-btn:disabled,
-        .download-btn:disabled {
+        .download-btn:disabled,
+        .preview-btn:disabled {
             background: #f8f9fa;
             color: var(--text-secondary);
             cursor: not-allowed;
@@ -558,7 +572,7 @@
             }
         }
     </style>
-    </head>
+</head>
 
 <body>
     <div class="app">
@@ -575,6 +589,9 @@
 
                 <div class="filename" id="fileName"><i class="fas fa-info-circle"></i> Pilih file untuk mulai mengedit</div>
                 <div class="header-actions">
+                    <button class="action-btn preview-btn" id="previewBtn" type="button" disabled title="Preview (Ctrl+Q)">
+                        <i class="fas fa-eye"></i>
+                    </button>
                     <button class="action-btn download-btn" id="downloadBtn" type="button" disabled title="Download">
                         <i class="fas fa-download"></i>
                     </button>
@@ -626,6 +643,7 @@
         const fileNameEl = document.getElementById("fileName");
         const saveBtn = document.getElementById("saveBtn");
         const downloadBtn = document.getElementById("downloadBtn");
+        const previewBtn = document.getElementById("previewBtn"); // NEW: elemen tombol preview
         const toast = document.getElementById("toast");
         const popupOverlay = document.getElementById("popupOverlay");
         const popupMsg = document.getElementById("popupMsg");
@@ -777,6 +795,7 @@
 
             downloadBtn.disabled = false;
             saveBtn.disabled = false;
+            previewBtn.disabled = false; // PERBAIKAN: Aktifkan tombol Preview
 
             codeArea.setAttribute('contenteditable', 'true');
             codeArea.textContent = data.content || "";
@@ -798,6 +817,7 @@
 
             downloadBtn.disabled = true;
             saveBtn.disabled = true;
+            previewBtn.disabled = true; // PERBAIKAN: Nonaktifkan tombol Preview
             document.querySelectorAll('.item.selected').forEach(el => el.classList.remove('selected'));
         }
 
@@ -1290,6 +1310,9 @@
             triggerDownload(content, name, mimeType);
             showToast(`File "${name}" berhasil diunduh.`);
         };
+        
+        // PERBAIKAN: Handler untuk tombol Preview (Header)
+        previewBtn.onclick = () => openPreview();
 
 
         // Editor: Pencegahan Paste Format
@@ -1324,82 +1347,81 @@
             renderTree(treeDataCache, treeEl, "");
         });
 
-        // Tambahkan kode ini ke bagian bawah skrip yang sudah ada di code.html
-// ---------------------------------
-// PREVIEW SYSTEM LOGIC
-// ---------------------------------
+        // ---------------------------------
+        // PREVIEW SYSTEM LOGIC
+        // ---------------------------------
 
-/**
- * Membuka jendela/tab baru dengan konten dari editor.
- * Konten akan disajikan sebagai HTML jika ekstensi file adalah .html atau .htm,
- * jika tidak, konten akan ditampilkan sebagai teks biasa.
- */
-function openPreview() {
-    if (!currentFilePath) {
-        showToast("Pilih file terlebih dahulu untuk mem-preview.");
-        return;
-    }
+        /**
+         * Membuka jendela/tab baru dengan konten dari editor.
+         * Konten akan disajikan sebagai HTML jika ekstensi file adalah .html atau .htm,
+         * jika tidak, konten akan ditampilkan sebagai teks biasa.
+         */
+        function openPreview() {
+            if (!currentFilePath) {
+                showToast("Pilih file terlebih dahulu untuk mem-preview.");
+                return;
+            }
 
-    const content = codeArea.textContent;
-    const filename = currentFileName;
-    const lowerFilename = filename ? filename.toLowerCase() : "";
+            const content = codeArea.textContent;
+            const filename = currentFileName;
+            const lowerFilename = filename ? filename.toLowerCase() : "";
 
-    let mimeType;
-    let isHtml = false;
+            let mimeType;
+            let isHtml = false;
 
-    if (lowerFilename.endsWith(".html") || lowerFilename.endsWith(".htm")) {
-        mimeType = 'text/html';
-        isHtml = true;
-    } else {
-        // Untuk file lain, gunakan teks biasa agar konten kode terlihat
-        mimeType = 'text/plain';
-    }
+            if (lowerFilename.endsWith(".html") || lowerFilename.endsWith(".htm")) {
+                mimeType = 'text/html';
+                isHtml = true;
+            } else {
+                // Untuk file lain, gunakan teks biasa agar konten kode terlihat
+                mimeType = 'text/plain';
+            }
 
-    // Buat Blob dari konten
-    const blob = new Blob([content], {
-        type: mimeType
-    });
-    const url = URL.createObjectURL(blob);
+            // Buat Blob dari konten
+            const blob = new Blob([content], {
+                type: mimeType
+            });
+            const url = URL.createObjectURL(blob);
 
-    // Buka jendela/tab baru
-    const previewWindow = window.open(url, '_blank', 'noopener,noreferrer');
+            // Buka jendela/tab baru
+            const previewWindow = window.open(url, '_blank', 'noopener,noreferrer');
 
-    // Jika berhasil dibuka
-    if (previewWindow) {
-        if (isHtml) {
-            showToast(`Membuka preview HTML untuk "${filename}" di tab baru.`, 3000);
-        } else {
-            showToast(`Membuka konten teks untuk "${filename}" di tab baru.`, 3000);
+            // Jika berhasil dibuka
+            if (previewWindow) {
+                if (isHtml) {
+                    showToast(`Membuka preview HTML untuk "${filename}" di tab baru.`, 3000);
+                } else {
+                    showToast(`Membuka konten teks untuk "${filename}" di tab baru.`, 3000);
+                }
+            } else {
+                showToast("Gagal membuka jendela preview. Pastikan browser Anda mengizinkan pop-up.", 4000);
+            }
+
+            // Penting: Clean up URL object setelah tab ditutup
+            // Namun, karena kita membuka tab baru, browser akan menangani cleanup secara otomatis.
+            // Jika ada kebutuhan untuk menutupnya, bisa ditambahkan event listener pada jendela preview (kompleks untuk cross-origin/pop-up).
         }
-    } else {
-        showToast("Gagal membuka jendela preview. Pastikan browser Anda mengizinkan pop-up.", 4000);
-    }
 
-    // Penting: Clean up URL object setelah tab ditutup
-    // Namun, karena kita membuka tab baru, browser akan menangani cleanup secara otomatis.
-    // Jika ada kebutuhan untuk menutupnya, bisa ditambahkan event listener pada jendela preview (kompleks untuk cross-origin/pop-up).
-}
+        // ---------------------------------
+        // EVENT LISTENER UNTUK SHORTCUT CTRL+Q
+        // ---------------------------------
 
-// ---------------------------------
-// EVENT LISTENER UNTUK SHORTCUT CTRL+Q
-// ---------------------------------
+        document.addEventListener("keydown", (e) => {
+            // Cek jika (CtrlKey ATAU MetaKey (Cmd di Mac)) DAN Key 'Q'
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "q") {
+                e.preventDefault(); // Mencegah perilaku default browser (misalnya menutup tab)
+                openPreview();
+                // Pastikan tidak mengganggu shortcut Save (Ctrl+S) jika ada
+            }
 
-document.addEventListener("keydown", (e) => {
-    // Cek jika (CtrlKey ATAU MetaKey (Cmd di Mac)) DAN Key 'Q'
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "q") {
-        e.preventDefault(); // Mencegah perilaku default browser (misalnya menutup tab)
-        openPreview();
-        // Pastikan tidak mengganggu shortcut Save (Ctrl+S) jika ada
-    }
-    
-    // Shortcut Save (Ctrl+S atau Cmd+S)
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
-        e.preventDefault();
-        saveFile();
-    }
-    // ... event listener lain yang sudah ada (jika ada)
-});
+            // Shortcut Save (Ctrl+S atau Cmd+S)
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+                e.preventDefault();
+                saveFile();
+            }
+            // ... event listener lain yang sudah ada (jika ada)
+        });
     </script>
-    </body>
+</body>
 
 </html>
