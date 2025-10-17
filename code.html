@@ -1323,6 +1323,82 @@
             treeDataCache = snap.val() || {};
             renderTree(treeDataCache, treeEl, "");
         });
+
+        // Tambahkan kode ini ke bagian bawah skrip yang sudah ada di code.html
+// ---------------------------------
+// PREVIEW SYSTEM LOGIC
+// ---------------------------------
+
+/**
+ * Membuka jendela/tab baru dengan konten dari editor.
+ * Konten akan disajikan sebagai HTML jika ekstensi file adalah .html atau .htm,
+ * jika tidak, konten akan ditampilkan sebagai teks biasa.
+ */
+function openPreview() {
+    if (!currentFilePath) {
+        showToast("Pilih file terlebih dahulu untuk mem-preview.");
+        return;
+    }
+
+    const content = codeArea.textContent;
+    const filename = currentFileName;
+    const lowerFilename = filename ? filename.toLowerCase() : "";
+
+    let mimeType;
+    let isHtml = false;
+
+    if (lowerFilename.endsWith(".html") || lowerFilename.endsWith(".htm")) {
+        mimeType = 'text/html';
+        isHtml = true;
+    } else {
+        // Untuk file lain, gunakan teks biasa agar konten kode terlihat
+        mimeType = 'text/plain';
+    }
+
+    // Buat Blob dari konten
+    const blob = new Blob([content], {
+        type: mimeType
+    });
+    const url = URL.createObjectURL(blob);
+
+    // Buka jendela/tab baru
+    const previewWindow = window.open(url, '_blank', 'noopener,noreferrer');
+
+    // Jika berhasil dibuka
+    if (previewWindow) {
+        if (isHtml) {
+            showToast(`Membuka preview HTML untuk "${filename}" di tab baru.`, 3000);
+        } else {
+            showToast(`Membuka konten teks untuk "${filename}" di tab baru.`, 3000);
+        }
+    } else {
+        showToast("Gagal membuka jendela preview. Pastikan browser Anda mengizinkan pop-up.", 4000);
+    }
+
+    // Penting: Clean up URL object setelah tab ditutup
+    // Namun, karena kita membuka tab baru, browser akan menangani cleanup secara otomatis.
+    // Jika ada kebutuhan untuk menutupnya, bisa ditambahkan event listener pada jendela preview (kompleks untuk cross-origin/pop-up).
+}
+
+// ---------------------------------
+// EVENT LISTENER UNTUK SHORTCUT CTRL+Q
+// ---------------------------------
+
+document.addEventListener("keydown", (e) => {
+    // Cek jika (CtrlKey ATAU MetaKey (Cmd di Mac)) DAN Key 'Q'
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "q") {
+        e.preventDefault(); // Mencegah perilaku default browser (misalnya menutup tab)
+        openPreview();
+        // Pastikan tidak mengganggu shortcut Save (Ctrl+S) jika ada
+    }
+    
+    // Shortcut Save (Ctrl+S atau Cmd+S)
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        saveFile();
+    }
+    // ... event listener lain yang sudah ada (jika ada)
+});
     </script>
     </body>
 
