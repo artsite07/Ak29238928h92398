@@ -1,282 +1,283 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Adlan M.R - Portofolio (Gaya Work Page)</title>
-  <link rel="icon" href="1.png">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    /* Variabel Warna dan Font (Palet Modern & Kalem) */
-    :root {
-      --primary-bg: #2c3e50;          /* Dark Slate (Sidebar - Diubah agar lebih gelap) */
-      --secondary-bg: #ecf0f1;        /* Background Halaman (Mirip Work Page) */
-      --text-color-light: #9ca3af;    /* Ikon Inactive Abu-abu Lembut */
-      --text-color-active: #1abc9c;   /* Teal Accent (Mirip Work Page) */
-      --hover-color: #374151;         /* Darker Hover Background */
-      --font-family: 'Inter', sans-serif;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adlan M.R - Portofolio (Gaya Work Page)</title>
+    <link rel="icon" href="1.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Variabel Warna dan Font (Palet Modern & Kalem) */
+        :root {
+            --primary-bg: #2c3e50;         /* Dark Slate (Sidebar) */
+            --secondary-bg: #ecf0f1;       /* Background Halaman */
+            --text-color-light: #9ca3af;   /* Ikon Inactive Abu-abu Lembut */
+            --text-color-active: #1abc9c;  /* Teal Accent */
+            --hover-color: #374151;        /* Darker Hover Background */
+            --font-family: 'Inter', sans-serif;
+        }
 
-    /* Layout utama */
-    body {
-      margin: 0;
-      font-family: var(--font-family);
-      background: var(--secondary-bg);
-      display: flex;
-      height: 100vh;
-      overflow: hidden;
-    }
-
-    /* Sidebar Kiri - Sangat Kecil (40px) */
-    #sidebar {
-      width: 40px; 
-      min-width: 40px;
-      background-color: var(--primary-bg);
-      color: var(--text-color-light);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px 0; /* Padding vertikal ditingkatkan */
-      box-shadow: 1px 0 5px rgba(0, 0, 0, 0.1);
-      z-index: 1000;
-      box-sizing: border-box;
-    }
-    
-    /* Navigasi Ikon */
-    #sidebar nav {
-        display: flex;
-        flex-direction: column;
-        gap: 15px; /* Jarak antar ikon yang lega */
-        width: 100%;
-    }
-
-    /* Link Navigasi */
-    #sidebar a {
-      color: var(--text-color-light);
-      text-decoration: none;
-      font-size: 1.25rem;
-      padding: 8px 0; 
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      transition: color 0.2s ease, background-color 0.2s ease, border-left 0.2s ease; /* Transisi diubah ke border-left */
-      width: 100%;
-      box-sizing: border-box;
-      border-left: 3px solid transparent; /* Tambahkan border-left transparan default */
-    }
-
-    /* Efek Hover Modern & Halus */
-    #sidebar a:hover,
-    #sidebar a:focus { 
-      color: var(--text-color-active);
-      background-color: var(--hover-color);
-      outline: none;
-      /* Tambahkan efek transform seperti Work Page */
-      transform: translateY(-2px); 
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); 
-    }
-
-    /* Status Aktif Minimalis: Border KIRI & Hapus border-bottom */
-    #sidebar a.active {
-      color: var(--text-color-active);
-      background-color: var(--primary-bg); /* Pertahankan latar belakang gelap */
-      border-left: 3px solid var(--text-color-active); /* Garis aktif di kiri */
-      border-bottom: none; /* Hapus border-bottom lama */
-      transform: none;
-      box-shadow: none;
-    }
-    
-    /* Area konten utama - DIMODIFIKASI untuk padding seperti Work Page */
-    #mainContent {
-      flex: 1; 
-      width: calc(100% - 40px);
-      height: 100%;
-      overflow: hidden;
-      /* PENTING: Tambahkan padding untuk margin visual di sekitar iframe */
-      padding: 20px; 
-      position: relative; 
-      box-sizing: border-box;
-      background-color: var(--secondary-bg); /* Latar belakang abu-abu sangat muda */
-    }
-
-    /* Gaya Iframe - DIMODIFIKASI untuk radius dan bayangan */
-    iframe {
-      position: absolute;
-      /* Posisikan iframe sesuai padding mainContent */
-      top: 20px;
-      left: 20px;
-      /* Ukuran iframe disesuaikan dengan padding mainContent */
-      width: calc(100% - 40px); 
-      height: calc(100% - 40px); 
-      
-      border: none;
-      background-color: #ffffff; /* Pastikan konten iframe terlihat putih */
-      
-      /* PENTING: Tambahkan radius dan bayangan */
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1); 
-      border-radius: 8px; 
-      
-      opacity: 0; 
-      transition: opacity 0.3s ease-in-out; 
-      pointer-events: none;
-    }
-
-    iframe.active {
-      opacity: 1; 
-      z-index: 10;
-      pointer-events: auto;
-    }
-
-    /* === Responsif untuk HP === */
-    @media (max-width: 767px) {
-        /* Sidebar di bagian bawah untuk tampilan mobile modern */
+        /* Layout utama */
         body {
-            flex-direction: column-reverse; /* Sidebar ke bawah */
-        }
-        
-        #sidebar {
-            width: 100%;
-            height: 50px;
-            min-width: unset;
-            padding: 0;
-            flex-direction: row; /* Ikon horizontal */
-            justify-content: space-around;
-            box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.1);
+            margin: 0;
+            font-family: var(--font-family);
+            background: var(--secondary-bg);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
         }
 
-        #sidebar nav {
-            flex-direction: row;
-            gap: 0;
-            width: 90%;
-            margin-top: 0;
-            justify-content: space-around;
+        /* Sidebar Kiri - Sangat Kecil (40px) */
+        #sidebar {
+            width: 40px; 
+            min-width: 40px;
+            background-color: var(--primary-bg);
+            color: var(--text-color-light);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0; 
+            box-shadow: 1px 0 5px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            box-sizing: border-box;
         }
         
-        /* Hapus efek transform hover di mobile agar lebih responsif */
+        /* Navigasi Ikon */
+        #sidebar nav {
+            display: flex;
+            flex-direction: column;
+            gap: 15px; 
+            width: 100%;
+        }
+
+        /* Link Navigasi */
+        #sidebar a {
+            color: var(--text-color-light);
+            text-decoration: none;
+            font-size: 1.25rem;
+            padding: 8px 0; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: color 0.2s ease, background-color 0.2s ease, border-left 0.2s ease, transform 0.2s ease;
+            width: 100%;
+            box-sizing: border-box;
+            border-left: 3px solid transparent; 
+        }
+
+        /* Efek Hover Modern & Halus */
         #sidebar a:hover,
         #sidebar a:focus { 
+            color: var(--text-color-active);
+            background-color: var(--hover-color);
+            outline: none;
+            transform: translateY(-2px); /* Efek transform */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); 
+        }
+
+        /* Status Aktif Minimalis: Border KIRI */
+        #sidebar a.active {
+            color: var(--text-color-active);
+            background-color: var(--primary-bg); 
+            border-left: 3px solid var(--text-color-active); 
+            border-bottom: none; 
             transform: none;
             box-shadow: none;
         }
-
-        #sidebar a {
-            padding: 15px 5px;
-            font-size: 1.2rem;
-            border-left: none; /* Hapus border kiri di mobile */
-        }
         
-        #sidebar a.active {
-            border-left: none;
-            /* Border top untuk tampilan aktif di bawah */
-            border-top: 2px solid var(--text-color-active); 
-            background-color: var(--hover-color); 
-        }
-
-        /* Kurangi padding di mobile untuk memaksimalkan ruang iframe */
+        /* Area konten utama */
         #mainContent {
-            flex: 1;
-            width: 100%;
-            height: calc(100vh - 50px);
-            padding: 10px; 
+            flex: 1; 
+            width: calc(100% - 40px);
+            height: 100%;
+            overflow: hidden;
+            padding: 20px; 
+            position: relative; 
+            box-sizing: border-box;
+            background-color: var(--secondary-bg); 
         }
 
+        /* Gaya Iframe */
         iframe {
-            top: 10px;
-            left: 10px;
-            width: calc(100% - 20px); 
-            height: calc(100% - 20px);
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: calc(100% - 40px); 
+            height: calc(100% - 40px); 
+            
+            border: none;
+            background-color: #ffffff; 
+            
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1); 
+            border-radius: 8px; 
+            
+            opacity: 0; 
+            transition: opacity 0.3s ease-in-out; 
+            pointer-events: none;
         }
-    }
-  </style>
+
+        iframe.active {
+            opacity: 1; 
+            z-index: 10;
+            pointer-events: auto;
+        }
+
+        /* === Responsif untuk HP === */
+        @media (max-width: 767px) {
+            
+            body {
+                flex-direction: column-reverse; /* Sidebar ke bawah */
+            }
+            
+            #sidebar {
+                width: 100%;
+                height: 50px;
+                min-width: unset;
+                padding: 0;
+                flex-direction: row; /* Ikon horizontal */
+                justify-content: space-around;
+                box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.1);
+            }
+
+            #sidebar nav {
+                flex-direction: row;
+                gap: 0;
+                width: 90%;
+                margin-top: 0;
+                justify-content: space-around;
+            }
+            
+            /* Hapus efek transform hover di mobile */
+            #sidebar a:hover,
+            #sidebar a:focus { 
+                transform: none;
+                box-shadow: none;
+            }
+
+            #sidebar a {
+                padding: 15px 5px;
+                font-size: 1.2rem;
+                border-left: none; /* Hapus border kiri di mobile */
+            }
+            
+            #sidebar a.active {
+                border-left: none;
+                /* Border top untuk tampilan aktif di bawah */
+                border-top: 2px solid var(--text-color-active); 
+                background-color: var(--hover-color); 
+            }
+
+            /* Kurangi padding di mobile */
+            #mainContent {
+                flex: 1;
+                width: 100%;
+                height: calc(100vh - 50px);
+                padding: 10px; 
+            }
+
+            iframe {
+                top: 10px;
+                left: 10px;
+                width: calc(100% - 20px); 
+                height: calc(100% - 20px);
+            }
+        }
+    </style>
 </head>
 <body>
-  <div id="sidebar">
-    
-    <nav role="navigation">
-        <a href="home.html" data-target="home-frame" title="Home">
-            <i class="fa-solid fa-house"></i>
-        </a>
-        <a href="v-drive.html" data-target="v-drive-frame" title="V-Drive">
-            <i class="fa-solid fa-hard-drive"></i>
-        </a>
-        </a>
-        <a href="codingin.html" data-target="codingin-frame" title="Terminal">
-            <i class="fa-solid fa-terminal"></i>
-        </a>
-        <a href="aplikasi.html" data-target="code-frame" title="Aplikasi">
-            <i class="fa-solid fa-code"></i>
-        </a>
-        </nav>
-  </div>
-
-  <div id="mainContent">
-    <iframe id="home-frame" src="home.html" class="active" title="Halaman Utama"></iframe>
-    <iframe id="v-drive-frame" src="v-drive.html" title="Penyimpanan Virtual"></iframe>
-    <iframe id="codingin-frame" src="codingin.html" title="Terminal Simulasi"></iframe>
-    <iframe id="aplikasi-frame" src="aplikasi.html" title="Daftar Aplikasi"></iframe>
+    <div id="sidebar">
+        
+        <nav role="navigation">
+            <a href="home.html" data-target="home-frame" title="Home">
+                <i class="fa-solid fa-house"></i>
+            </a>
+            <a href="v-drive.html" data-target="v-drive-frame" title="V-Drive">
+                <i class="fa-solid fa-hard-drive"></i>
+            </a>
+            <a href="codingin.html" data-target="codingin-frame" title="Terminal">
+                <i class="fa-solid fa-terminal"></i>
+            </a>
+            <a href="aplikasi.html" data-target="aplikasi-frame" title="Aplikasi">
+                <i class="fa-solid fa-code"></i>
+            </a>
+            </nav>
     </div>
 
-  <script>
-    const links = document.querySelectorAll('#sidebar a');
-    const iframes = document.querySelectorAll('iframe');
-    const ACTIVE_KEY = 'activePage';
-    const DEFAULT_PAGE = 'home-frame';
+    <div id="mainContent">
+        <iframe id="home-frame" src="home.html" class="active" title="Halaman Utama"></iframe>
+        <iframe id="v-drive-frame" src="v-drive.html" title="Penyimpanan Virtual"></iframe>
+        <iframe id="codingin-frame" src="codingin.html" title="Terminal Simulasi"></iframe>
+        <iframe id="aplikasi-frame" src="aplikasi.html" title="Daftar Aplikasi"></iframe>
+    </div>
 
-    // Fungsi untuk mengelola status aktif (membuat kode lebih rapi)
-    const setActiveState = (targetId) => {
-        // Kelola kelas 'active' pada ikon sidebar
-        links.forEach(l => {
-            l.classList.remove('active');
-            l.removeAttribute('aria-current');
-            if (l.dataset.target === targetId) {
-                l.classList.add('active');
-                l.setAttribute('aria-current', 'page');
-                const newUrl = l.getAttribute('href');
-                history.replaceState(null, '', newUrl);
+    <script>
+        const links = document.querySelectorAll('#sidebar a');
+        const iframes = document.querySelectorAll('iframe');
+        const ACTIVE_KEY = 'activePage';
+        const DEFAULT_PAGE = 'home-frame';
+
+        // Fungsi untuk mengelola status aktif
+        const setActiveState = (targetId) => {
+            // Kelola kelas 'active' pada ikon sidebar
+            links.forEach(l => {
+                l.classList.remove('active');
+                l.removeAttribute('aria-current');
+                if (l.dataset.target === targetId) {
+                    l.classList.add('active');
+                    l.setAttribute('aria-current', 'page');
+                    const newUrl = l.getAttribute('href');
+                    // Ganti path URL tanpa memuat ulang halaman
+                    history.replaceState(null, '', newUrl);
+                }
+            });
+            
+            // Kelola visibilitas iframe
+            iframes.forEach(f => f.classList.remove('active'));
+            const activeFrame = document.getElementById(targetId);
+            if (activeFrame) {
+                activeFrame.classList.add('active');
             }
+            
+            // Simpan status aktif ke session storage
+            sessionStorage.setItem(ACTIVE_KEY, targetId);
+        };
+
+
+        // Event Listener untuk Navigasi Sidebar
+        links.forEach(link => {
+            link.addEventListener('click', e => {
+                e.preventDefault();
+                const target = link.dataset.target;
+                setActiveState(target);
+            });
         });
-        
-        // Kelola visibilitas iframe
-        iframes.forEach(f => f.classList.remove('active'));
-        const activeFrame = document.getElementById(targetId);
-        if (activeFrame) {
-            activeFrame.classList.add('active');
-        }
-        
-        sessionStorage.setItem(ACTIVE_KEY, targetId);
-    };
 
-
-    links.forEach(link => {
-      link.addEventListener('click', e => {
-        e.preventDefault();
-        const target = link.dataset.target;
-        setActiveState(target);
-      });
-    });
-
-    document.addEventListener('DOMContentLoaded', () => {
-      const saved = sessionStorage.getItem(ACTIVE_KEY);
-      
-      let initialTarget = DEFAULT_PAGE;
-      const currentPath = window.location.pathname.substring(1); 
-      
-      let pathTarget = null;
-      links.forEach(l => {
-          if (l.getAttribute('href') === currentPath) {
-              pathTarget = l.dataset.target;
-          }
-      });
-      
-      if (pathTarget && document.getElementById(pathTarget)) {
-          initialTarget = pathTarget;
-      } else if (saved && document.getElementById(saved)) {
-          initialTarget = saved;
-      }
-      
-      setActiveState(initialTarget);
-    });
-  </script>
+        // Inisialisasi Halaman Saat Pemuatan (DOMContentLoaded)
+        document.addEventListener('DOMContentLoaded', () => {
+            const saved = sessionStorage.getItem(ACTIVE_KEY);
+            
+            let initialTarget = DEFAULT_PAGE;
+            // Ambil hanya nama file dari path URL saat ini
+            const currentPath = window.location.pathname.split('/').pop(); 
+            
+            let pathTarget = null;
+            links.forEach(l => {
+                // Cocokkan link href (e.g., home.html) dengan nama file URL saat ini
+                if (l.getAttribute('href') === currentPath) {
+                    pathTarget = l.dataset.target;
+                }
+            });
+            
+            // Prioritas: 1. URL Path, 2. Session Storage, 3. Default Page
+            if (pathTarget && document.getElementById(pathTarget)) {
+                initialTarget = pathTarget;
+            } else if (saved && document.getElementById(saved)) {
+                initialTarget = saved;
+            }
+            
+            setActiveState(initialTarget);
+        });
+    </script>
 </body>
 </html>
