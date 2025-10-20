@@ -12,8 +12,31 @@
         font-family: 'Inter', sans-serif;
         background: #ffffff; /* Putih terang */
         color: #1f2937; /* Teks gelap */
+        /* Menggunakan flexbox untuk tata letak editor dan preview */
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
     }
-    #editor { width:100%; height:100vh; }
+    #main-container {
+        display: flex;
+        flex-grow: 1; /* Agar container mengisi sisa tinggi viewport */
+        overflow: hidden; /* Mencegah scroll pada container utama */
+    }
+    #editor-container {
+        flex: 1; /* Editor mengambil setengah lebar */
+        height: 100%;
+    }
+    #preview-container {
+        flex: 1; /* Preview mengambil setengah lebar */
+        height: 100%;
+        border-left: 1px solid #d1d5db; /* Garis pemisah */
+    }
+    #live-preview {
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+
     /* Toast Notification Styles - Disesuaikan untuk Light Mode */
     #toast-notification {
         position: fixed;
@@ -34,11 +57,11 @@
         opacity: 1;
     }
     #toast-notification.success {
-        background-color: #10b981; /* Emerald-500 (sama, terlihat bagus) */
+        background-color: #10b981; /* Emerald-500 */
         color: #ffffff; /* Teks putih untuk sukses */
     }
     #toast-notification.error {
-        background-color: #ef4444; /* Red-500 (sama, terlihat bagus) */
+        background-color: #ef4444; /* Red-500 */
         color: #ffffff; /* Teks putih untuk error */
     }
 </style>
@@ -47,7 +70,14 @@
 
 <div id="toast-notification"></div>
 
-<div id="editor"></div>
+<div id="main-container">
+    <div id="editor-container">
+        <div id="editor" style="width:100%; height:100%;"></div>
+    </div>
+    <div id="preview-container">
+        <iframe id="live-preview" sandbox="allow-scripts allow-forms allow-same-origin"></iframe>
+    </div>
+</div>
 
 <link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.41.0/min/vs/editor/editor.main.css">
 <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.41.0/min/vs/loader.js"></script>
@@ -95,6 +125,15 @@ function showToast(message, type = 'default') {
     }, 3000);
 }
 
+// --- Live Preview Function (untuk Iframe di tab yang sama) ---
+let previewIframe;
+function updateLivePreview(code) {
+    if (!previewIframe) {
+        previewIframe = document.getElementById('live-preview');
+    }
+    // Menggunakan srcdoc untuk memuat konten HTML ke dalam iframe
+    previewIframe.setAttribute('srcdoc', code);
+}
 
 // --- Load Monaco setelah window load ---
 window.addEventListener('load', () => {
@@ -103,7 +142,7 @@ window.addEventListener('load', () => {
         const editor = monaco.editor.create(document.getElementById('editor'), {
             value: '',
             language: 'html',
-            theme: 'vs', /* PERUBAHAN UTAMA: Menggunakan tema 'vs' untuk Light Mode */
+            theme: 'vs',
             automaticLayout: true,
             minimap: { enabled: false },
             fontSize: 14,
@@ -111,20 +150,23 @@ window.addEventListener('load', () => {
             wordWrap: 'on'
         });
 
-        // --- Preview Logic ---
-        const runPreview = () => {
+        // --- Real-time Update Listener ---
+        // Memperbarui iframe setiap kali konten model berubah
+        editor.onDidChangeModelContent(() => {
             const code = editor.getValue();
-            const blob = new Blob([code], { type:'text/html' });
-            window.open(URL.createObjectURL(blob), '_blank');
-        };
-
-        // --- Keyboard Shortcut (Ctrl + Q) for Preview ---
-        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyQ, runPreview, '');
-
+            updateLivePreview(code);
+        });
+        
         // --- Load dari Firebase ---
         get(ref(db, 'code/editor')).then(snapshot => {
-            if(snapshot.exists()) editor.setValue(snapshot.val().content);
-        }).catch(console.error);
+            let initialCode = '';
+            if(snapshot.exists()) {
+                initialCode = snapshot.val().content;
+                editor.setValue(initialCode);
+            }
+            // Panggil updateLivePreview untuk kode awal yang dimuat
+            updateLivePreview(initialCode); 
+        }).catch(err => console.error("Gagal memuat dari Firebase:", err));
 
         // --- Auto-save tiap 5 detik ---
         let lastSavedValue = editor.getValue();
@@ -137,6 +179,19 @@ window.addEventListener('load', () => {
                   .catch(err => { showToast('Gagal ❌', 'error'); console.error(err); });
             }
         }, 5000);
+        
+        // --- Preview Logic (Ctrl + Q: Buka di Tab Baru) ---
+        const runPreviewInNewTab = () => {
+            const code = editor.getValue();
+            const blob = new Blob([code], { type:'text/html' });
+            window.open(URL.createObjectURL(blob), '_blank');
+            showToast('Membuka preview di tab baru...', 'default');
+        };
+
+        // --- Keyboard Shortcut (Ctrl + Q) for Preview ---
+        // Shortcut ini sekarang menjalankan fungsi untuk membuka tab baru
+        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyQ, runPreviewInNewTab, '');
+
     });
 });
 </script>
