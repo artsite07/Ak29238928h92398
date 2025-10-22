@@ -3,19 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Adlan M.R - Portofolio (Gaya Work Page)</title>
+    <title>Adlan M.R - Portofolio (Gaya Dock Tengah)</title>
     <link rel="icon" href="1.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Variabel Warna dan Font (Palet Modern & Kalem) */
+        /* Variabel Warna dan Font */
         :root {
-            --primary-bg: #2c3e50;         /* Dark Slate (Sidebar) */
+            --primary-bg: #2c3e50;         /* Dark Slate (Dock Background) */
             --secondary-bg: #ecf0f1;       /* Background Halaman */
             --text-color-light: #9ca3af;   /* Ikon Inactive Abu-abu Lembut */
             --text-color-active: #1abc9c;  /* Teal Accent */
             --hover-color: #374151;        /* Darker Hover Background */
             --font-family: 'Inter', sans-serif;
+            --tooltip-bg: #4a5568;
+            --dock-width: 55px;
         }
 
         /* Layout utama */
@@ -26,70 +28,129 @@
             display: flex;
             height: 100vh;
             overflow: hidden;
+            /* Tambahkan padding kiri untuk memberi ruang pada Dock */
+            padding-left: 80px; 
+            box-sizing: border-box;
         }
 
-        /* Sidebar Kiri - Sangat Kecil (40px) */
+        /* Sidebar Kiri - Icon Dock Terapung di Tengah Vertikal */
         #sidebar {
-            width: 40px; 
-            min-width: 40px;
+            /* Posisikan di luar alur dokumen */
+            position: fixed; 
+            left: 20px; 
+            top: 50%;
+            transform: translateY(-50%); /* Kunci di tengah vertikal */
+            
+            width: var(--dock-width); 
             background-color: var(--primary-bg);
             color: var(--text-color-light);
+            
+            /* Gaya visual Dock */
+            border-radius: 12px; /* Sudut membulat (Dock look) */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); /* Bayangan kuat */
+            
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 20px 0; 
-            box-shadow: 1px 0 5px rgba(0, 0, 0, 0.1);
+            padding: 15px 0; /* Padding vertikal di dalam dock */
             z-index: 1000;
-            box-sizing: border-box;
         }
         
         /* Navigasi Ikon */
         #sidebar nav {
             display: flex;
             flex-direction: column;
-            gap: 15px; 
+            gap: 15px; /* Jarak antar ikon */
             width: 100%;
+        }
+
+        /* Link Navigasi - Kontainer untuk Tooltip */
+        .nav-item-container {
+            position: relative;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         /* Link Navigasi */
         #sidebar a {
             color: var(--text-color-light);
             text-decoration: none;
-            font-size: 1.25rem;
-            padding: 8px 0; 
+            font-size: 1.4rem; 
+            padding: 10px 0; 
             display: flex;
             justify-content: center;
             align-items: center;
-            transition: color 0.2s ease, background-color 0.2s ease, border-left 0.2s ease, transform 0.2s ease;
+            /* Efek Hover: Subtle Lift & Glow */
+            transition: color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease; 
             width: 100%;
             box-sizing: border-box;
-            border-left: 3px solid transparent; 
+            border-radius: 4px;
         }
 
-        /* Efek Hover Modern & Halus */
-        #sidebar a:hover,
-        #sidebar a:focus { 
+        /* Efek Hover (Subtle Lift & Glow) */
+        .nav-item-container:hover a,
+        .nav-item-container:focus-within a { 
             color: var(--text-color-active);
-            background-color: var(--hover-color);
-            outline: none;
-            transform: translateY(-2px); /* Efek transform */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); 
+            transform: translateY(-3px); /* Lift */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); 
         }
 
-        /* Status Aktif Minimalis: Border KIRI */
+        /* Status Aktif: Warna dan Indikator */
         #sidebar a.active {
             color: var(--text-color-active);
-            background-color: var(--primary-bg); 
-            border-left: 3px solid var(--text-color-active); 
-            border-bottom: none; 
+            background-color: var(--hover-color); 
+            /* Indikator: Shadow inset dari atas dan bawah */
+            box-shadow: inset 0 2px 0 var(--text-color-active), inset 0 -2px 0 var(--text-color-active); 
             transform: none;
-            box-shadow: none;
+            border-radius: 0;
+        }
+        
+        /* Tooltip */
+        .tooltip {
+            visibility: hidden;
+            opacity: 0;
+            width: 80px;
+            background-color: var(--tooltip-bg);
+            color: white;
+            text-align: center;
+            border-radius: 4px;
+            padding: 5px 0;
+            position: absolute;
+            z-index: 1001;
+            left: calc(100% + 15px); 
+            font-size: 0.75rem;
+            white-space: nowrap;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            pointer-events: none;
+            transform: translateX(-10px);
+        }
+        
+        /* Panah Tooltip */
+        .tooltip::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            right: 100%;
+            margin-top: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent var(--tooltip-bg) transparent transparent;
+        }
+
+        /* Tampilkan Tooltip saat hover/fokus */
+        .nav-item-container:hover .tooltip,
+        .nav-item-container:focus-within .tooltip {
+            visibility: visible;
+            opacity: 1;
+            transform: translateX(0);
         }
         
         /* Area konten utama */
         #mainContent {
             flex: 1; 
-            width: calc(100% - 40px);
+            width: 100%; /* Isi sisa ruang */
             height: 100%;
             overflow: hidden;
             padding: 20px; 
@@ -98,7 +159,7 @@
             background-color: var(--secondary-bg); 
         }
 
-        /* Gaya Iframe */
+        /* Gaya Iframe tetap sama */
         iframe {
             position: absolute;
             top: 20px;
@@ -108,7 +169,6 @@
             
             border: none;
             background-color: #ffffff; 
-            
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.1); 
             border-radius: 8px; 
             
@@ -123,55 +183,63 @@
             pointer-events: auto;
         }
 
-        /* === Responsif untuk HP === */
+        /* === Responsif untuk HP: Kembali ke Dock Bawah === */
         @media (max-width: 767px) {
             
             body {
-                flex-direction: column-reverse; /* Sidebar ke bawah */
+                flex-direction: column-reverse; 
+                padding-left: 0; /* Hapus padding kiri di mobile */
             }
             
             #sidebar {
+                /* Kembalikan ke posisi bawah horizontal */
+                position: fixed; 
+                bottom: 0;
+                left: 0;
+                top: unset;
+                transform: none;
+                
                 width: 100%;
                 height: 50px;
-                min-width: unset;
                 padding: 0;
-                flex-direction: row; /* Ikon horizontal */
+                
+                flex-direction: row; 
                 justify-content: space-around;
                 box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.1);
+                border-radius: 0; /* Hilangkan sudut membulat */
             }
 
             #sidebar nav {
                 flex-direction: row;
                 gap: 0;
                 width: 90%;
-                margin-top: 0;
                 justify-content: space-around;
             }
             
+            .tooltip {
+                display: none; 
+            }
+            
             /* Hapus efek transform hover di mobile */
-            #sidebar a:hover,
-            #sidebar a:focus { 
+            .nav-item-container:hover a,
+            .nav-item-container:focus-within a { 
                 transform: none;
                 box-shadow: none;
             }
 
             #sidebar a {
                 padding: 15px 5px;
-                font-size: 1.2rem;
-                border-left: none; /* Hapus border kiri di mobile */
+                border: none;
             }
             
             #sidebar a.active {
-                border-left: none;
+                box-shadow: none;
                 /* Border top untuk tampilan aktif di bawah */
                 border-top: 2px solid var(--text-color-active); 
                 background-color: var(--hover-color); 
             }
 
-            /* Kurangi padding di mobile */
             #mainContent {
-                flex: 1;
-                width: 100%;
                 height: calc(100vh - 50px);
                 padding: 10px; 
             }
@@ -189,19 +257,34 @@
     <div id="sidebar">
         
         <nav role="navigation">
-            <a href="home.html" data-target="home-frame" title="Home">
-                <i class="fa-solid fa-house"></i>
-            </a>
-            <a href="v-drive.html" data-target="v-drive-frame" title="V-Drive">
-                <i class="fa-solid fa-hard-drive"></i>
-            </a>
-            <a href="codingin.html" data-target="codingin-frame" title="Terminal">
-                <i class="fa-solid fa-terminal"></i>
-            </a>
-            <a href="aplikasi.html" data-target="aplikasi-frame" title="Aplikasi">
-                <i class="fa-solid fa-code"></i>
-            </a>
-            </nav>
+            <div class="nav-item-container">
+                <a href="home.html" data-target="home-frame">
+                    <i class="fa-solid fa-house"></i>
+                </a>
+                <span class="tooltip">Home</span>
+            </div>
+            
+            <div class="nav-item-container">
+                <a href="v-drive.html" data-target="v-drive-frame">
+                    <i class="fa-solid fa-hard-drive"></i>
+                </a>
+                <span class="tooltip">V-Drive</span>
+            </div>
+            
+            <div class="nav-item-container">
+                <a href="codingin.html" data-target="codingin-frame">
+                    <i class="fa-solid fa-terminal"></i>
+                </a>
+                <span class="tooltip">Terminal</span>
+            </div>
+            
+            <div class="nav-item-container">
+                <a href="aplikasi.html" data-target="aplikasi-frame">
+                    <i class="fa-solid fa-code"></i>
+                </a>
+                <span class="tooltip">Aplikasi</span>
+            </div>
+        </nav>
     </div>
 
     <div id="mainContent">
@@ -219,7 +302,6 @@
 
         // Fungsi untuk mengelola status aktif
         const setActiveState = (targetId) => {
-            // Kelola kelas 'active' pada ikon sidebar
             links.forEach(l => {
                 l.classList.remove('active');
                 l.removeAttribute('aria-current');
@@ -227,19 +309,16 @@
                     l.classList.add('active');
                     l.setAttribute('aria-current', 'page');
                     const newUrl = l.getAttribute('href');
-                    // Ganti path URL tanpa memuat ulang halaman
                     history.replaceState(null, '', newUrl);
                 }
             });
             
-            // Kelola visibilitas iframe
             iframes.forEach(f => f.classList.remove('active'));
             const activeFrame = document.getElementById(targetId);
             if (activeFrame) {
                 activeFrame.classList.add('active');
             }
             
-            // Simpan status aktif ke session storage
             sessionStorage.setItem(ACTIVE_KEY, targetId);
         };
 
@@ -258,18 +337,15 @@
             const saved = sessionStorage.getItem(ACTIVE_KEY);
             
             let initialTarget = DEFAULT_PAGE;
-            // Ambil hanya nama file dari path URL saat ini
             const currentPath = window.location.pathname.split('/').pop(); 
             
             let pathTarget = null;
             links.forEach(l => {
-                // Cocokkan link href (e.g., home.html) dengan nama file URL saat ini
                 if (l.getAttribute('href') === currentPath) {
                     pathTarget = l.dataset.target;
                 }
             });
             
-            // Prioritas: 1. URL Path, 2. Session Storage, 3. Default Page
             if (pathTarget && document.getElementById(pathTarget)) {
                 initialTarget = pathTarget;
             } else if (saved && document.getElementById(saved)) {
