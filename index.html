@@ -3,28 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Akses Ultra Minimalis + Firebase</title>
+    <title>Akses Ultra Minimalis | Dark Mode Cepat</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;400;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
     <style>
-        /* Ultra Minimalist Design Variables */
+        /* Ultra Minimalist Dark Mode Variables (Green Accent) */
         :root {
-            --primary-blue: #007BFF; /* Biru terang */
-            --bg-light: #F4F7F9;
-            --card-bg: #FFFFFF;
-            --text-dark: #212529;
-            --text-light: #6C757D; 
-            --input-border: #DEE2E6;
+            --primary-green: #10B981; /* Hijau Cemerlang */
+            --bg-dark: #1a1a1a; 
+            --card-bg: #2d2d2d; 
+            --text-light: #e0e0e0; 
+            --text-secondary: #a0a0a0; 
+            --input-border: #444444; 
             --error-red: #EF4444;
             --success-green: #10B981;
             --font-main: 'Poppins', sans-serif;
-            --gap-medium: 40px; /* Jarak antara jam/tanggal dan input */
+            --gap-medium: 40px; 
         }
 
-        /* Base & Layout */
+        /* Base & Layout (Dark Mode) */
         body {
             font-family: var(--font-main);
             display: flex;
@@ -33,14 +33,17 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            background-color: var(--bg-light);
-            color: var(--text-dark);
+            background-color: var(--bg-dark); 
+            color: var(--text-light); 
+            transition: background-color 0.3s;
         }
         .container {
             width: 100%;
             max-width: 380px; 
             padding: 20px;
             text-align: center;
+            /* Transisi untuk fade-out yang cepat */
+            transition: opacity 0.1s, transform 0.1s; 
         }
 
         /* Time & Date Display Group */
@@ -48,24 +51,25 @@
             margin-bottom: var(--gap-medium);
         }
 
-        /* Time Display (Biru, Super Besar dan Tebal) */
+        /* Time Display (Hijau, Super Besar dan Tebal) */
         .time-display {
             font-family: var(--font-main);
             font-weight: 800;
             font-size: 8rem;
-            color: var(--primary-blue);
+            color: var(--primary-green); 
             line-height: 1;
+            transition: color 0.3s;
         }
         
         /* Date Display (Ringan) */
         .date-display {
             font-weight: 400;
             font-size: 1.1rem;
-            color: var(--text-light);
+            color: var(--text-secondary); 
             margin-top: 10px;
         }
 
-        /* Form & Input */
+        /* Form & Input (Dark Mode) */
         .form-group {
             text-align: left;
             position: relative;
@@ -78,16 +82,16 @@
             border-radius: 12px;
             box-sizing: border-box;
             font-size: 1.1rem;
-            color: var(--text-dark);
-            background-color: var(--card-bg);
+            color: var(--text-light); 
+            background-color: var(--card-bg); 
             outline: none;
             transition: border-color 0.3s, box-shadow 0.3s;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); 
         }
         
         .password-input:focus {
-            border-color: var(--primary-blue);
-            box-shadow: 0 0 0 1px var(--primary-blue);
+            border-color: var(--primary-green); 
+            box-shadow: 0 0 0 1px var(--primary-green);
         }
         
         /* State Visual Feedback */
@@ -104,17 +108,35 @@
         button[type="submit"] {
             display: none; 
         }
-
+        
+        /* Iframe untuk halaman beranda */
+        #contentFrame {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            z-index: 1000;
+            display: none; 
+            opacity: 0;
+            /* Jeda fade-in yang singkat */
+            transition: opacity 0.3s ease-in; 
+        }
+        #contentFrame.loaded {
+            display: block;
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
 
-    <div class="container">
+    <div class="container" id="loginContainer">
         
         <div class="header-info">
-            <div class="time-display" id="currentTime">00:00</div>
+            <div class="time-display" id="currentTime">...</div>
             
-            <div class="date-display" id="currentDate"></div>
+            <div class="date-display" id="currentDate">Memuat Data Sandi...</div>
         </div>
 
         <form id="loginForm">
@@ -126,8 +148,9 @@
                     name="password" 
                     class="password-input"
                     required 
-                    placeholder="Masukkan sandi..."
+                    placeholder="Memuat..."
                     autocomplete="off"
+                    disabled
                 >
             </div>
             
@@ -135,9 +158,9 @@
         </form>
 
     </div>
-
+    
     <script>
-        // --- KONFIGURASI FIREBASE --- (Gunakan konfigurasi Anda yang asli)
+        // --- KONFIGURASI FIREBASE ---
         const firebaseConfig = {
             apiKey: "AIzaSyCba6M_spBXvuG91Zn-XWJ4bSTX6vNcST0",
             authDomain: "index-68220.firebaseapp.com",
@@ -153,6 +176,7 @@
         const db = firebase.database();
         // -----------------------------
 
+        const loginContainer = document.getElementById('loginContainer');
         const timeElement = document.getElementById('currentTime');
         const dateElement = document.getElementById('currentDate');
         const passwordField = document.getElementById('password');
@@ -160,8 +184,10 @@
         
         const stateClasses = ['is-error', 'is-success'];
         const locale = 'id-ID'; 
+        const iframeURL = 'beranda.html';
 
-        let isAuthenticating = false; // Flag untuk mencegah double submit
+        let isAuthenticating = false; 
+        let storedHash = null; 
 
         // Helper: compute SHA-256 hex
         async function sha256Hex(str) {
@@ -171,78 +197,109 @@
         }
 
         // --- Fungsi Update Waktu dan Tanggal ---
-        function updateDateTime() {
+        function updateDateTime(initial = false) {
             const now = new Date();
-            
-            // 1. Waktu (Jam:Menit)
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
             timeElement.textContent = `${hours}:${minutes}`;
 
-            // 2. Tanggal
-            const dateOptions = { 
-                weekday: 'long', 
-                day: 'numeric', 
-                month: 'long', 
-                year: 'numeric' 
-            };
-            dateElement.textContent = now.toLocaleDateString(locale, dateOptions);
+            if (initial) {
+                const dateOptions = { 
+                    weekday: 'long', 
+                    day: 'numeric', 
+                    month: 'long', 
+                    year: 'numeric' 
+                };
+                dateElement.textContent = now.toLocaleDateString(locale, dateOptions);
+            }
         }
         
-        // --- Fungsi Feedback Visual ---
+        // --- Fungsi Feedback Visual (Dimodifikasi: Hapus Jeda) ---
         function setFeedback(state) {
-            // Hapus semua state sebelumnya
+            // Langsung terapkan visual feedback
             stateClasses.forEach(cls => passwordField.classList.remove(cls));
 
             if (state === 'success') {
                 passwordField.classList.add('is-success');
             } else if (state === 'error') {
                 passwordField.classList.add('is-error');
+                // Untuk error, tetap beri jeda agar user bisa lihat
+                setTimeout(() => {
+                    stateClasses.forEach(cls => passwordField.classList.remove(cls));
+                    passwordField.focus();
+                }, 1500);
             }
             
-            // Bersihkan input setelah feedback
             passwordField.value = '';
-            
-            // Hapus visual feedback setelah 1.5 detik
-            setTimeout(() => {
-                stateClasses.forEach(cls => passwordField.classList.remove(cls));
-                passwordField.focus();
-            }, 1500);
         }
 
-        // --- Fungsi Otentikasi Firebase ---
+        // --- Fungsi Otentikasi Cepat ---
         async function authenticateUser(inputPassword) {
+            if (!storedHash) {
+                return false;
+            }
+            const inputHash = await sha256Hex(inputPassword);
+            return inputHash === storedHash;
+        }
+        
+        // --- Fungsi Utama: Memuat Hash Sandi ---
+        async function preloadPasswordHash() {
             try {
                 const snapshot = await db.ref('real/passwordHash').once('value');
-                const storedHash = snapshot.val();
+                storedHash = snapshot.val();
 
                 if (!storedHash) {
-                    console.error('ERROR: Hash sandi tidak ditemukan di Firebase.');
-                    return false;
+                    dateElement.textContent = 'ERROR: Sandi tidak ditemukan di DB!';
+                    passwordField.placeholder = 'DB Error';
+                    passwordField.disabled = true;
+                } else {
+                    dateElement.textContent = new Date().toLocaleDateString(locale, { 
+                        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' 
+                    });
+                    passwordField.placeholder = 'Masukkan sandi...';
+                    passwordField.disabled = false;
+                    passwordField.focus();
                 }
 
-                const inputHash = await sha256Hex(inputPassword);
-
-                return inputHash === storedHash;
-
             } catch (error) {
-                console.error('Error saat autentikasi Firebase:', error);
-                return false; // Gagal jika ada error koneksi/runtime
+                console.error('Error saat memuat sandi:', error);
+                dateElement.textContent = 'ERROR KONEKSI: Cek jaringan atau Firebase!';
+                passwordField.placeholder = 'Koneksi Error';
+                passwordField.disabled = true;
             }
         }
+
+        // --- Fungsi Baru: Memuat Iframe (Dioptimalkan tanpa jeda) ---
+        function loadIframe() {
+            // 1. Sembunyikan kontainer login utama *secepatnya*
+            loginContainer.style.opacity = '0';
+            loginContainer.style.transform = 'translateY(-20px)';
+            loginContainer.style.display = 'none';
+
+            // 2. Buat dan siapkan iframe
+            const iframe = document.createElement('iframe');
+            iframe.id = 'contentFrame';
+            iframe.src = iframeURL;
+            
+            // 3. Setelah iframe memuat konten, tampilkan dengan efek fade-in
+            iframe.onload = function() {
+                iframe.classList.add('loaded'); 
+            };
+            
+            // 4. Masukkan iframe ke body
+            document.body.appendChild(iframe);
+        }
+
 
         // --- Event Listener Form (Submit dengan Enter) ---
         form.addEventListener('submit', async (event) => {
             event.preventDefault();
             
-            if (isAuthenticating) return;
+            if (isAuthenticating || passwordField.disabled) return;
             
             const password = passwordField.value.trim();
             
-            if (password.length === 0) {
-                // Jangan lakukan apa-apa jika input kosong
-                return;
-            }
+            if (password.length === 0) return;
 
             isAuthenticating = true;
             passwordField.placeholder = 'Memverifikasi...';
@@ -254,21 +311,18 @@
 
             if (success) {
                 setFeedback('success');
-                // Beri waktu sejenak untuk efek visual
-                setTimeout(() => {
-                     window.location.href = 'beranda.html'; 
-                }, 500);
+                // PENGALIHAN: Panggil fungsi loadIframe *langsung tanpa jeda*
+                loadIframe();
             } else {
                 setFeedback('error');
             }
         });
 
         // --- Inisialisasi ---
-        updateDateTime();
-        setInterval(updateDateTime, 10000); 
-
         document.addEventListener('DOMContentLoaded', () => {
-            passwordField.focus();
+            preloadPasswordHash(); 
+            updateDateTime(true);
+            setInterval(() => updateDateTime(false), 10000); 
         });
         
     </script>
