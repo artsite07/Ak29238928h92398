@@ -13,17 +13,12 @@
         :root {
             --sidebar-width: 280px;
             --touch-area: 12px;
-            --primary-bg: #111827;
+            --primary-bg: #111827; /* Warna latar belakang solid dark */
             --secondary-bg: #1f2937;
             --text-color: #f3f4f6;
             --accent-color: #34d399;
             --main-transition-duration: 0.35s;
             --padding-x: 20px;
-
-            /* Variabel Baru untuk Gradasi Animasi (Hijau ke Gelap) */
-            --gradient-start: #14532d; /* Hijau Tua */
-            --gradient-mid: #10b981; /* Hijau Accent */
-            --gradient-end: #0a0a0a; /* Sangat Gelap */
         }
 
         /* ------------------------------------------------------------------------------------- */
@@ -32,36 +27,14 @@
         body {
             margin: 0;
             font-family: 'Inter', sans-serif;
+            /* Latar belakang solid, bukan animasi gradasi */
+            background: var(--primary-bg); 
             height: 100vh;
             overflow: hidden;
             transition: background-color 0.5s ease;
-            
-            /* Latar Belakang Gradasi Animasi */
-            background: linear-gradient(135deg, 
-                var(--gradient-start) 0%, 
-                var(--gradient-mid) 25%, 
-                var(--gradient-start) 50%,
-                var(--gradient-end) 75%,
-                var(--gradient-start) 100%
-            );
-            background-size: 400% 400%; /* Ukuran besar untuk animasi pergeseran */
-            animation: gradientShift 15s ease infinite; /* Terapkan animasi */
         }
 
-        /* Keyframes untuk Animasi Pergeseran Gradasi */
-        @keyframes gradientShift {
-            0% {
-                background-position: 0% 50%;
-            }
-            50% {
-                background-position: 100% 50%;
-            }
-            100% {
-                background-position: 0% 50%;
-            }
-        }
-        /* MODIFIKASI BERAKHIR DI SINI */
-
+        /* Hapus keyframes @gradientShift karena sudah tidak digunakan */
 
         /* Area pemicu Hover (Trigger) */
         #edge-trigger {
@@ -214,21 +187,21 @@
             transition: transform var(--main-transition-duration) cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
 
-        /* Gaya Iframe */
+        /* Gaya Iframe - FULL SCREEN (MODIFIKASI DI SINI) */
         iframe {
             position: absolute;
-            top: 20px;
-            left: 20px;
-            width: calc(100% - 40px); 
-            height: calc(100% - 40px); 
+            top: 0;    /* Diubah menjadi 0 */
+            left: 0;   /* Diubah menjadi 0 */
+            width: 100%;  /* Diubah menjadi 100% */
+            height: 100%; /* Diubah menjadi 100% */
             border: none;
             background-color: #ffffff; 
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-            border-radius: 12px;
+            box-shadow: none; /* Dihapus untuk tampilan full screen yang bersih */
+            border-radius: 0; /* Dihapus untuk tampilan full screen yang bersih */
             opacity: 0; 
             transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
             pointer-events: none;
-            transform: scale(0.98);
+            transform: scale(1); /* Tetap 1 atau diatur ulang jika tidak ada scaling awal */
         }
 
         iframe.active {
@@ -251,7 +224,6 @@
         .sidebar-open #mainContentContainer {
             transform: translateX(calc(var(--sidebar-width) - 50px));
             /* HANYA MENGGUNAKAN BRIGHTNESS, HAPUS BLUR */
-            /* Blur adalah penyebab utama lag */
             filter: brightness(0.6); 
             box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.3);
         }
@@ -281,13 +253,6 @@
             body { position: relative; background: var(--primary-bg); }
             #edge-trigger { display: none; }
             .sidebar-overlay { display: none !important; }
-
-            /* Nonaktifkan animasi gradasi di mobile untuk performa yang lebih baik */
-            body { 
-                background: var(--primary-bg); /* Kembali ke warna solid */
-                background-size: auto; 
-                animation: none;
-            }
 
             /* Gunakan navigasi dock bawah yang lebih menonjol */
             #sidebar {
