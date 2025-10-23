@@ -19,19 +19,49 @@
             --accent-color: #34d399;
             --main-transition-duration: 0.35s;
             --padding-x: 20px;
+
+            /* Variabel Baru untuk Gradasi Animasi (Hijau ke Gelap) */
+            --gradient-start: #14532d; /* Hijau Tua */
+            --gradient-mid: #10b981; /* Hijau Accent */
+            --gradient-end: #0a0a0a; /* Sangat Gelap */
         }
 
         /* ------------------------------------------------------------------------------------- */
-        /* Layout utama */
+        /* Layout utama - MODIFIKASI DIMULAI DI SINI */
         /* ------------------------------------------------------------------------------------- */
         body {
             margin: 0;
             font-family: 'Inter', sans-serif;
-            background: #e5e7eb;
             height: 100vh;
             overflow: hidden;
             transition: background-color 0.5s ease;
+            
+            /* Latar Belakang Gradasi Animasi */
+            background: linear-gradient(135deg, 
+                var(--gradient-start) 0%, 
+                var(--gradient-mid) 25%, 
+                var(--gradient-start) 50%,
+                var(--gradient-end) 75%,
+                var(--gradient-start) 100%
+            );
+            background-size: 400% 400%; /* Ukuran besar untuk animasi pergeseran */
+            animation: gradientShift 15s ease infinite; /* Terapkan animasi */
         }
+
+        /* Keyframes untuk Animasi Pergeseran Gradasi */
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        /* MODIFIKASI BERAKHIR DI SINI */
+
 
         /* Area pemicu Hover (Trigger) */
         #edge-trigger {
@@ -248,9 +278,16 @@
         /* ------------------------------------------------------------------------------------- */
         @media (max-width: 767px) {
             
-            body { position: relative; background: #ffffff; }
+            body { position: relative; background: var(--primary-bg); }
             #edge-trigger { display: none; }
             .sidebar-overlay { display: none !important; }
+
+            /* Nonaktifkan animasi gradasi di mobile untuk performa yang lebih baik */
+            body { 
+                background: var(--primary-bg); /* Kembali ke warna solid */
+                background-size: auto; 
+                animation: none;
+            }
 
             /* Gunakan navigasi dock bawah yang lebih menonjol */
             #sidebar {
