@@ -344,7 +344,7 @@
         </div>
         
         <nav role="navigation">
-            <a href="home.html" data-target="home-frame" aria-label="Home">
+            <a href="aplikasi.html" data-target="aplikasi-frame" aria-label="Home">
                 <i class="fa-solid fa-house"></i>
                 <span>Home</span>
             </a>
@@ -356,10 +356,6 @@
                 <i class="fa-solid fa-terminal"></i>
                 <span>Terminal</span>
             </a>
-            <a href="aplikasi.html" data-target="aplikasi-frame" aria-label="Aplikasi">
-                <i class="fa-solid fa-code"></i>
-                <span>Aplikasi</span>
-            </a>
         </nav>
         
         <div class="sidebar-footer">
@@ -370,10 +366,9 @@
     <div id="sidebar-overlay" class="sidebar-overlay"></div>
 
     <div id="mainContentContainer">
-        <iframe id="home-frame" src="home.html" title="Halaman Utama"></iframe>
+        <iframe id="aplikasi-frame" src="aplikasi.html" title="Halaman Utama"></iframe>
         <iframe id="v-drive-frame" src="v-drive.html" title="Penyimpanan Virtual"></iframe>
         <iframe id="codingin-frame" src="codingin.html" title="Terminal Simulasi"></iframe>
-        <iframe id="aplikasi-frame" src="aplikasi.html" title="Daftar Aplikasi"></iframe>
     </div>
 
     <script>
@@ -384,8 +379,9 @@
         const mainContentContainer = document.getElementById('mainContentContainer');
         const links = document.querySelectorAll('#sidebar a');
         const iframes = document.querySelectorAll('iframe');
+        // Pastikan DEFAULT_PAGE tetap 'aplikasi-frame'
         const ACTIVE_KEY = 'activePage';
-        const DEFAULT_PAGE = 'home-frame';
+        const DEFAULT_PAGE = 'aplikasi-frame'; 
         const SIDEBAR_OPEN_CLASS = 'sidebar-open';
 
         // --- FUNGSI UTILITY ---
