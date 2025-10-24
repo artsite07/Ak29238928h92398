@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Akses Ultra Minimalis | Dark Mode Cepat</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;400;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
@@ -19,9 +18,8 @@
             --text-secondary: #a0a0a0; 
             --input-border: #444444; 
             --error-red: #EF4444;
-            --success-color: #06B6D4; /* Menggunakan Cyan untuk success */
+            --success-color: #06B6D4; 
             --font-main: 'Poppins', sans-serif;
-            --gap-medium: 40px; 
         }
 
         /* Base & Layout (Dark Mode) */
@@ -42,13 +40,11 @@
             max-width: 380px; 
             padding: 20px;
             text-align: center;
-            /* Transisi untuk fade-out yang cepat */
             transition: opacity 0.1s, transform 0.1s; 
         }
 
-        /* Header Info (Hanya untuk menjaga layout, sekarang kosong) */
+        /* Header info dikosongkan untuk tampilan minimalis */
         .header-info {
-            /* Menghapus margin agar input benar-benar di tengah vertikal */
             margin-bottom: 0; 
         }
         
@@ -70,7 +66,6 @@
             outline: none;
             transition: border-color 0.3s, box-shadow 0.3s;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); 
-            /* Memberi sedikit ruang di atas input agar tidak terlalu mepet ke atas */
             margin-top: 20px; 
         }
         
@@ -89,7 +84,7 @@
             box-shadow: 0 0 0 2px var(--success-color);
         }
 
-        /* Menyembunyikan tombol submit */
+        /* Menyembunyikan tombol submit (agar hanya Enter yang berfungsi) */
         button[type="submit"] {
             display: none; 
         }
@@ -105,7 +100,6 @@
             z-index: 1000;
             display: none; 
             opacity: 0;
-            /* Jeda fade-in yang singkat */
             transition: opacity 0.3s ease-in; 
         }
         #contentFrame.loaded {
@@ -118,8 +112,7 @@
 
     <div class="container" id="loginContainer">
         
-        <div class="header-info">
-            </div>
+        <div class="header-info"></div>
 
         <form id="loginForm">
             
@@ -136,15 +129,16 @@
                 >
             </div>
             
-            <button type="submit" style="display: none;"></button>
+            <button type="submit" style="display: none;"></button> 
         </form>
 
     </div>
     
     <script>
         // --- KONFIGURASI FIREBASE ---
+        // GANTI DENGAN KONFIGURASI FIREBASE ANDA YANG SEBENARNYA!
         const firebaseConfig = {
-            apiKey: "AIzaSyCba6M_spBXvuG91Zn-XWJ4bSTX6vNcST0",
+            apiKey: "AIzaSyCba6M_spBXvuG91Zn-XWJ4bSTX6vNcST0", 
             authDomain: "index-68220.firebaseapp.com",
             databaseURL: "https://index-68220-default-rtdb.firebaseio.com",
             projectId: "index-68220",
@@ -154,12 +148,14 @@
             measurementId: "G-2VQCRFJQCM"
         };
 
-        firebase.initializeApp(firebaseConfig);
+        // Inisialisasi Firebase
+        if (!firebase.apps.length) {
+             firebase.initializeApp(firebaseConfig);
+        }
         const db = firebase.database();
         // -----------------------------
 
         const loginContainer = document.getElementById('loginContainer');
-        // const statusMessageElement = document.getElementById('statusMessage'); // Dihapus
         const passwordField = document.getElementById('password');
         const form = document.getElementById('loginForm');
         
@@ -169,7 +165,7 @@
         let isAuthenticating = false; 
         let storedHash = null; 
         
-        // Konstanta untuk Placeholder
+        // Konstanta untuk Placeholder (Pesan tanpa teks status eksternal)
         const PLACEHOLDER_DEFAULT = 'Ketik sandi...';
         const PLACEHOLDER_LOADING = 'Memuat...';
         const PLACEHOLDER_VERIFYING = 'Memverifikasi...';
@@ -181,13 +177,15 @@
         async function sha256Hex(str) {
             const enc = new TextEncoder().encode(str);
             const digest = await crypto.subtle.digest('SHA-256', enc);
-            return Array.from(new Uint8صاب(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+            // Mengonversi ArrayBuffer menjadi string hex
+            return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
         }
 
-        // --- Fungsi Feedback Visual (Dimodifikasi: Hapus Jeda) ---
+        // --- Fungsi Feedback Visual ---
         function setFeedback(state) {
-            // Langsung terapkan visual feedback
+            // Hapus semua kelas state
             stateClasses.forEach(cls => passwordField.classList.remove(cls));
+            passwordField.value = '';
 
             if (state === 'success') {
                 passwordField.classList.add('is-success');
@@ -195,22 +193,20 @@
             } else if (state === 'error') {
                 passwordField.classList.add('is-error');
                 passwordField.placeholder = 'Sandi Salah ❌';
-                // Untuk error, tetap beri jeda agar user bisa lihat
+                
+                // Beri jeda 1.5 detik untuk menampilkan error, lalu kembali normal
                 setTimeout(() => {
                     stateClasses.forEach(cls => passwordField.classList.remove(cls));
-                    passwordField.placeholder = PLACEHOLDER_DEFAULT; // Kembali ke default
+                    passwordField.placeholder = PLACEHOLDER_DEFAULT; 
                     passwordField.focus();
                 }, 1500);
             }
-            
-            passwordField.value = '';
         }
 
         // --- Fungsi Otentikasi Cepat ---
         async function authenticateUser(inputPassword) {
-            if (!storedHash) {
-                return false;
-            }
+            if (!storedHash) return false;
+            
             const inputHash = await sha256Hex(inputPassword);
             return inputHash === storedHash;
         }
@@ -227,7 +223,7 @@
                     passwordField.disabled = true;
                 } else {
                     passwordField.placeholder = PLACEHOLDER_DEFAULT;
-                    passwordField.disabled = false;
+                    passwordField.disabled = false; // <<< INI KUNCI AGAR ENTER BEKERJA
                     passwordField.focus();
                 }
 
@@ -238,12 +234,11 @@
             }
         }
 
-        // --- Fungsi Baru: Memuat Iframe (Dioptimalkan tanpa jeda) ---
+        // --- Fungsi Memuat Iframe ---
         function loadIframe() {
-            // 1. Sembunyikan kontainer login utama *secepatnya*
+            // 1. Sembunyikan kontainer login
             loginContainer.style.opacity = '0';
             loginContainer.style.transform = 'translateY(-20px)';
-            // Jeda singkat untuk efek visual sebelum menghapus elemen
             setTimeout(() => {
                 loginContainer.style.display = 'none';
             }, 100); 
@@ -253,24 +248,23 @@
             iframe.id = 'contentFrame';
             iframe.src = iframeURL;
             
-            // 3. Setelah iframe memuat konten, tampilkan dengan efek fade-in
+            // 3. Tampilkan iframe setelah dimuat
             iframe.onload = function() {
                 iframe.classList.add('loaded'); 
             };
             
-            // 4. Masukkan iframe ke body
             document.body.appendChild(iframe);
         }
 
 
-        // --- Event Listener Form (Submit dengan Enter) ---
+        // --- Event Listener Form (Dipicu oleh tombol Enter) ---
         form.addEventListener('submit', async (event) => {
-            event.preventDefault();
+            event.preventDefault(); // Mencegah form submit default (page refresh)
             
+            // Periksa status otentikasi dan input
             if (isAuthenticating || passwordField.disabled) return;
             
             const password = passwordField.value.trim();
-            
             if (password.length === 0) return;
 
             isAuthenticating = true;
@@ -282,7 +276,7 @@
             
             if (success) {
                 setFeedback('success');
-                // PENGALIHAN: Panggil fungsi loadIframe *langsung tanpa jeda*
+                // Pindah ke halaman beranda
                 loadIframe();
             } else {
                 setFeedback('error');
