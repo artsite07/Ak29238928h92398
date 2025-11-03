@@ -3,41 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Adlan M.R - Portofolio (Gaya Edge-Drag Enhanced V2 - Optimized)</title>
+    <title>Adlan M.R - Portofolio (Gaya Edge-Drag Enhanced V2 - Black-Cyan Final)</title>
     <link rel="icon" href="1.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
-        /* Variabel Warna dan Font yang Ditingkatkan */
+        /* Variabel Warna dan Font yang Ditingkatkan (Black-Cyan) */
         :root {
             --sidebar-width: 280px;
+            --sidebar-border-width: 3px; /* Variabel baru untuk lebar garis */
             --touch-area: 12px;
-            --primary-bg: #111827; /* Warna latar belakang solid dark */
-            --secondary-bg: #1f2937;
+            /* HITAM PEKAT */
+            --primary-bg: #000000; 
+            /* HAMPIR HITAM untuk pemisah/hover */
+            --secondary-bg: #0c0c0c; 
             --text-color: #f3f4f6;
-            /* UBAH KE AKESEN CYAN (Tailwind CSS 'cyan-500' atau yang serupa) */
+            /* AKESEN CYAN */
             --accent-color: #06b6d4; 
             --main-transition-duration: 0.35s;
             --padding-x: 20px;
             /* Shadow color disesuaikan agar cocok dengan aksen cyan */
-            --shadow-color: rgba(6, 182, 212, 0.15); 
+            --shadow-color: rgba(6, 182, 212, 0.2); 
         }
 
         /* ------------------------------------------------------------------------------------- */
-        /* Layout utama - MODIFIKASI DIMULAI DI SINI */
+        /* Layout utama */
         /* ------------------------------------------------------------------------------------- */
         body {
             margin: 0;
             font-family: 'Inter', sans-serif;
-            /* Latar belakang solid, bukan animasi gradasi */
             background: var(--primary-bg); 
             height: 100vh;
-            overflow: hidden;
+            /* FIX: Menghilangkan potensi scrollbar horizontal */
+            overflow: hidden; 
+            overflow-x: hidden; 
             transition: background-color 0.5s ease;
         }
-
-        /* Hapus keyframes @gradientShift karena sudah tidak digunakan */
 
         /* Area pemicu Hover (Trigger) */
         #edge-trigger {
@@ -83,12 +85,14 @@
             z-index: 2000;
             padding: 0;
             
-            transform: translateX(calc(-1 * var(--sidebar-width)));
+            /* FIX: Mendorong sedikit lebih jauh untuk menyembunyikan border 3px */
+            transform: translateX(calc(-1 * (var(--sidebar-width) + var(--sidebar-border-width))));
+            
             transition: transform var(--main-transition-duration) cubic-bezier(0.25, 0.46, 0.45, 0.94);
             
-            /* Menggunakan --shadow-color baru */
-            box-shadow: 10px 0 30px var(--shadow-color); 
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
+
+            border-right: var(--sidebar-border-width) solid var(--accent-color);
+            
             display: flex;
             flex-direction: column;
         }
@@ -104,7 +108,6 @@
             margin: 0;
             font-size: 1.5rem;
             font-weight: 700;
-            /* Menggunakan aksen cyan */
             color: var(--accent-color); 
             letter-spacing: 0.05em;
         }
@@ -154,18 +157,15 @@
         }
 
         #sidebar a:hover i {
-            /* Menggunakan aksen cyan */
             color: var(--accent-color); 
         }
 
         /* Active State */
         #sidebar a.active {
-            /* Menggunakan aksen cyan */
             background-color: var(--accent-color); 
             color: var(--primary-bg);
             font-weight: 700;
-            /* Bayangan disesuaikan dengan aksen cyan */
-            box-shadow: 0 4px 10px rgba(6, 182, 212, 0.4); 
+            box-shadow: 0 4px 10px rgba(6, 182, 212, 0.5); 
         }
 
         #sidebar a.active i {
@@ -191,25 +191,26 @@
             overflow: hidden;
             position: relative;
             box-sizing: border-box;
-            /* Hapus transisi filter yang berat, hanya fokus pada transform */
             transition: transform var(--main-transition-duration) cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            
+            border-left: none;
         }
 
-        /* Gaya Iframe - FULL SCREEN (MODIFIKASI DI SINI) */
+        /* Gaya Iframe - FULL SCREEN */
         iframe {
             position: absolute;
-            top: 0;    /* Diubah menjadi 0 */
-            left: 0;   /* Diubah menjadi 0 */
-            width: 100%;  /* Diubah menjadi 100% */
-            height: 100%; /* Diubah menjadi 100% */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             border: none;
             background-color: #ffffff; 
-            box-shadow: none; /* Dihapus untuk tampilan full screen yang bersih */
-            border-radius: 0; /* Dihapus untuk tampilan full screen yang bersih */
+            box-shadow: none; 
+            border-radius: 0;
             opacity: 0; 
             transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
             pointer-events: none;
-            transform: scale(1); /* Tetap 1 atau diatur ulang jika tidak ada scaling awal */
+            transform: scale(1); 
         }
 
         iframe.active {
@@ -225,15 +226,15 @@
 
         /* 1. Tampilkan Sidebar */
         .sidebar-open #sidebar {
+            /* Transform 0 untuk menunjukkan sidebar dan border secara penuh */
             transform: translateX(0);
         }
 
-        /* 2. Dorong Konten dan Gelapkan (OPTIMASI LAG DI SINI) */
+        /* 2. Dorong Konten dan Gelapkan */
         .sidebar-open #mainContentContainer {
             transform: translateX(calc(var(--sidebar-width) - 50px));
-            /* HANYA MENGGUNAKAN BRIGHTNESS, HAPUS BLUR */
             filter: brightness(0.6); 
-            box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.3);
+            box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.5);
         }
         
         /* Overlay Transparan (Untuk menutup klik luar) */
@@ -250,86 +251,6 @@
         
         .sidebar-open .sidebar-overlay {
             display: block;
-        }
-
-
-        /* ------------------------------------------------------------------------------------- */
-        /* Responsif (Mobile: Navigasi Dock Bawah yang Ditingkatkan) */
-        /* ------------------------------------------------------------------------------------- */
-        @media (max-width: 767px) {
-            
-            body { position: relative; background: var(--primary-bg); }
-            #edge-trigger { display: none; }
-            .sidebar-overlay { display: none !important; }
-
-            /* Gunakan navigasi dock bawah yang lebih menonjol */
-            #sidebar {
-                width: 100%;
-                height: 60px;
-                top: unset;
-                bottom: 0;
-                transform: none !important;
-                padding-top: 0;
-                z-index: 4000;
-                background-color: var(--primary-bg);
-                /* Menggunakan --shadow-color baru */
-                box-shadow: 0 -5px 15px var(--shadow-color); 
-                border-right: none;
-                border-top: 1px solid var(--secondary-bg);
-            }
-            
-            .sidebar-header, .sidebar-footer { 
-                display: none;
-            }
-
-            #sidebar nav {
-                flex-direction: row;
-                justify-content: space-around;
-                align-items: center;
-                gap: 0;
-                padding: 0;
-                height: 100%;
-            }
-
-            #sidebar a {
-                flex-direction: column;
-                justify-content: center;
-                padding: 5px 10px;
-                flex-grow: 1;
-                height: 100%;
-                border-radius: 0;
-            }
-            
-            #sidebar a span {
-                font-size: 0.65rem;
-                font-weight: 500;
-                margin-top: 2px;
-            }
-            
-            #sidebar a i {
-                font-size: 1.1rem;
-                width: auto;
-            }
-            
-            #sidebar a:hover {
-                background-color: transparent;
-                transform: none;
-            }
-
-            /* Active State Mobile */
-            #sidebar a.active {
-                background-color: var(--secondary-bg);
-                border-radius: 0;
-                box-shadow: none;
-            }
-
-            /* Nonaktifkan efek parallax/filter di mobile */
-            .sidebar-open #mainContentContainer,
-            #mainContentContainer {
-                transform: none !important;
-                filter: none !important;
-                padding-bottom: 70px;
-            }
         }
     </style>
 </head>
@@ -379,20 +300,16 @@
         const mainContentContainer = document.getElementById('mainContentContainer');
         const links = document.querySelectorAll('#sidebar a');
         const iframes = document.querySelectorAll('iframe');
-        // Pastikan DEFAULT_PAGE tetap 'aplikasi-frame'
         const ACTIVE_KEY = 'activePage';
         const DEFAULT_PAGE = 'aplikasi-frame'; 
         const SIDEBAR_OPEN_CLASS = 'sidebar-open';
 
         // --- FUNGSI UTILITY ---
         function openSidebar() {
-            // Hanya buka di desktop
-            if (window.innerWidth > 767) { 
-                if (!body.classList.contains(SIDEBAR_OPEN_CLASS)) {
-                    body.classList.add(SIDEBAR_OPEN_CLASS);
-                    // Matikan interaksi pada konten saat menu terbuka
-                    mainContentContainer.style.pointerEvents = 'none';
-                }
+            if (!body.classList.contains(SIDEBAR_OPEN_CLASS)) {
+                body.classList.add(SIDEBAR_OPEN_CLASS);
+                // Matikan interaksi pada konten saat menu terbuka
+                mainContentContainer.style.pointerEvents = 'none';
             }
         }
 
@@ -408,7 +325,7 @@
 
         // --- LOGIKA BUKA/TUTUP ---
         
-        // 1. Edge Hover (Desktop Only)
+        // 1. Edge Hover 
         edgeTrigger.addEventListener('mouseenter', openSidebar);
         
         // 2. Klik di luar Sidebar (Overlay)
@@ -421,13 +338,11 @@
                 const target = link.dataset.target;
                 setActiveState(target);
                 
-                if (window.innerWidth > 767) {
-                    closeSidebar();
-                }
+                closeSidebar();
             });
         });
 
-        // --- LOGIKA NAVIGASI (DIKEMBALIKAN KE ASLI) ---
+        // --- LOGIKA NAVIGASI ---
 
         const setActiveState = (targetId) => {
             links.forEach(l => {
@@ -444,7 +359,6 @@
             iframes.forEach(f => f.classList.remove('active'));
             const activeFrame = document.getElementById(targetId);
             if (activeFrame) {
-                // Tidak perlu lazy load karena src sudah ada di HTML
                 activeFrame.classList.add('active');
             }
             
